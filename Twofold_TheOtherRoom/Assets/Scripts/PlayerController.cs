@@ -3,12 +3,14 @@ using UnityEngine;
 [DefaultExecutionOrder(-1)]
 public class PlayerController : MonoBehaviour
 {
+    #region Class Variables
     [Header("Components")]
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private Camera _playerCamera;
 
     [Header("Base Movement")]
     public float runSpeed = 4f;
+    public float movingThreshold = 0.01f;
 
     [Header("Camera Settings")]
     public float lookSenseH = 0.1f;
@@ -16,15 +18,38 @@ public class PlayerController : MonoBehaviour
     public float lookLimitV = 89f;
 
     private PlayerLocomotionInput _playerLocomotionInput;
+    private PlayerState _playerState;
+
     private float _bodyYaw;       // 몸체 좌우 회전(yaw)
     private float _cameraPitch;   // 카메라 상하 회전(pitch)
+    #endregion
 
+    #region Startup
     private void Awake()
     {
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+        _playerState = GetComponent<PlayerState>();
     }
+    #endregion
+
+    #region Update Logic
 
     private void Update()
+    {
+        UpdateMovementState();
+        HandleLateralMovement();
+    }
+
+    private void UpdateMovementState()
+    {
+        bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero;
+        bool isMovingLaterally = IsMovingLaterally();
+
+        PlayerMovementState lateralState = isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling;
+        _playerState.SetPlayerMovementState(lateralState);
+    }
+
+    public void HandleLateralMovement()
     {
         // 카메라가 바라보는 방향(XZ 평면) 기준으로 이동 방향 계산
         Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
@@ -35,7 +60,9 @@ public class PlayerController : MonoBehaviour
         Vector3 movementVelocity = movementDirection * runSpeed;
         _characterController.Move(movementVelocity * Time.deltaTime);
     }
+    #endregion
 
+    #region LateUpdate Logic
     private void LateUpdate()
     {
         UpdateCursorLock();
@@ -54,7 +81,9 @@ public class PlayerController : MonoBehaviour
         _cameraPitch = Mathf.Clamp(_cameraPitch - lookSenseV * _playerLocomotionInput.LookInput.y, -lookLimitV, lookLimitV);
         _playerCamera.transform.localRotation = Quaternion.Euler(_cameraPitch, 0f, 0f);
     }
+    #endregion
 
+    #region Camera Control
     private void UpdateCursorLock()
     {
         // 우클릭 중에는 커서 잠금/숨김, 평소에는 커서로 물체 클릭 가능
@@ -62,4 +91,15 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = look ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !look;
     }
+    #endregion
+
+    #region State Check
+
+    private bool IsMovingLaterally()
+    {
+        Vector3 lateralVelocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
+        
+        return lateralVelocity.magnitude > movingThreshold;
+    }
+    #endregion
 }
