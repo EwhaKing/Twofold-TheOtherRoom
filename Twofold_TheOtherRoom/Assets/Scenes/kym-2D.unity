@@ -677,7 +677,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 269962729}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 546808852}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: DecreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &269962729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1189,6 +1201,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 416644798}
+  - component: {fileID: 416644799}
   m_Layer: 5
   m_Name: C_Row
   m_TagString: Untagged
@@ -1219,6 +1232,24 @@ RectTransform:
   m_AnchoredPosition: {x: -19, y: -110}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &416644799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416644797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04ec7a2e24ad06847b1cb88d1a751188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorBlockController
+  blocks:
+  - {fileID: 1531365459}
+  - {fileID: 340785142}
+  - {fileID: 514388217}
+  - {fileID: 1569030465}
+  - {fileID: 156816327}
 --- !u!1 &424215611
 GameObject:
   m_ObjectHideFlags: 0
@@ -1553,7 +1584,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 432500160}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1577545723}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: DecreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &432500160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2480,6 +2523,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 546808851}
+  - component: {fileID: 546808852}
   m_Layer: 5
   m_Name: D_Row
   m_TagString: Untagged
@@ -2510,6 +2554,24 @@ RectTransform:
   m_AnchoredPosition: {x: -19, y: -165}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &546808852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 546808850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04ec7a2e24ad06847b1cb88d1a751188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorBlockController
+  blocks:
+  - {fileID: 240536412}
+  - {fileID: 792366057}
+  - {fileID: 453687556}
+  - {fileID: 1364808240}
+  - {fileID: 2072729818}
 --- !u!1 &581130520
 GameObject:
   m_ObjectHideFlags: 0
@@ -2668,7 +2730,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 589226746}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 416644799}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: DecreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &589226746
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3377,7 +3451,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 744403004}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 746342769}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: IncreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &744403004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3556,7 +3642,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 769974566}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 416644799}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: IncreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &769974566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3814,7 +3912,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 790905141}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1577545723}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: IncreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &790905141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6650,6 +6760,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1577545722}
+  - component: {fileID: 1577545723}
   m_Layer: 5
   m_Name: B_Row
   m_TagString: Untagged
@@ -6680,6 +6791,24 @@ RectTransform:
   m_AnchoredPosition: {x: -19, y: -55}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1577545723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577545721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04ec7a2e24ad06847b1cb88d1a751188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorBlockController
+  blocks:
+  - {fileID: 97067977}
+  - {fileID: 937030461}
+  - {fileID: 981010577}
+  - {fileID: 424215611}
+  - {fileID: 994131051}
 --- !u!1 &1684595038
 GameObject:
   m_ObjectHideFlags: 0
@@ -7939,7 +8068,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2062113487}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 746342769}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: DecreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2062113487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8135,7 +8276,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2078932412}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 546808852}
+        m_TargetAssemblyTypeName: ColorBlockController, Assembly-CSharp
+        m_MethodName: IncreaseBlock
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2078932412
 MonoBehaviour:
   m_ObjectHideFlags: 0
