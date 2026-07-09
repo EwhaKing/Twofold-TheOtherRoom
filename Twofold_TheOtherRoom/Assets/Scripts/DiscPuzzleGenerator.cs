@@ -12,6 +12,11 @@ public class DiscPuzzleGenerator : MonoBehaviour
     public Disc minuteDisc;
     public Disc secondDisc;
 
+    void Start()
+    {
+        Generate();
+    }
+
     [ContextMenu("Generate Puzzle")]
     public void Generate()
     {
@@ -23,46 +28,49 @@ public class DiscPuzzleGenerator : MonoBehaviour
         int mSlot = SnapToSlot(minuteAngle);
         int sSlot = SnapToSlot(secondAngle);
 
-        hourDisc.targetSlot = hSlot;
-        minuteDisc.targetSlot = mSlot;
-        secondDisc.targetSlot = sSlot;
+        if (hSlot == mSlot || hSlot == sSlot || mSlot == sSlot)
+        {
+            Debug.LogWarning($"슬롯 충돌 (H:{hSlot} M:{mSlot} S:{sSlot}) — 마커/구멍 겹침, 다른 시각 권장.");
+        }
 
-        int hourShowsMinute = RequiredHole(hSlot, mSlot);
-        int hourShowsSecond = RequiredHole(hSlot, sSlot);
-        int minuteShowsSecond = RequiredHole(mSlot, sSlot);
+        int hTarget = (6 - hSlot) % 6;
+        int mTarget = (6 - mSlot) % 6;
+        int sTarget = (6 - sSlot) % 6;
+        hourDisc.targetSlot = hTarget;
+        minuteDisc.targetSlot = mTarget;
+        secondDisc.targetSlot = sTarget;
 
-        hourDisc.ApplyHolePattern(BuildPattern(hourShowsMinute, hourShowsSecond));
-        minuteDisc.ApplyHolePattern(BuildPattern(minuteShowsSecond, -1));
-        secondDisc.ApplyHolePattern(BuildPattern(-1, -1));
+        // 각 원판 로컬 기준 구멍 슬롯 계산 (구멍은 index 기준이라 원래 slot 값 사용)
+        hourDisc.ApplyHolePattern(new[] { RequiredHole(hSlot, mSlot), RequiredHole(hSlot, sSlot) });
+        minuteDisc.ApplyHolePattern(new[] { RequiredHole(mSlot, sSlot) });
+        secondDisc.ApplyHolePattern(new int[0]);
 
-        // 원판 초기 회전은 랜덤 위치에서 시작
-        hourDisc.currentSlot = Random.Range(0, 6);
-        minuteDisc.currentSlot = Random.Range(0, 6);
-        secondDisc.currentSlot = Random.Range(0, 6);
-        hourDisc.transform.localRotation = Quaternion.Euler(0, 0, hourDisc.currentSlot * 60f);
-        minuteDisc.transform.localRotation = Quaternion.Euler(0, 0, minuteDisc.currentSlot * 60f);
-        secondDisc.transform.localRotation = Quaternion.Euler(0, 0, secondDisc.currentSlot * 60f);
+        // 시작은 랜덤 슬롯 (정답 위치와 다르게)
+        hourDisc.SetSlot(RandomSlotExcept(hTarget));
+        minuteDisc.SetSlot(RandomSlotExcept(mTarget));
+        secondDisc.SetSlot(RandomSlotExcept(sTarget));
 
-        Debug.Log($"Target Slots - Hour:{hSlot} Minute:{mSlot} Second:{sSlot}");
+        Debug.Log($"Target Slots - Hour:{hTarget} Minute:{mTarget} Second:{sTarget}");
+    }
+
+    [ContextMenu("Reset Puzzle")]
+    public void ResetPuzzle()
+    {
+        hourDisc.ResetDisc();
+        minuteDisc.ResetDisc();
+        secondDisc.ResetDisc();
     }
 
     int SnapToSlot(float angleDeg) => Mathf.RoundToInt(angleDeg / 60f) % 6;
 
     int RequiredHole(int thisTarget, int behindTarget)
-        => ((behindTarget - thisTarget) % 6 + 6) % 6;
+        => ((thisTarget - behindTarget) % 6 + 6) % 6;
 
-    int[] BuildPattern(int required1, int required2)
+    // 정답 슬롯을 피해서 랜덤 시작 슬롯 뽑기
+    int RandomSlotExcept(int exclude)
     {
-        var list = new System.Collections.Generic.List<int>();
-        if (required1 >= 0) list.Add(required1);
-        if (required2 >= 0 && !list.Contains(required2)) list.Add(required2);
-
-        while (list.Count < 3)
-        {
-            int c = Random.Range(0, 6);
-            if (list.Contains(c)) continue;
-            list.Add(c);
-        }
-        return list.ToArray();
+        int slot = Random.Range(0, 5);      // 0~4
+        if (slot >= exclude) slot++;        // exclude 건너뛰어 0~5 매핑
+        return slot;
     }
 }
