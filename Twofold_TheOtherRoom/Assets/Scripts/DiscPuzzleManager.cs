@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using TMPro;
 
 public class DiscPuzzleManager : MonoBehaviour
@@ -9,13 +10,19 @@ public class DiscPuzzleManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) TryRotate(-1); // 왼쪽 클릭 = 왼쪽 회전
-        if (Input.GetMouseButtonDown(1)) TryRotate(1);  // 오른쪽 클릭 = 오른쪽 회전
+        // Side 뷰에서만 원판 회전 가능
+        if (ViewSwitcher.CurrentView != ViewSwitcher.ViewMode.Side) return;
+
+        var mouse = Mouse.current;
+        if (mouse == null) return;
+
+        if (mouse.leftButton.wasPressedThisFrame) TryRotate(1);  // 왼쪽 클릭 = 왼쪽 회전
+        if (mouse.rightButton.wasPressedThisFrame) TryRotate(-1);  // 오른쪽 클릭 = 오른쪽 회전
     }
 
     void TryRotate(int dir)
     {
-        Ray ray = puzzleCamera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = puzzleCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Disc disc = hit.collider.GetComponentInParent<Disc>();
@@ -29,10 +36,12 @@ public class DiscPuzzleManager : MonoBehaviour
 
     void CheckSolved()
     {
+        if (discs == null || discs.Length == 0) return;
+
         bool solved = true;
         foreach (var d in discs)
             if (!d.IsCorrect()) solved = false;
 
-        resultText.text = solved ? "정답" : "";
+        resultText.text = solved ? "Clear!" : "";
     }
 }
