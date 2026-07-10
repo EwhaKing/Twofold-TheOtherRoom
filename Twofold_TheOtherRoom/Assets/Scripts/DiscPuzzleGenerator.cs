@@ -67,6 +67,9 @@ public class DiscPuzzleGenerator : MonoBehaviour
         secondDisc.ResetDisc();
     }
 
+    // 마커 슬롯
+    const int MARKER_SLOT = 0;
+
     // 최종 구멍 목록
     int[] BuildHoles(params int[] required)
     {
@@ -81,6 +84,7 @@ public class DiscPuzzleGenerator : MonoBehaviour
         while (holes.Count < targetCount && guard++ < 100)
         {
             int s = Random.Range(0, 6);
+            if (s == MARKER_SLOT) continue;         // 마커 슬롯 구멍 제외
             if (!holes.Contains(s)) holes.Add(s);
         }
         return holes.ToArray();
