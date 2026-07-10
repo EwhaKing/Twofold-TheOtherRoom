@@ -8,7 +8,10 @@ public class Button : MonoBehaviour
     public Lamp lamp3;
     public Lamp lamp4;
 
-    
+    //public float pressDistance = 0.1f;
+    //public float pressTime = 0.1f;
+
+    //private bool isPressed = false;
 
     public enum ButtonColor
     {
@@ -21,7 +24,7 @@ public class Button : MonoBehaviour
 
     private void OnMouseDown()
     {
-
+        
         switch (buttonColor)
         {
             case ButtonColor.Red:
@@ -52,4 +55,5 @@ public class Button : MonoBehaviour
                 break;
         }
     }
+    
 }
