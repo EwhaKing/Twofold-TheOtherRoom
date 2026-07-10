@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DiscPuzzleGenerator : MonoBehaviour
@@ -11,6 +12,10 @@ public class DiscPuzzleGenerator : MonoBehaviour
     public Disc hourDisc;
     public Disc minuteDisc;
     public Disc secondDisc;
+
+    [Header("구멍 설정")]
+    [Tooltip("원판당 전체 구멍 상한 (필수 포함)")]
+    public int maxHolesPerDisc = 3;
 
     void Start()
     {
@@ -30,7 +35,7 @@ public class DiscPuzzleGenerator : MonoBehaviour
 
         if (hSlot == mSlot || hSlot == sSlot || mSlot == sSlot)
         {
-            Debug.LogWarning($"슬롯 충돌 (H:{hSlot} M:{mSlot} S:{sSlot}) — 마커/구멍 겹침, 다른 시각 권장.");
+            Debug.LogWarning($"슬롯 충돌 (H:{hSlot} M:{mSlot} S:{sSlot}) — 마커/빈 슬롯 겹침, 다른 시각 권장.");
         }
 
         int hTarget = (6 - hSlot) % 6;
@@ -40,12 +45,13 @@ public class DiscPuzzleGenerator : MonoBehaviour
         minuteDisc.targetSlot = mTarget;
         secondDisc.targetSlot = sTarget;
 
-        // 각 원판 로컬 기준 구멍 슬롯 계산 (구멍은 index 기준이라 원래 slot 값 사용)
-        hourDisc.ApplyHolePattern(new[] { RequiredHole(hSlot, mSlot), RequiredHole(hSlot, sSlot) });
-        minuteDisc.ApplyHolePattern(new[] { RequiredHole(mSlot, sSlot) });
-        secondDisc.ApplyHolePattern(new int[0]);
+        // 각 원판 로컬 기준 구멍 계산 (index 기준이라 원래 slot 값 사용)
+        // 필수 + 랜덤 추가 구멍
+        hourDisc.ApplyHolePattern(BuildHoles(RequiredHole(hSlot, mSlot), RequiredHole(hSlot, sSlot)));
+        minuteDisc.ApplyHolePattern(BuildHoles(RequiredHole(mSlot, sSlot)));
+        secondDisc.ApplyHolePattern(BuildHoles());
 
-        // 시작은 랜덤 슬롯 (정답 위치와 다르게)
+        // 시작 - 랜덤 슬롯 (정답 위치와 다르게)
         hourDisc.SetSlot(RandomSlotExcept(hTarget));
         minuteDisc.SetSlot(RandomSlotExcept(mTarget));
         secondDisc.SetSlot(RandomSlotExcept(sTarget));
@@ -59,6 +65,25 @@ public class DiscPuzzleGenerator : MonoBehaviour
         hourDisc.ResetDisc();
         minuteDisc.ResetDisc();
         secondDisc.ResetDisc();
+    }
+
+    // 최종 구멍 목록
+    int[] BuildHoles(params int[] required)
+    {
+        var holes = new List<int>();
+        foreach (int h in required)
+            if (!holes.Contains(h)) holes.Add(h);
+
+        int cap = Mathf.Clamp(maxHolesPerDisc, holes.Count, 6);
+        int targetCount = Random.Range(holes.Count, cap + 1);
+
+        int guard = 0;
+        while (holes.Count < targetCount && guard++ < 100)
+        {
+            int s = Random.Range(0, 6);
+            if (!holes.Contains(s)) holes.Add(s);
+        }
+        return holes.ToArray();
     }
 
     int SnapToSlot(float angleDeg) => Mathf.RoundToInt(angleDeg / 60f) % 6;
