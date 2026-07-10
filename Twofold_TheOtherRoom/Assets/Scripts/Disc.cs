@@ -7,15 +7,13 @@ public class Disc : MonoBehaviour
     public int currentSlot = 0;
 
     const float STEP = 60f;
-    // 마커는 Disc의 자식으로 로컬 0°(반경 r)에 배치 → 원판 회전 시 자동으로 따라 돎.
-    // wedge 배열엔 포함하지 않으므로 ApplyHolePattern이 마커를 건드리지 않음.
 
     public void ApplyHolePattern(int[] openSlots)
     {
         for (int i = 0; i < 6; i++)
         {
             bool isHole = System.Array.Exists(openSlots, s => s == i);
-            wedges[i].SetActive(!isHole);   // 마커는 독립 자식이라 안전
+            wedges[i].SetActive(!isHole);
         }
     }
 
