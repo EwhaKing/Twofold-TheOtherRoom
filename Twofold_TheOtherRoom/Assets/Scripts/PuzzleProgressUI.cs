@@ -23,6 +23,11 @@ public class PuzzleProgressUI : MonoBehaviour
         Refresh();
     }
 
+    void Start()
+    {
+        Refresh();
+    }
+
     void OnDisable()
     {
         PuzzleManager.OnProgressChanged -= OnProgressChanged;
