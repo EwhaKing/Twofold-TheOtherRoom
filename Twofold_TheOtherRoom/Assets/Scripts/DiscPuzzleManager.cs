@@ -14,10 +14,12 @@ public class DiscPuzzleManager : MonoBehaviour
     [Tooltip("퍼즐 해당 차원")]
     public PuzzleDimension dimension = PuzzleDimension.ThreeD;
 
-    bool _reported; // 성공 보고용
+    bool _solved;
 
     void Update()
     {
+        if (_solved) return; // 회전 잠금
+
         // Side 뷰에서만 원판 회전 가능
         if (ViewSwitcher.CurrentView != ViewSwitcher.ViewMode.Side) return;
 
@@ -52,9 +54,9 @@ public class DiscPuzzleManager : MonoBehaviour
 
         resultText.text = solved ? "Clear!" : "";
 
-        if (solved && !_reported)
+        if (solved && !_solved)
         {
-            _reported = true;
+            _solved = true; // 회전 잠금
             if (PuzzleManager.Instance != null)
                 PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
         }
