@@ -8,6 +8,14 @@ public class DiscPuzzleManager : MonoBehaviour
     public TMP_Text resultText;
     public Camera puzzleCamera;
 
+    [Tooltip("이 퍼즐의 고유 id (유일해야 함)")]
+    public string puzzleId = "3D-6";
+
+    [Tooltip("퍼즐 해당 차원")]
+    public PuzzleDimension dimension = PuzzleDimension.ThreeD;
+
+    bool _reported; // 성공 보고용
+
     void Update()
     {
         // Side 뷰에서만 원판 회전 가능
@@ -43,5 +51,12 @@ public class DiscPuzzleManager : MonoBehaviour
             if (!d.IsCorrect()) solved = false;
 
         resultText.text = solved ? "Clear!" : "";
+
+        if (solved && !_reported)
+        {
+            _reported = true;
+            if (PuzzleManager.Instance != null)
+                PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
+        }
     }
 }
