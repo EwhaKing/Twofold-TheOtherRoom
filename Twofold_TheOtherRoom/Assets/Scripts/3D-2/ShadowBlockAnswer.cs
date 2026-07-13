@@ -1,11 +1,12 @@
 using UnityEngine;
 
-public class ShadowBlockAnswer : PuzzleBase
+public class ShadowBlockAnswer : MonoBehaviour
 {
    [Header("Blocks From Left To Right")]
     public MoveBlocks[] blocks;
 
     private readonly int[] answer = { 1, 3, 4, 2 };
+    private bool IsCleared = false;
 
     public void CheckClear()
     {
@@ -27,8 +28,9 @@ public class ShadowBlockAnswer : PuzzleBase
                 return;
             }
         }
-        
-        Debug.Log("ClearPuzzle 전");
-        ClearPuzzle();
+        // 먼저 클리어 처리해서 중복 호출 방지
+        IsCleared = true;
+
+        PuzzleManager.Instance.ReportSolved("3D-2", PuzzleDimension.ThreeD);
     }
 }
