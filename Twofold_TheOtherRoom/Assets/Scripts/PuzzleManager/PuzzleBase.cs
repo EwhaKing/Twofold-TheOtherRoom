@@ -9,7 +9,7 @@ public abstract class PuzzleBase : MonoBehaviour
     protected virtual void Start()
     {
         
-        PuzzleManager.Instance.RegisterPuzzle(this);
+        PSH_PuzzleManager.Instance.RegisterPuzzle(this);
     }
 
     protected void ClearPuzzle()
@@ -18,6 +18,6 @@ public abstract class PuzzleBase : MonoBehaviour
 
         IsCleared = true;
         Debug.Log(puzzleId + " 클리어! RegisterPuzzle 호출");
-        PuzzleManager.Instance.NotifyPuzzleCleared(this);
+        PSH_PuzzleManager.Instance.NotifyPuzzleCleared(this);
     }
 }

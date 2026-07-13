@@ -2,9 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
-public class PuzzleManager : MonoBehaviour
+public class PSH_PuzzleManager : MonoBehaviour
 {
-    public static PuzzleManager Instance;
+    public static PSH_PuzzleManager Instance;
 
     private readonly List<PuzzleBase> puzzles = new List<PuzzleBase>();
     private int clearedCount = 0;
