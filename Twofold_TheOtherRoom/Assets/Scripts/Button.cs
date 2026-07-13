@@ -2,16 +2,8 @@ using UnityEngine;
 
 public class Button : MonoBehaviour
 {
-    public Lamp lamp0;
-    public Lamp lamp1;
-    public Lamp lamp2;
-    public Lamp lamp3;
-    public Lamp lamp4;
-
-    //public float pressDistance = 0.1f;
-    //public float pressTime = 0.1f;
-
-    //private bool isPressed = false;
+    public Lamp[] lamps;
+    public int number;
 
     public enum ButtonColor
     {
@@ -22,37 +14,37 @@ public class Button : MonoBehaviour
 
     public ButtonColor buttonColor;
 
+//    public float pressDistance = 0.1f;  
+//    public float returnDelay = 0.5f;    
+
+//    private Vector3 originalPosition;
+
     private void OnMouseDown()
     {
-        
         switch (buttonColor)
         {
             case ButtonColor.Red:
-                lamp0.BlinkRed();
-                lamp1.BlinkRed();
-                lamp2.BlinkRed();
-                lamp3.BlinkRed();
-
-                Debug.Log("빨강");
+                for (int i = 0; i < number; i++)
+                {
+                    lamps[i].BlinkRed();
+                }
                 break;
 
             case ButtonColor.Green:
-                lamp0.BlinkGreen();
-                lamp1.BlinkGreen();
-                lamp2.BlinkGreen();
-
-                Debug.Log("초록");
+                for (int i = 0; i < number; i++)
+                {
+                    lamps[i].BlinkGreen();
+                }
                 break;
 
             case ButtonColor.Blue:
-                lamp0.BlinkBlue();
-                lamp1.BlinkBlue();
-                lamp2.BlinkBlue();
-                lamp3.BlinkBlue();
-                lamp4.BlinkBlue();
+                for (int i = 0; i < number; i++)
+                {
+                    lamps[i].BlinkBlue();
+                }
 
-                Debug.Log("파랑");
                 break;
+
         }
     }
     
