@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class Lamp : MonoBehaviour
+public class LAY_Lamp : MonoBehaviour
 {
     public Light pointLight;
     public Renderer lampRenderer;

@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class Button : MonoBehaviour
+public class LAY_Button : MonoBehaviour
 {
-    public Lamp[] lamps;
+    public LAY_Lamp[] lamps;
     public int number;
 
     public enum ButtonColor
