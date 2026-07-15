@@ -110,6 +110,14 @@ InitTestScene*.unity*
 .vscode/
 
 
+# 모든 ttf 원본과 meta 제외
+*.ttf
+*.ttf.meta
+
+# Assets/Fonts 폴더 전체 제외
+Assets/Fonts/
+Assets/Fonts.meta
+
 # Font files - check license before committing
 Assets/**/*.ttf
 Assets/**/*.otf
