@@ -1,12 +1,12 @@
 using TMPro;
 using UnityEngine;
 
-public class NumberSlot : MonoBehaviour
+public class NumberSlot2D8 : MonoBehaviour
 {
     public TMP_Text numberText;
 
     private int currentNumber = 0;
-    public Answer controller;
+    public Answer2D8 controller;
 
     void Start()
     {
@@ -40,7 +40,14 @@ public class NumberSlot : MonoBehaviour
 
     void UpdateNumber()
     {
+        if (controller.GetSolve())
+        {
+            return;
+        }
+        else
+        {
         numberText.text = currentNumber.ToString();
+        }
     }
 
     public int GetNumber()

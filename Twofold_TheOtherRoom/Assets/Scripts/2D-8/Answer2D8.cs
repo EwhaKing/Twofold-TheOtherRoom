@@ -1,10 +1,11 @@
 using UnityEngine;
 
-public class Answer : MonoBehaviour
+public class Answer2D8 : MonoBehaviour
 {
-    public NumberSlot[] slots;
+    public NumberSlot2D8[] slots;
 
-    public int[] answer = { 3, 5, 1, 8 };
+    public int[] answer = { 5, 7, 9, 3 };
+    public bool _solved = false;
 
     public void CheckAnswer()
     {
@@ -15,10 +16,14 @@ public class Answer : MonoBehaviour
         }
 
         Debug.Log("퍼즐 성공!");
-
+        _solved =true;
         PuzzleManager.Instance.ReportSolved(
             "2D-1",
             PuzzleDimension.TwoD
         );
+    }
+    public bool GetSolve()
+    {
+        return _solved;
     }
 }
