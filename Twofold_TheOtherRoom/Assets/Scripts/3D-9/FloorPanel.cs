@@ -41,7 +41,6 @@ public class FloorPanel : MonoBehaviour
         isPlayerOn = true;
         ChangeMaterial();
         OnToggled?.Invoke(panelIndex, currentState == PanelState.On);
-        // transform 올리거나 내리기
     }
 
     void OnTriggerExit(Collider other)
