@@ -3,8 +3,12 @@ using UnityEngine;
 public class ColorBlockController : MonoBehaviour
 {
     public GameObject[] blocks;
+    public PuzzleChecker checker;
 
     private int blockCount = 0;
+
+    
+    public int BlockCount => blockCount;
 
     void Start()
     {
@@ -25,6 +29,9 @@ public class ColorBlockController : MonoBehaviour
         {
             blockCount++;
             UpdateBlocks();
+
+            if (checker != null)
+                checker.CheckAnswer();
         }
     }
 
@@ -34,6 +41,9 @@ public class ColorBlockController : MonoBehaviour
         {
             blockCount--;
             UpdateBlocks();
+
+            if (checker != null)
+                checker.CheckAnswer();
         }
     }
 }
