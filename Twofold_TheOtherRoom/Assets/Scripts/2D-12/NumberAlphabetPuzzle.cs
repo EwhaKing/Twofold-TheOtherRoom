@@ -38,7 +38,7 @@ public class NumberAlphabetPuzzle : MonoBehaviour
 
     private PuzzleStep currentStep = PuzzleStep.Number;
 
-    // 현재 문제에서 틀린 횟수만 저장합니다.
+    // 현재 문제에서 틀린 횟수만 저장
     private int currentWrongCount;
 
     private bool isLocked;
@@ -69,7 +69,7 @@ public class NumberAlphabetPuzzle : MonoBehaviour
 
         if (selectedNumber == correctNumber)
         {
-            // 숫자 문제를 통과했으므로 오답 횟수를 초기화합니다.
+            // 숫자 문제를 통과했으므로 오답 횟수를 초기화
             currentWrongCount = 0;
 
             SetResultText("정답입니다!");
@@ -144,15 +144,16 @@ public class NumberAlphabetPuzzle : MonoBehaviour
                 int seconds = Mathf.CeilToInt(remainingTime);
 
                 lockTimerText.text =
-                    $"현재 문제에서 3번 틀렸습니다.\n" +
-                    $"{seconds}초 후 다시 시도할 수 있습니다.";
+                        ///$"현재 문제에서 3번 틀렸습니다.\n" +
+                        ///$"{seconds}초 후 다시 시도할 수 있습니다.";
+                        $"Wait {seconds}s";
             }
 
             remainingTime -= Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // 대기가 끝나면 현재 문제의 오답 횟수만 초기화합니다.
+        // 대기가 끝나면 현재 문제의 오답 횟수만 초기화
         currentWrongCount = 0;
         isLocked = false;
         lockCoroutine = null;
