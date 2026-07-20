@@ -7,19 +7,24 @@ public class Cylinder3D10 : MonoBehaviour
     private float currentY = 80f;
     public Answer3D10 controller;
 
-
     void OnMouseDown()
-    {
-        if (isRotating)
+    {   
+        if (controller.GetSolve())
+        {
             return;
-        currentY += 120f;
+        }
+        else
+        {
+            if (isRotating)
+                return;
+            currentY += 120f;
 
-        if (currentY >= 360f)
-            currentY -= 360f;
+            if (currentY >= 360f)
+                currentY -= 360f;
 
-        StartCoroutine(RotateSmooth());
-        controller.CheckAnswer();
-
+            StartCoroutine(RotateSmooth());
+            controller.CheckAnswer();
+        }
     }
 
     public float GetY()
