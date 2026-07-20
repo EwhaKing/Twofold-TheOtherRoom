@@ -55,6 +55,14 @@ public class FloorPanelPuzzleController : MonoBehaviour
         }
     }
 
+    // 퍼즐 리셋 - 리셋 버튼이 호출
+    public void ResetPuzzle()
+    {
+		if(isSolved) return;
+        foreach (FloorPanel panel in panels) panel.ChangeStateToOff();
+        currentOn.Clear();
+    }
+
     void OnDestroy()
     {
         if(panels == null) return;

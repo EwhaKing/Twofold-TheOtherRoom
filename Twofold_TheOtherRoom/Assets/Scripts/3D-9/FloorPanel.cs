@@ -62,6 +62,14 @@ public class FloorPanel : MonoBehaviour
         frozen = true;
     }
 
+    // Reset 처리 - 컨트롤러가 호출
+    public void ChangeStateToOff()
+    {
+        isPlayerOn = false;
+        currentState = PanelState.Off;
+        ChangeMaterial();
+    }
+
     // State에 따른 Material 처리
     void ChangeMaterial()
     {
