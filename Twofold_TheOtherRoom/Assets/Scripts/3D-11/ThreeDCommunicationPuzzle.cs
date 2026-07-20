@@ -51,18 +51,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     [SerializeField] private GameObject backButton;
 
     [Header("UI - Alphabet Input")]
-    [SerializeField] private GameObject alphabetInputPanel;
     [SerializeField] private TMP_InputField alphabetInput;
 
     [Header("UI - Shape Reveal")]
-    [SerializeField] private GameObject shapeRevealPanel;
     [Tooltip("도형 Image 슬롯 3개를 연결하세요.")]
     [SerializeField] private Image[] shapeImageSlots;
     [Tooltip("도형 표시 시간이 3초에서 0초로 줄어드는 Slider입니다.")]
     [SerializeField] private Slider timerSlider;
     [Tooltip("선택 사항입니다. 비워 두면 숫자는 표시하지 않고 Slider만 줄어듭니다.")]
     [SerializeField] private TMP_Text timerText;
-    [SerializeField, Min(0.1f)] private float shapeRevealSeconds = 3f;
+  
 
     private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
     private Phase phase = Phase.Closed;
@@ -79,6 +77,17 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (playerCamera == null)
             playerCamera = Camera.main;
 
+        if (instructionText != null) instructionText.gameObject.SetActive(true);
+        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
+        if (stageText != null) stageText.gameObject.SetActive(false);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
+        if (timerText != null) timerText.gameObject.SetActive(false);
+        if (resetButton != null) resetButton.SetActive(false);
+        if (backButton != null) backButton.SetActive(false);
+
+
+        HideAllShapeSlots();
     }
 
     private void Update()
@@ -92,7 +101,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             return;
         }
 
-        if (phase == Phase.AlphabetInput &&
+        if ((phase == Phase.AlphabetInput || phase == Phase.ShapeReveal) &&
             (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
         {
             SubmitAlphabet();
@@ -138,17 +147,20 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        if (stageText != null) stageText.gameObject.SetActive(true);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         if (backButton != null) backButton.SetActive(true);
-        if (resetButton != null) resetButton.SetActive(true);
 
         RestartFromBeginning();
+
+
     }
 
 
     /// Enter를 눌렀을 때 알파벳을 순서대로 검사합니다.
     private void SubmitAlphabet()
     {
-        if (phase != Phase.AlphabetInput)
+        if (phase != Phase.AlphabetInput && phase != Phase.ShapeReveal)
             return;
 
         string entered = NormalizeAlphabet(alphabetInput != null ? alphabetInput.text : string.Empty);
@@ -156,7 +168,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         if (!string.Equals(entered, expected, StringComparison.Ordinal))
         {
-            SetFeedback("정답이 아닙니다. 알파벳 순서를 확인하세요.");
+            SetFeedback("정답이 아닙니다.");
             if (alphabetInput != null)
             {
                 alphabetInput.text = string.Empty;
@@ -174,7 +186,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             return;
         }
 
-        ShowShapes(currentStageIndex + 1);
+        StartStage(currentStageIndex + 1);
     }
 
     //Reset Button의 OnClick에 연결합니다. 최초 알파벳 입력부터 다시 시작합니다.
@@ -198,58 +210,66 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         Cursor.lockState = originalCursorLockMode;
         Cursor.visible = originalCursorVisible;
 
+        if (instructionText != null) instructionText.gameObject.SetActive(true);
+        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
+        if (stageText != null) stageText.gameObject.SetActive(false);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
+        if (timerText != null) timerText.gameObject.SetActive(false);
+        if (resetButton != null) resetButton.SetActive(false);
+        if (backButton != null) backButton.SetActive(false);
+        HideAllShapeSlots();
+
         phase = solved ? Phase.Cleared : Phase.Closed;
     }
 
     private void RestartFromBeginning()
     {
-        currentStageIndex = -1; // -1은 최초 알파벳 입력 화면
+        currentStageIndex = -1;
         revealTimeLeft = 0f;
-        ShowAlphabetInput();
-    }
-
-    private void ShowAlphabetInput()
-    {
         phase = Phase.AlphabetInput;
-        if (alphabetInputPanel != null) alphabetInputPanel.SetActive(true);
-        if (shapeRevealPanel != null) shapeRevealPanel.SetActive(false);
 
-        if (currentStageIndex < 0)
-        {
-            SetStageLabel("시작");
-            if (instructionText != null)
-                instructionText.text = "상대가 알려준 첫 알파벳을 순서대로 입력하세요. (시간제한 없음)";
-        }
-        else
-        {
-            SetStageLabel($"{currentStageIndex + 1}단계");
-            if (instructionText != null)
-                instructionText.text = "상대가 알려준 알파벳을 순서대로 입력하세요.";
-        }
+        HideAllShapeSlots();
+        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
+        if (timerText != null) timerText.gameObject.SetActive(false);
+        if (resetButton != null) resetButton.SetActive(false);
+        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
 
+        SetStageLabel(string.Empty);
+        if (instructionText != null)
+            instructionText.text = "상대를 통해 알파벳 4자리를 입력하세요";
         SetFeedback(string.Empty);
         if (alphabetInput != null)
         {
             alphabetInput.text = string.Empty;
-            alphabetInput.characterLimit = CurrentExpectedAlphabet().Length;
+            alphabetInput.characterLimit = 8;
             alphabetInput.ActivateInputField();
         }
     }
 
-    private void ShowShapes(int stageIndex)
+    private void StartStage(int stageIndex)
     {
         if (!HasValidStage(stageIndex))
         {
             Debug.LogWarning($"[ThreeDCommunicationPuzzle] {stageIndex + 1}단계 데이터가 없습니다.", this);
             return;
         }
+        if (alphabetInput != null)
+            alphabetInput.text = string.Empty;
 
         currentStageIndex = stageIndex;
         phase = Phase.ShapeReveal;
-        revealTimeLeft = shapeRevealSeconds;
+        revealTimeLeft = 3f;
 
-        if (alphabetInputPanel != null) alphabetInputPanel.SetActive(false);
-        if (shapeRevealPanel != null) shapeRevealPanel.SetActive(true);
+        if (alphabetInput != null)
+        {
+            alphabetInput.characterLimit = 8;
+            alphabetInput.ActivateInputField();
+        }
+
+        if (timerSlider != null) timerSlider.gameObject.SetActive(true);
+        if (timerText != null) timerText.gameObject.SetActive(true);
+        if (resetButton != null) resetButton.SetActive(true);
         SetStageLabel($"{stageIndex + 1}단계");
         SetFeedback(string.Empty);
         if (instructionText != null)
@@ -263,13 +283,33 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     {
         revealTimeLeft = 0f;
         HideAllShapeSlots();
-        ShowAlphabetInput();
+        phase = Phase.AlphabetInput;
+
+
+
+        if (instructionText != null)
+            instructionText.text = "상대가 알려준 알파벳을 순서대로 입력하세요.";
+        SetFeedback(string.Empty);
+        if (alphabetInput != null)
+        {
+            alphabetInput.characterLimit = 8;
+            alphabetInput.ActivateInputField();
+        }
     }
 
     private void CompletePuzzle()
     {
         solved = true;
-        SetFeedback("CLEAR!");
+        instructionText.text = "CLEAR!";
+        instructionText.fontSize = 35f;
+        
+        if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
+        if (stageText != null) stageText.gameObject.SetActive(false);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
+        if (timerText != null) timerText.gameObject.SetActive(false);
+        if (resetButton != null) resetButton.SetActive(false);
+
 
         if (PuzzleManager.Instance != null)
             PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
@@ -277,7 +317,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 
         phase = Phase.Cleared;
-        ClosePuzzle();
     }
 
     private string CurrentExpectedAlphabet()
@@ -327,7 +366,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (timerSlider != null)
         {
             timerSlider.minValue = 0f;
-            timerSlider.maxValue = shapeRevealSeconds;
+            timerSlider.maxValue = 3f;
             timerSlider.value = time;
         }
         if (timerText != null)
