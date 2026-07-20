@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
-public enum PanelState { Off, On, Solved }
+public enum PanelState { Off, On, Answer }
 public class FloorPanel : MonoBehaviour
 {
     #region Inspector
@@ -12,7 +11,7 @@ public class FloorPanel : MonoBehaviour
     [Header("Materials")]
     [SerializeField] private Material offMat;
     [SerializeField] private Material onMat;
-    [SerializeField] private Material solvedMat;
+    [SerializeField] private Material answerMat;
 
     [Header("Debug")]
     [SerializeField] private bool debugMode;
@@ -21,9 +20,12 @@ public class FloorPanel : MonoBehaviour
     #endregion
 
     private Renderer _renderer;
-    
     private bool isPlayerOn = false;
+    private bool frozen = false;
     private PanelState currentState = PanelState.Off;
+
+    public event Action<Vector2Int, bool> OnToggled; // 이벤트 - 인덱스, on/off 상태 알림
+    public Vector2Int Index => panelIndex;
 
     // Awake - 렌더러 참조
     void Awake()
@@ -34,31 +36,37 @@ public class FloorPanel : MonoBehaviour
     // 충돌 처리
     void OnTriggerEnter(Collider other)
     {   
-        if(!other.CompareTag("Player") || isPlayerOn || currentState == PanelState.Solved) return;
+        if(!other.CompareTag("Player") || isPlayerOn || frozen) return;
         currentState = (currentState == PanelState.Off) ? PanelState.On : PanelState.Off;
         isPlayerOn = true;
         ChangeMaterial();
-        // 컨트롤러에게 state 메세지
+        OnToggled?.Invoke(panelIndex, currentState == PanelState.On);
         // transform 올리거나 내리기
     }
 
     void OnTriggerExit(Collider other)
     {
-        if(!other.CompareTag("Player") || currentState == PanelState.Solved) return;
+        if(!other.CompareTag("Player") || frozen) return;
         isPlayerOn = false;
     }
 
-    // 컨트롤러한테 Solved 받음
-    void ChangeStateToSolved()
+    // 정답색으로 변경 - 컨트롤러가 호출
+    public void ChangeStateToAnswer()
     {
-        currentState = PanelState.Solved;
+        Freeze();
+        currentState = PanelState.Answer;
         ChangeMaterial();
+    }
+
+    public void Freeze()
+    {
+        frozen = true;
     }
 
     // State에 따른 Material 처리
     void ChangeMaterial()
     {
-        if(currentState == PanelState.Solved) _renderer.sharedMaterial = solvedMat;
+        if(currentState == PanelState.Answer) _renderer.sharedMaterial = answerMat;
         else if(currentState == PanelState.Off) _renderer.sharedMaterial = offMat;
         else _renderer.sharedMaterial = onMat;
     }
@@ -74,6 +82,5 @@ public class FloorPanel : MonoBehaviour
         }
         currentState = debugState;
         ChangeMaterial();
-        // 컨트롤러에게 state 메세지
     }
 }
