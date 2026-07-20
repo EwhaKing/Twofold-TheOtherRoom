@@ -4,8 +4,11 @@ using UnityEngine;
 public class LetterController : MonoBehaviour
 {
     public TMP_Text letterText;
+    public PuzzleChecker checker;
 
     private char currentLetter = 'A';
+
+    public char CurrentLetter => currentLetter;
 
     void Start()
     {
@@ -18,6 +21,9 @@ public class LetterController : MonoBehaviour
         {
             currentLetter++;
             letterText.text = currentLetter.ToString();
+
+            if (checker != null)
+                checker.CheckAnswer();
         }
     }
 
@@ -27,6 +33,9 @@ public class LetterController : MonoBehaviour
         {
             currentLetter--;
             letterText.text = currentLetter.ToString();
+
+            if (checker != null)
+                checker.CheckAnswer();
         }
     }
 }
