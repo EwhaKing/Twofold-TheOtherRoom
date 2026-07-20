@@ -109,17 +109,14 @@ InitTestScene*.unity*
 # VS Code
 .vscode/
 
-# TextMeshPro imported/generated resources
-Assets/TextMesh Pro/
-Assets/TextMesh Pro.meta
-Assets/TextMeshPro/
-Assets/TextMeshPro.meta
 
-# TMP generated shaders / shadergraphs
-Assets/**/TMP_*.shader
-Assets/**/TMP_*.shader.meta
-Assets/**/TMP_*.shadergraph
-Assets/**/TMP_*.shadergraph.meta
+# 모든 ttf 원본과 meta 제외
+*.ttf
+*.ttf.meta
+
+# Assets/Fonts 폴더 전체 제외
+Assets/Fonts/
+Assets/Fonts.meta
 
 # Font files - check license before committing
 Assets/**/*.ttf

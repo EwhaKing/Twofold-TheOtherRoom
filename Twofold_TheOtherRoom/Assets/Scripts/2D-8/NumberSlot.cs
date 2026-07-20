@@ -18,7 +18,9 @@ public class NumberSlot : MonoBehaviour
         currentNumber++;
 
         if (currentNumber > 9)
-            currentNumber = 0;        
+        {
+            currentNumber = 0; 
+        }       
         UpdateNumber();
         controller.CheckAnswer();
 
@@ -29,7 +31,9 @@ public class NumberSlot : MonoBehaviour
         currentNumber--;
 
         if (currentNumber < 0)
+        {
             currentNumber = 9;
+        }
         UpdateNumber();
         controller.CheckAnswer();
     }
