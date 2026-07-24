@@ -1,11 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 
 public class DiscPuzzleManager : MonoBehaviour
 {
     public Disc[] discs; // 3개
-    public TMP_Text resultText;
     public Camera puzzleCamera;
 
     [Tooltip("이 퍼즐의 고유 id (유일해야 함)")]
@@ -19,6 +17,9 @@ public class DiscPuzzleManager : MonoBehaviour
     void Update()
     {
         if (_solved) return; // 회전 잠금
+
+        // 퍼즐에 진입했을 때만 입력 처리해 탐험 중 클릭 무시
+        if (puzzleCamera == null || !puzzleCamera.enabled) return;
 
         // Side 뷰에서만 원판 회전 가능
         if (ViewSwitcher.CurrentView != ViewSwitcher.ViewMode.Side) return;
@@ -51,8 +52,6 @@ public class DiscPuzzleManager : MonoBehaviour
         bool solved = true;
         foreach (var d in discs)
             if (!d.IsCorrect()) solved = false;
-
-        resultText.text = solved ? "Clear!" : "";
 
         if (solved && !_solved)
         {
