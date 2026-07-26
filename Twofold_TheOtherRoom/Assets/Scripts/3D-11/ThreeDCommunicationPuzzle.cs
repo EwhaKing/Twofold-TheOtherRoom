@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
@@ -30,10 +31,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     }
 
     [Header("Puzzle Data")]
-    [SerializeField] private string puzzleId = "3D-4";
+    [SerializeField] private string puzzleId = "3D-11";
     [SerializeField] private PuzzleDimension dimension = PuzzleDimension.ThreeD;
     [Tooltip("맨 처음 입력할 알파벳 3글자. 이 입력에는 시간제한이 없습니다.")]
-    [SerializeField] private string introAlphabetAnswer = "ACF";
+    [SerializeField] private string introAlphabetAnswer = "ACP";
     [Tooltip("Size는 3입니다. 단계별 도형과 그 뒤에 입력할 알파벳을 한 묶음으로 설정합니다.")]
     [SerializeField] private StageData[] stages = new StageData[3];
 
@@ -152,8 +153,25 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (backButton != null) backButton.SetActive(true);
 
         RestartFromBeginning();
+        StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
+    }
 
+    private IEnumerator ActivateAlphabetInputAfterInteractKeyReleased()
+    {
+        if (alphabetInput == null)
+            yield break;
 
+        // 퍼즐을 연 E 입력이 같은 프레임에 InputField 문자로 들어가는 것을 막습니다.
+        alphabetInput.DeactivateInputField();
+        while (Input.GetKey(KeyCode.E))
+            yield return null;
+        yield return null;
+
+        if (phase == Phase.AlphabetInput)
+        {
+            alphabetInput.text = string.Empty;
+            alphabetInput.ActivateInputField();
+        }
     }
 
 
@@ -237,13 +255,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         SetStageLabel(string.Empty);
         if (instructionText != null)
-            instructionText.text = "상대를 통해 알파벳 4자리를 입력하세요";
+            instructionText.text = "상대를 통해 알파벳 3자리를 입력하세요";
         SetFeedback(string.Empty);
         if (alphabetInput != null)
         {
             alphabetInput.text = string.Empty;
             alphabetInput.characterLimit = 8;
-            alphabetInput.ActivateInputField();
         }
     }
 
@@ -365,9 +382,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         float time = Mathf.Max(0f, revealTimeLeft);
         if (timerSlider != null)
         {
+           
+
             timerSlider.minValue = 0f;
             timerSlider.maxValue = 3f;
             timerSlider.value = time;
+
+            if (timerSlider.fillRect != null)
+            {
+                timerSlider.fillRect.gameObject.SetActive(time > 0.001f);
+            }
         }
         if (timerText != null)
             timerText.text = $"{time:0.0}";
@@ -405,11 +429,17 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     private void DisablePlayerControl()
     {
         disabledBehaviours.Clear();
+
+
+        PlayerInteractor.Instance.HideInteractionPrompt();
+
+        TryDisable(PlayerInteractor.Instance);
+
+
         if (behavioursToDisable == null || behavioursToDisable.Length == 0)
         {
             TryDisable(FindAnyObjectByType<PlayerController>());
             TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
             return;
         }
 
