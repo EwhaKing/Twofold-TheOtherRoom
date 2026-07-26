@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 23181646}
   - component: {fileID: 23181645}
   m_Layer: 5
-  m_Name: Btn_FindRoom
+  m_Name: Btn_EnterRoom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -534,7 +534,7 @@ GameObject:
   - component: {fileID: 150166798}
   - component: {fileID: 150166797}
   m_Layer: 5
-  m_Name: Canvas_Room
+  m_Name: Canvas_Lobby
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1647,7 +1647,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Find Room
+  m_text: 'Enter Room
 
 '
   m_isRightToLeft: 0
@@ -2245,6 +2245,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1085819479}
+  - component: {fileID: 1085819483}
+  - component: {fileID: 1085819482}
+  - component: {fileID: 1085819481}
   - component: {fileID: 1085819480}
   m_Layer: 0
   m_Name: RoomManager
@@ -2277,20 +2280,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1085819478}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2977859e6cf5a5e4991b1d7efafb8ce1, type: 3}
+  m_Script: {fileID: 11500000, guid: db469ec8f8b4cf046913be0d4440d5a4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoomManager
-  sceneRunner: {fileID: 1195984089}
-  gameSessionPrefab:
-    RawGuidValue: 0bfa2473ac7e3e344937bb3857872ba6
-  canvasMenu: {fileID: 531353236}
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyView
   canvasLobby: {fileID: 150166796}
-  btnMakeRoom: {fileID: 1251903863}
-  btnEnterRoom: {fileID: 23181645}
-  findRoomUI: {fileID: 926693630}
-  inputCode: {fileID: 1775624975}
-  menuStatus: {fileID: 678634975}
-  menuStatusDuration: 4
   textRoomId: {fileID: 1781116600}
   player2Icon: {fileID: 2123402305}
   btnMode1: {fileID: 847496252}
@@ -2300,9 +2293,57 @@ MonoBehaviour:
   lobbyLog: {fileID: 159726501}
   modeSelected: {r: 1, g: 1, b: 1, a: 1}
   modeDeselected: {r: 0.35, g: 0.35, b: 0.35, a: 1}
-  debugFixedCode: 
+--- !u!114 &1085819481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085819478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82261bd6babeefe49bf246577b80dd05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuView
+  canvasMenu: {fileID: 531353236}
+  btnMakeRoom: {fileID: 1251903863}
+  btnEnterRoom: {fileID: 23181645}
+  findRoomUI: {fileID: 926693630}
+  inputCode: {fileID: 1775624975}
+  menuStatus: {fileID: 678634975}
+  menuStatusDuration: 4
+--- !u!114 &1085819482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085819478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87118706bd1493e4795d6e1a185104ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFlow
+  menuView: {fileID: 1085819481}
+  lobbyView: {fileID: 1085819480}
   sceneA: ceb-network-2d-1
   sceneB: ceb-network-3d-1
+--- !u!114 &1085819483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085819478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2ee80a5a4e46f24b8b46a08f8fde6eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomService
+  sceneRunner: {fileID: 1195984089}
+  gameSessionPrefab:
+    RawGuidValue: 0bfa2473ac7e3e344937bb3857872ba6
+  debugFixedCode: 
 --- !u!1 &1141867874
 GameObject:
   m_ObjectHideFlags: 0

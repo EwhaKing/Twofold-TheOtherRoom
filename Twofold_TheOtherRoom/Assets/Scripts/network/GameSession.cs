@@ -2,18 +2,19 @@ using Fusion;
 using UnityEngine;
 
 /// <summary>
-/// 방 전체가 공유하는 네트워크 상태 컨테이너
-/// 방장이 방에 들어오면 생성, StateAuthority 가진 방장만 값 쓰기 가능.
+/// 방 전체가 공유하는 네트워크 상태. 방장이 Spawn하고 방장만 씀.
+/// 두 사람이 같은 값을 봐야 하는 것만 [Networked]로 둘 것.
+/// 타이머 / 거울 조각 추가 방법은 ARCHITECTURE.md 참고.
 /// </summary>
 public class GameSession : NetworkBehaviour
 {
-    // 어디든 참조 가능
+    // Spawn된 뒤에만 유효. 항상 null 검사할 것
     public static GameSession Instance { get; private set; }
 
-    // 0 = 모드1, 1 = 모드2. 방장만 쓰기 가능
+    /// 0 = 모드1, 1 = 모드2
     [Networked] public int Mode { get; set; }
 
-    // 방장이 시작을 누르면 true. 전원이 값 변화를 감지해 각자 씬을 로드.
+    /// 방장이 시작을 누르면 true. 전원이 감지해 각자 씬 로드
     [Networked] public bool StartRequested { get; set; }
 
     ChangeDetector _changes;
@@ -30,6 +31,10 @@ public class GameSession : NetworkBehaviour
             Instance = null;
     }
 
+    /// <summary>
+    /// 값이 바뀌는 순간 한 번만 해야 할 일만 여기 둠.
+    /// Mode처럼 매 프레임 읽어도 되는 값은 View가 직접 가져옴.
+    /// </summary>
     public override void Render()
     {
         foreach (var change in _changes.DetectChanges(this))
@@ -38,14 +43,14 @@ public class GameSession : NetworkBehaviour
             {
                 case nameof(StartRequested):
                     if (StartRequested)
-                        RoomManager.Instance?.BeginGameplay(Mode);
+                        GameFlow.Instance?.BeginGameplay(Mode);
                     break;
             }
         }
     }
 
-    // 아래 두 메서드는 방장 UI(모드 토글 / 시작 버튼)에서만 호출
-    // StateAuthority 체크로 이중 방어
+    // ---------- 방장만 호출 ----------
+    // 게스트가 불러도 아무 일 없음
 
     public void SetMode(int mode)
     {
@@ -58,4 +63,7 @@ public class GameSession : NetworkBehaviour
         if (Object.HasStateAuthority)
             StartRequested = true;
     }
+
+    // 타이머 / 거울 조각이 여기 들어옴. 필드 이름과 틱 계산법은 ARCHITECTURE.md.
+    // 주의: [Networked]는 방장만 쓸 수 있음. 게스트가 바꿔야 하는 값은 RPC로 요청해야 함.
 }
