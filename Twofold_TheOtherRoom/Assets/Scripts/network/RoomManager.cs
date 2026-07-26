@@ -11,10 +11,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Bootstrap 씬 하나로 메뉴 → 대기방 → 시작(모드별 씬 로드)을 처리한다.
-/// 씬 전환이 아니라 Canvas 패널 교체 방식이며, NetworkRunner는 파괴하지 않는다.
-///
-/// 이번 마일스톤: 방 만들기 / 들어가기 / 나가기 / 모드 설정 / 시작 시 역할·모드별 씬 로드.
+/// Bootstrap 씬 하나로 메뉴 → 대기방 → 시작(모드별 씬 로드)을 처리.
 /// </summary>
 public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -72,8 +69,12 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
     const string CodeChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const int CodeLength = 4;
 
-    // 2인 전용. 방을 만든 피어의 값이 세션에 적용되고, 초과 입장은 Photon이 거절한다.
+    // 2인 전용. 방을 만든 피어의 값이 세션에 적용되고, 초과 입장은 Photon이 거절
     const int MaxPlayers = 2;
+
+    // 방을 만들 때 코드가 겹치면 다른 코드로 다시 시도하는 횟수
+    // 32^4 = 약 100만 개. 매우 희박
+    const int MaxCreateAttempts = 5;
 
     NetworkRunner _runner;
     bool _connecting;
@@ -85,12 +86,12 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
     // menuStatus를 다시 끄기 위한 타이머. 메시지가 새로 오면 이전 타이머를 취소한다.
     Coroutine _menuStatusRoutine;
 
-    // 로비 로그. 최대 2인이라 길어질 일이 없지만 무한 누적은 막는다.
+    // 로비 로그 제한
     const int MaxLogLines = 6;
     readonly List<string> _logLines = new List<string>();
 
     // 마지막으로 확인된 방장 PlayerRef. Shared Mode엔 방장 PlayerRef API가 없어
-    // GameSession의 StateAuthority(=방장)를 매 프레임 캐싱해 이탈 판별에 쓴다.
+    // GameSession의 StateAuthority(=방장)를 매 프레임 캐싱해 이탈 판별 사용
     PlayerRef _hostRef;
 
     void Awake()
@@ -102,15 +103,23 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
     {
         btnMakeRoom.onClick.AddListener(OnClickMakeRoom);
         btnEnterRoom.onClick.AddListener(OnClickFindRoom);
-        // 입력창에서 Enter를 쳐도 입장되게. (버튼을 또 누르러 갈 필요 없음)
+        // 입력창에서 Enter를 쳐도 입장 가능
         inputCode.onSubmit.AddListener(_ => TryEnterRoom());
+        // 입력 대문자 강제 + 자릿수 제한
+        inputCode.characterLimit = CodeLength;
+        inputCode.characterValidation = TMP_InputField.CharacterValidation.Alphanumeric;
+        inputCode.onValueChanged.AddListener(text =>
+        {
+            string upper = text.ToUpperInvariant();
+            if (upper != text)
+                inputCode.text = upper;
+        });
         btnMode1.onClick.AddListener(() => OnClickSelectMode(0));
         btnMode2.onClick.AddListener(() => OnClickSelectMode(1));
         btnStart.onClick.AddListener(OnClickStart);
         btnLeave.onClick.AddListener(OnClickLeave);
 
-        // Button의 기본 ColorTint 전환은 마우스가 닿을 때마다 Image.color를 normalColor로
-        // 되돌려버린다. 선택 상태를 색으로 표현해야 하므로 전환을 끄고 우리가 직접 칠한다.
+        // Button의 기본 ColorTint Transition 끄고 직접 색칠
         _modeImage1 = SetupModeButton(btnMode1);
         _modeImage2 = SetupModeButton(btnMode2);
 
@@ -128,7 +137,7 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         string code = string.IsNullOrWhiteSpace(debugFixedCode)
             ? GenerateCode()
             : debugFixedCode.Trim().ToUpperInvariant();
-        _ = StartRoomAsync(code);
+        _ = StartRoomAsync(code, allowCreate: true);
     }
 
     // 첫 클릭은 입력창 열기, 열려 있는 상태에서의 클릭은 입장 시도.
@@ -155,10 +164,15 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
             SetMenuStatus("코드를 입력하세요");
             return;
         }
-        _ = StartRoomAsync(code);
+        // 서버에 물어보기 전, 코드 형식 확인 (자릿수 부족 거름)
+        if (!IsValidCode(code))
+        {
+            SetMenuStatus($"코드는 {CodeLength}자리입니다");
+            return;
+        }
+        _ = StartRoomAsync(code, allowCreate: false);
     }
 
-    // 열 때는 바로 타이핑할 수 있게 입력창에 포커스를 준다.
     void ShowFindRoomUI(bool on)
     {
         findRoomUI.SetActive(on);
@@ -169,7 +183,12 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         }
     }
 
-    async Task StartRoomAsync(string code)
+    /// <param name="allowCreate">
+    /// true면 그 이름의 방이 없을 때 새로 만든다(방 만들기).
+    /// false면 없는 방일 때 GameNotFound로 실패한다(방 찾기).
+    /// FindRoom에서 없는 코드 쳤을 때 방 생김 방지
+    /// </param>
+    async Task StartRoomAsync(string code, bool allowCreate)
     {
         _connecting = true;
         SetMenuButtons(false);
@@ -180,49 +199,76 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         // try/catch가 없으면 여기서 난 예외는 아무 데도 안 찍히고 UI만 "접속 중"에 멈춘다.
         try
         {
-            _runner = GetOrCreateRunner();
+            // 실패하면 await 도중 OnShutdown이 돌고, 그 안의 ShowMenu()가 _runner를 null로 만든다.
+            // 그래서 필드가 아니라 지역 변수로 들고 있어야 반환 후에도 결과를 제대로 읽을 수 있다.
+            var runner = GetOrCreateRunner();
+            _runner = runner;
+
+            // 코드 충돌 시 새 코드로 다시 시도할 수 있는 건 "랜덤 코드로 방 만들기"뿐이다.
+            // debugFixedCode는 일부러 고른 코드이므로 바꾸지 않고 그대로 실패시킨다.
+            // 방 찾기(allowCreate: false)는 애초에 코드를 바꾸면 의미가 없다.
+            bool canRetryWithNewCode = allowCreate && string.IsNullOrWhiteSpace(debugFixedCode);
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            Debug.Log($"[Room] StartGame 호출: {code}");
+            StartGameResult result;
 
-            var result = await _runner.StartGame(new StartGameArgs
+            for (int attempt = 1; ; attempt++)
             {
-                GameMode    = GameMode.Shared,
-                SessionName = code,
-                PlayerCount = MaxPlayers,   // NetworkProjectConfig 값을 덮어쓴다
-                // 씬은 우리가 직접 Additive로 관리하므로 여기서 지정하지 않는다.
-            });
+                Debug.Log($"[Room] StartGame 호출: {code} " +
+                          $"(allowCreate: {allowCreate}, 시도 {attempt}/{MaxCreateAttempts})");
+
+                result = await runner.StartGame(new StartGameArgs
+                {
+                    GameMode    = GameMode.Shared,
+                    SessionName = code,
+                    PlayerCount = MaxPlayers,   // NetworkProjectConfig 값을 덮어쓴다
+                    EnableClientSessionCreation = allowCreate,
+                    // 씬은 우리가 직접 Additive로 관리하므로 여기서 지정하지 않는다.
+                });
+
+                bool codeTaken = result.ShutdownReason == ShutdownReason.GameIdAlreadyExists;
+                if (result.Ok || !codeTaken || !canRetryWithNewCode || attempt >= MaxCreateAttempts)
+                    break;
+
+                code = GenerateCode();
+                Debug.LogWarning($"[Room] 코드 충돌 — 새 코드로 재시도: {code}");
+                SetMenuStatus($"접속 중... ({code})", autoHide: false);
+
+                // 직전 시도로 러너가 정리됐을 수 있어 다시 확보한다.
+                runner = GetOrCreateRunner();
+                _runner = runner;
+            }
 
             sw.Stop();
+            Debug.Log($"[Room] StartGame {(result.Ok ? "성공" : "실패")} — " +
+                      $"{sw.ElapsedMilliseconds}ms, reason: {result.ShutdownReason}");
 
-            // await 도중 OnShutdown이 돌면 ShowMenu()가 _runner를 null로 만든다.
-            // 그 상태로 아래를 진행하면 NullReference가 나고, 던져놓은 Task라 조용히 묻힌다.
-            if (_runner == null)
+            if (!result.Ok)
             {
-                Debug.LogWarning($"[Room] StartGame 반환 전에 러너가 정리됨 ({sw.ElapsedMilliseconds}ms)");
+                SetMenuStatus(DescribeFailure(result.ShutdownReason));
+                SetMenuButtons(true);
+                return;
+            }
+
+            // 접속엔 성공했는데 그 직후 끊긴 경우. SessionInfo를 읽기 전에 걸러낸다.
+            if (!runner.IsRunning)
+            {
+                Debug.LogWarning("[Room] StartGame은 성공했으나 러너가 이미 정지 상태");
                 SetMenuStatus("접속이 중단되었습니다");
                 SetMenuButtons(true);
                 return;
             }
 
-            Debug.Log($"[Room] StartGame {(result.Ok ? "성공" : "실패")} — {sw.ElapsedMilliseconds}ms, " +
-                      $"region: {(result.Ok ? _runner.SessionInfo.Region : "-")}, " +
-                      $"reason: {result.ShutdownReason}");
+            Debug.Log($"[Room] 입장 완료 — region: {runner.SessionInfo.Region}, " +
+                      $"master: {runner.IsSharedModeMasterClient}");
 
-            if (!result.Ok)
-            {
-                // 3번째 사람이 코드를 알고 들어오려 한 경우가 가장 흔하다.
-                SetMenuStatus(result.ShutdownReason == ShutdownReason.GameIsFull
-                    ? "방이 가득 찼습니다"
-                    : $"접속 실패: {result.ShutdownReason}");
-                SetMenuButtons(true);
-                return;
-            }
+            // OnShutdown이 중간에 비웠을 수 있으니 되돌려놓는다. Update가 이 필드를 본다.
+            _runner = runner;
 
             // Shared Mode에서 세션을 처음 만든 피어가 방장이 된다. 방장만 GameSession을 Spawn.
             // (씬에 미리 두면 각 클라가 중복 생성할 위험이 있어 입장 후 Spawn 방식을 쓴다.)
-            if (_runner.IsSharedModeMasterClient)
-                _runner.Spawn(gameSessionPrefab);
+            if (runner.IsSharedModeMasterClient)
+                runner.Spawn(gameSessionPrefab);
 
             // 성공했으니 "접속 중"을 끈다. 안 끄면 나중에 메뉴로 돌아왔을 때 남아 있다.
             SetMenuStatus("");
@@ -231,7 +277,7 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         catch (Exception e)
         {
             Debug.LogException(e);
-            SetMenuStatus("접속 오류 (콘솔 확인)");
+            SetMenuStatus("접속 오류");
             SetMenuButtons(true);
         }
         finally
@@ -427,6 +473,35 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         runner.RemoveCallbacks(this);
         runner.AddCallbacks(this);
         return runner;
+    }
+
+    // 길이와 문자 집합이 생성 규칙과 같은지 확인. 소문자는 호출 전에 대문자로 바꿔 넘긴다.
+    static bool IsValidCode(string code)
+    {
+        if (code.Length != CodeLength)
+            return false;
+
+        foreach (char c in code)
+        {
+            if (CodeChars.IndexOf(c) < 0)
+                return false;
+        }
+        return true;
+    }
+
+    static string DescribeFailure(ShutdownReason reason)
+    {
+        switch (reason)
+        {
+            case ShutdownReason.GameNotFound:
+                return "방이 존재하지 않습니다";
+            case ShutdownReason.GameIsFull:
+                return "방이 가득 찼습니다";
+            case ShutdownReason.GameIdAlreadyExists:
+                return "같은 코드의 방이 이미 있습니다";
+            default:
+                return $"접속 실패: {reason}";
+        }
     }
 
     static string GenerateCode()
