@@ -176,36 +176,68 @@ public class RoomManager : MonoBehaviour, INetworkRunnerCallbacks
         // 얼마나 걸릴지 모르므로 자동으로 끄지 않는다. 성공/실패 시 다음 메시지가 덮는다.
         SetMenuStatus($"접속 중... ({code})", autoHide: false);
 
-        _runner = GetOrCreateRunner();
-
-        var result = await _runner.StartGame(new StartGameArgs
+        // 이 메서드는 `_ = StartRoomAsync(...)` 로 던져놓고 기다리지 않는다.
+        // try/catch가 없으면 여기서 난 예외는 아무 데도 안 찍히고 UI만 "접속 중"에 멈춘다.
+        try
         {
-            GameMode    = GameMode.Shared,
-            SessionName = code,
-            PlayerCount = MaxPlayers,   // NetworkProjectConfig 값을 덮어쓴다
-            // 씬은 우리가 직접 Additive로 관리하므로 여기서 지정하지 않는다.
-        });
+            _runner = GetOrCreateRunner();
 
-        _connecting = false;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Debug.Log($"[Room] StartGame 호출: {code}");
 
-        if (!result.Ok)
-        {
-            // 3번째 사람이 코드를 알고 들어오려 한 경우가 가장 흔하다.
-            SetMenuStatus(result.ShutdownReason == ShutdownReason.GameIsFull
-                ? "방이 가득 찼습니다"
-                : $"접속 실패: {result.ShutdownReason}");
-            SetMenuButtons(true);
-            return;
+            var result = await _runner.StartGame(new StartGameArgs
+            {
+                GameMode    = GameMode.Shared,
+                SessionName = code,
+                PlayerCount = MaxPlayers,   // NetworkProjectConfig 값을 덮어쓴다
+                // 씬은 우리가 직접 Additive로 관리하므로 여기서 지정하지 않는다.
+            });
+
+            sw.Stop();
+
+            // await 도중 OnShutdown이 돌면 ShowMenu()가 _runner를 null로 만든다.
+            // 그 상태로 아래를 진행하면 NullReference가 나고, 던져놓은 Task라 조용히 묻힌다.
+            if (_runner == null)
+            {
+                Debug.LogWarning($"[Room] StartGame 반환 전에 러너가 정리됨 ({sw.ElapsedMilliseconds}ms)");
+                SetMenuStatus("접속이 중단되었습니다");
+                SetMenuButtons(true);
+                return;
+            }
+
+            Debug.Log($"[Room] StartGame {(result.Ok ? "성공" : "실패")} — {sw.ElapsedMilliseconds}ms, " +
+                      $"region: {(result.Ok ? _runner.SessionInfo.Region : "-")}, " +
+                      $"reason: {result.ShutdownReason}");
+
+            if (!result.Ok)
+            {
+                // 3번째 사람이 코드를 알고 들어오려 한 경우가 가장 흔하다.
+                SetMenuStatus(result.ShutdownReason == ShutdownReason.GameIsFull
+                    ? "방이 가득 찼습니다"
+                    : $"접속 실패: {result.ShutdownReason}");
+                SetMenuButtons(true);
+                return;
+            }
+
+            // Shared Mode에서 세션을 처음 만든 피어가 방장이 된다. 방장만 GameSession을 Spawn.
+            // (씬에 미리 두면 각 클라가 중복 생성할 위험이 있어 입장 후 Spawn 방식을 쓴다.)
+            if (_runner.IsSharedModeMasterClient)
+                _runner.Spawn(gameSessionPrefab);
+
+            // 성공했으니 "접속 중"을 끈다. 안 끄면 나중에 메뉴로 돌아왔을 때 남아 있다.
+            SetMenuStatus("");
+            ShowLobby();
         }
-
-        // Shared Mode에서 세션을 처음 만든 피어가 방장이 된다. 방장만 GameSession을 Spawn.
-        // (씬에 미리 두면 각 클라가 중복 생성할 위험이 있어 입장 후 Spawn 방식을 쓴다.)
-        if (_runner.IsSharedModeMasterClient)
-            _runner.Spawn(gameSessionPrefab);
-
-        // 성공했으니 "접속 중"을 끈다. 안 끄면 나중에 메뉴로 돌아왔을 때 남아 있다.
-        SetMenuStatus("");
-        ShowLobby();
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            SetMenuStatus("접속 오류 (콘솔 확인)");
+            SetMenuButtons(true);
+        }
+        finally
+        {
+            _connecting = false;
+        }
     }
 
     // ---------- 대기방 ----------
