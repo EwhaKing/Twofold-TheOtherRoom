@@ -1,17 +1,33 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>화면 종류. 한 번에 하나만 켜짐.</summary>
+public enum ScreenId
+{
+    Title,
+    Menu,
+    FindRoom,
+    Lobby,
+    ModeSelect,   // 방장만 봄
+    Waiting,      // 게스트만 봄
+    None,         // 게임플레이 중 — UI 전부 꺼짐
+}
+
 /// <summary>
-/// 화면 흐름 담당. 메뉴 ↔ 대기방 전환, 시작 시 게임플레이 씬 로드.
-/// 게임 시작 이후 흐름(로드 완료 통보, 타이머 시작, 일시정지)도 여기 붙이면 됨.
+/// 화면 흐름 담당. 어떤 화면을 켤지는 전부 여기서 결정한다.
+/// View는 자기 위젯만 알고, 화면 전환은 GameFlow.Show()를 부른다.
 /// </summary>
 public class GameFlow : MonoBehaviour
 {
     public static GameFlow Instance { get; private set; }
 
-    [Header("View")]
-    [SerializeField] MenuView menuView;
-    [SerializeField] LobbyView lobbyView;
+    [Header("화면")]
+    [SerializeField] ScreenView title;
+    [SerializeField] ScreenView menu;
+    [SerializeField] ScreenView findRoom;
+    [SerializeField] ScreenView lobby;
+    [SerializeField] ScreenView modeSelect;
+    [SerializeField] ScreenView waiting;
 
     [Header("시작 씬 (모드)")]
     [Tooltip("모드1-방장 / 모드2-일반 이 로드. Build Settings에 등록되어 있어야 함.")]
@@ -19,7 +35,9 @@ public class GameFlow : MonoBehaviour
     [Tooltip("모드1-일반 / 모드2-방장 이 로드. Build Settings에 등록되어 있어야 함.")]
     [SerializeField] string sceneB = "ceb-network-3d-1";
 
-    // StartRequested가 여러 번 감지돼도 씬은 한 번만 로드
+    public ScreenId Current { get; private set; } = ScreenId.Title;
+
+    // Phase가 여러 번 감지돼도 씬은 한 번만 로드
     bool _gameplayStarted;
 
     void Awake()
@@ -29,35 +47,91 @@ public class GameFlow : MonoBehaviour
 
     void Start()
     {
-        RoomService.Instance.RoomJoined += ShowLobby;
-        RoomService.Instance.RoomLeft   += ShowMenu;
+        RoomService.Instance.RoomJoined += OnRoomJoined;
+        RoomService.Instance.RoomLeft   += OnRoomLeft;
 
-        ShowMenu();
+        Show(ScreenId.Title);
     }
 
     void OnDestroy()
     {
         if (RoomService.Instance == null) return;
-        RoomService.Instance.RoomJoined -= ShowLobby;
-        RoomService.Instance.RoomLeft   -= ShowMenu;
+        RoomService.Instance.RoomJoined -= OnRoomJoined;
+        RoomService.Instance.RoomLeft   -= OnRoomLeft;
     }
 
-    void ShowMenu()
+    // ---------- 화면 전환 ----------
+
+    public void Show(ScreenId id)
+    {
+        Current = id;
+
+        Apply(title,      id == ScreenId.Title);
+        Apply(menu,       id == ScreenId.Menu);
+        Apply(findRoom,   id == ScreenId.FindRoom);
+        Apply(lobby,      id == ScreenId.Lobby);
+        Apply(modeSelect, id == ScreenId.ModeSelect);
+        Apply(waiting,    id == ScreenId.Waiting);
+    }
+
+    static void Apply(ScreenView view, bool on)
+    {
+        if (view != null)
+            view.SetVisible(on);
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    // ---------- RoomService 이벤트 ----------
+
+    void OnRoomJoined()
     {
         _gameplayStarted = false;
-        menuView.SetVisible(true);
-        lobbyView.SetVisible(false);
+        Show(ScreenId.Lobby);
     }
 
-    void ShowLobby()
+    void OnRoomLeft()
     {
-        menuView.SetVisible(false);
-        lobbyView.SetVisible(true);
+        _gameplayStarted = false;
+        Show(ScreenId.Menu);
     }
 
-    /// GameSession이 StartRequested 변화를 감지하면 호출.
+    // ---------- Phase ----------
+
+    /// <summary>
+    /// GameSession의 Phase가 바뀔 때마다 호출. 방장/게스트가 여기서 갈라진다.
+    /// </summary>
+    public void ApplyPhase(RoomPhase phase)
+    {
+        var room = RoomService.Instance;
+        if (room == null || !room.IsInRoom) return;
+
+        switch (phase)
+        {
+            case RoomPhase.Lobby:
+                _gameplayStarted = false;
+                Show(ScreenId.Lobby);
+                break;
+
+            case RoomPhase.ModeSelect:
+                Show(room.IsHost ? ScreenId.ModeSelect : ScreenId.Waiting);
+                break;
+
+            case RoomPhase.Playing:
+                BeginGameplay(GameSession.Instance != null ? GameSession.Instance.Mode : 0);
+                break;
+        }
+    }
+
     /// 이 클라이언트의 역할(방장/게스트) + 모드로 시작 씬을 정해 Additive 로드.
-    public void BeginGameplay(int mode)
+    void BeginGameplay(int mode)
     {
         var room = RoomService.Instance;
         if (room == null || !room.IsInRoom) return;
@@ -71,8 +145,7 @@ public class GameFlow : MonoBehaviour
 
         Debug.Log($"[Flow] 게임 시작 — mode: {mode}, host: {isHost}, scene: {scene}");
 
-        menuView.SetVisible(false);
-        lobbyView.SetVisible(false);
+        Show(ScreenId.None);
         SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
 
         // TODO(타이머): 씬 로드 완료를 기다렸다가 GameSession에 로드 완료를 알릴 것.

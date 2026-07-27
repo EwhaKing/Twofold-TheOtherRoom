@@ -292,7 +292,8 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
         if (!_inRoom) return;
-        string who = player == runner.LocalPlayer ? "내가" : $"Player {player.PlayerId} 님이";
+        // 상대 이름은 GameSession RPC로 조금 뒤에 도착하므로 여기선 안 씀
+        string who = player == runner.LocalPlayer ? "내가" : "상대가";
         LogLine?.Invoke($"{who} 들어왔습니다.");
     }
 
@@ -307,11 +308,16 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
             LogLine?.Invoke("방장이 나갔습니다.");
             StatusChanged?.Invoke("방장이 나갔습니다", false);
             Leave();
+            return;
         }
-        else
-        {
-            LogLine?.Invoke($"Player {player.PlayerId} 님이 나갔습니다.");
-        }
+
+        // 게스트가 나감 → 방장은 로비로 돌아감
+        var gs = GameSession.Instance;
+        string name = gs != null ? gs.GuestName.ToString() : string.Empty;
+        LogLine?.Invoke($"{PlayerProfile.Honorific(name)}이 나갔습니다.");
+
+        // 이름을 로그에 쓴 뒤에 지워야 함
+        gs?.HandleGuestLeft();
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)

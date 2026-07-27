@@ -4,110 +4,87 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 대기방(Canvas_Room) UI. 방 코드 / 인원 / 모드 선택 / 시작·나가기 / 로그.
-/// RoomService와 GameSession을 매 프레임 가져와 그림.
-/// 방장이 바꾼 값이 게스트 화면에도 그대로 반영.
+/// 로비 화면. 방 코드 / 플레이어 2칸 / 인원 / 시작·나가기 / 로그.
+/// RoomService와 GameSession을 매 프레임 가져와 그린다.
+/// 모드 선택은 여기가 아니라 ModeSelectView가 담당한다.
 /// </summary>
-public class LobbyView : MonoBehaviour
+public class LobbyView : ScreenView
 {
-    [Header("Canvas")]
-    [SerializeField] GameObject canvasLobby;
-
     [Header("위젯")]
     [SerializeField] TMP_Text textRoomId;
-    [Tooltip("Player2 슬롯의 사람 아이콘. Player1(방장)은 씬에서 항상 켜둘 것.")]
-    [SerializeField] GameObject player2Icon;
-    [SerializeField] Button btnMode1;           // 방장만 조작
-    [SerializeField] Button btnMode2;           // 방장만 조작
-    [SerializeField] Button btnStart;           // 방장만 조작
+    [Tooltip("1번 칸 — 항상 방장. 왕관 아이콘은 씬에 고정해 둘 것.")]
+    [SerializeField] TMP_Text textHostName;
+    [Tooltip("2번 칸 — 게스트 이름. 아무도 없으면 꺼짐.")]
+    [SerializeField] TMP_Text textGuestName;
+    [Tooltip("\"다른 플레이어를 기다리는 중...\" 게스트가 들어오면 꺼짐.")]
+    [SerializeField] GameObject waitingLabel;
+    [Tooltip("\"1/2\" 인원 표시")]
+    [SerializeField] TMP_Text textPlayerCount;
+    [Tooltip("방장에게만 보임")]
+    [SerializeField] Button btnStart;
     [SerializeField] Button btnLeave;
     [Tooltip("입장/퇴장 로그. 없으면 콘솔에만 남음.")]
     [SerializeField] TMP_Text lobbyLog;
-
-    [Header("모드 버튼 색")]
-    [SerializeField] Color modeSelected = new Color(1f, 1f, 1f, 1f);
-    [SerializeField] Color modeDeselected = new Color(0.35f, 0.35f, 0.35f, 1f);
 
     // 최대 2인이라 길어질 일은 없지만 무한 누적은 막음
     const int MaxLogLines = 6;
     readonly List<string> _logLines = new List<string>();
 
-    // 매 프레임 색을 칠하므로 한 번만 캐싱
-    Image _modeImage1;
-    Image _modeImage2;
-
     RoomService Room => RoomService.Instance;
 
     void Start()
     {
-        btnMode1.onClick.AddListener(() => OnClickSelectMode(0));
-        btnMode2.onClick.AddListener(() => OnClickSelectMode(1));
-        btnStart.onClick.AddListener(() => GameSession.Instance?.RequestStart());
+        btnStart.onClick.AddListener(() => GameSession.Instance?.RequestModeSelect());
         btnLeave.onClick.AddListener(() => Room.Leave());
 
-        _modeImage1 = SetupModeButton(btnMode1);
-        _modeImage2 = SetupModeButton(btnMode2);
-
-        Room.LogLine += AppendLog;
+        Room.LogLine    += AppendLog;
+        // 화면이 켜질 때가 아니라 "새 방에 들어올 때" 지운다.
+        // 게스트 퇴장 로그는 로비로 돌아오기 직전에 찍히므로 여기서 지우면 안 됨
+        Room.RoomJoined += ClearLog;
     }
 
     void OnDestroy()
     {
-        if (Room != null)
-            Room.LogLine -= AppendLog;
-    }
-
-    /// GameFlow가 화면 전환할 때 호출
-    public void SetVisible(bool on)
-    {
-        canvasLobby.SetActive(on);
-        if (on)
-            ClearLog();
+        if (Room == null) return;
+        Room.LogLine    -= AppendLog;
+        Room.RoomJoined -= ClearLog;
     }
 
     void Update()
     {
-        if (!canvasLobby.activeSelf || !Room.IsInRoom)
+        if (!IsVisible || !Room.IsInRoom)
             return;
 
         textRoomId.text = Room.RoomCode;
 
-        // 방장=Player1은 고정. 상대가 왔을 때 Player2만 켬
         int count = Room.PlayerCount;
-        player2Icon.SetActive(count >= 2);
+        textPlayerCount.text = $"{count}/2";
 
-        bool isHost = Room.IsHost;
         var gs = GameSession.Instance;
+        bool isHost = Room.IsHost;
 
-        // 게스트는 모드 조작만 막음
-        // GameSession이 아직 Spawn 전이면 기본값 0으로 그림
-        ApplyModeVisual(gs != null ? gs.Mode : 0);
+        // GameSession Spawn 전이거나 상대 이름 RPC가 아직 안 왔을 수 있음
+        string hostName  = gs != null ? gs.HostName.ToString()  : string.Empty;
+        string guestName = gs != null ? gs.GuestName.ToString() : string.Empty;
 
+        // 내 이름은 네트워크를 기다릴 필요가 없다
+        if (string.IsNullOrEmpty(hostName) && isHost)
+            hostName = PlayerProfile.Nickname;
+        if (string.IsNullOrEmpty(guestName) && !isHost)
+            guestName = PlayerProfile.Nickname;
+
+        textHostName.text = PlayerProfile.OrDefault(hostName);
+
+        bool guestHere = count >= 2;
+        textGuestName.gameObject.SetActive(guestHere);
+        if (guestHere)
+            textGuestName.text = PlayerProfile.OrDefault(guestName);
+        if (waitingLabel != null)
+            waitingLabel.SetActive(!guestHere);
+
+        // 시작 버튼은 방장에게만, 그것도 둘이 다 모였을 때만
         btnStart.gameObject.SetActive(isHost);
-        btnMode1.interactable = isHost && gs != null;
-        btnMode2.interactable = isHost && gs != null;
-        btnStart.interactable = isHost && gs != null && count >= 2;
-    }
-
-    // 토글이 아니라 값을 직접 지정. 같은 걸 다시 눌러도 변화 없음
-    void OnClickSelectMode(int mode)
-    {
-        GameSession.Instance?.SetMode(mode);
-    }
-
-    // Button transition 색 변화 끄고 inspector 색으로 직접 지정.
-    static Image SetupModeButton(Button button)
-    {
-        button.transition = Selectable.Transition.None;
-        return button.GetComponent<Image>();
-    }
-
-    void ApplyModeVisual(int mode)
-    {
-        if (_modeImage1 != null)
-            _modeImage1.color = mode == 0 ? modeSelected : modeDeselected;
-        if (_modeImage2 != null)
-            _modeImage2.color = mode == 1 ? modeSelected : modeDeselected;
+        btnStart.interactable = isHost && gs != null && guestHere;
     }
 
     // ---------- 로그 ----------
