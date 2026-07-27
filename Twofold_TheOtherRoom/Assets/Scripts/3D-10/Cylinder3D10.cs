@@ -1,13 +1,13 @@
 using UnityEngine;
 using System.Collections;
 
-public class Cylinder3D10 : MonoBehaviour
+public class Cylinder3D10 : MonoBehaviour, IInteractable
 {
     private bool isRotating = false;
     private float currentY = 80f;
     public Answer3D10 controller;
 
-    void OnMouseDown()
+    public void Interact()
     {   
         if (controller.GetSolve())
         {
