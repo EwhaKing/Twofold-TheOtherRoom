@@ -89,7 +89,7 @@ public class FindRoomView : ScreenView
 
     void OnStatusChanged(string message, bool persistent)
     {
-        if (status != null)
+        if (IsVisible && status != null)
             status.Show(message, !persistent);
     }
 }

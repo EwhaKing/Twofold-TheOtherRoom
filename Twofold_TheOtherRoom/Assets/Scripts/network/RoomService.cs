@@ -282,9 +282,13 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
     // 여러 콜백에서 부르는 공통 처리
     void HandleLeftRoom()
     {
+        bool wasInRoom = _inRoom;
+
         _runner = null;
         _inRoom = false;
-        RoomLeft?.Invoke();
+
+        if (wasInRoom)
+            RoomLeft?.Invoke();
     }
 
     // ================= INetworkRunnerCallbacks =================

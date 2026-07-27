@@ -57,10 +57,10 @@ public class MenuView : ScreenView
         Room.CreateRoom();
     }
 
-    // 접속 실패 문구는 방찾기 화면에서도 뜬다. 각 화면이 자기 라벨에 그림
+    // 같은 이벤트를 방찾기 화면도 들으므로, 지금 보이는 화면만 자기 라벨에 그림
     void OnStatusChanged(string message, bool persistent)
     {
-        if (status != null)
+        if (IsVisible && status != null)
             status.Show(message, !persistent);
     }
 }
