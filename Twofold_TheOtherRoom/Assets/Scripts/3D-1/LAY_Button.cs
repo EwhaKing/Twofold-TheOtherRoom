@@ -16,9 +16,9 @@ public class LAY_Button : MonoBehaviour, IInteractable
     public ButtonColor buttonColor;
 
     [Header("Button Animation")]
-    public float pressDistance = 0.05f;   // 얼마나 내려갈지
-    public float pressSpeed = 8f;         // 내려가는 속도
-    public float returnSpeed = 6f;        // 올라오는 속도
+    public float pressDistance = 0.05f;
+    public float pressSpeed = 8f;
+    public float returnSpeed = 6f;
 
     private Vector3 originalPosition;
     private bool isAnimating = false;
