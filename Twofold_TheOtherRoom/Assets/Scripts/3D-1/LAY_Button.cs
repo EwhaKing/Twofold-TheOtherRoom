@@ -41,6 +41,7 @@ public class LAY_Button : MonoBehaviour, IInteractable
     private IEnumerator PressButton()
     {
         isAnimating = true;
+        SoundManager.Instance.PlaySFX(SFXType.TestSe);
 
         Vector3 pressedPosition = originalPosition + Vector3.down * pressDistance;
 

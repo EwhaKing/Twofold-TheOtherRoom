@@ -21,7 +21,6 @@ public enum SFXType
 /// 사용 예시)
 /// SoundManager.Instance.PlaySFX(SFXType.ButtonClick);
 /// SoundManager.Instance.PlaySFX(SFXType.PuzzleClear);
-/// SoundManager.Instance.PlayBGM(defaultBGM);
 /// </summary>
 public class SoundManager : MonoBehaviour
 {
