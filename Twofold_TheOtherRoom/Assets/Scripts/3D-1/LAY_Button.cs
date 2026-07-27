@@ -30,7 +30,6 @@ public class LAY_Button : MonoBehaviour, IInteractable
 
     public void Interact()
     {    
-        Debug.Log("버튼 상호작용!");
         if (isAnimating)
         {    
             return;

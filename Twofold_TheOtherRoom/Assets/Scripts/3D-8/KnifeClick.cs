@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class KnifeClick : MonoBehaviour
+public class KnifeClick : MonoBehaviour, IInteractable
 {
     public GameObject section;
     public Renderer cake;          
@@ -9,7 +9,7 @@ public class KnifeClick : MonoBehaviour
     {
         click = false;
     }
-    private void OnMouseDown()
+    public void Interact()
     {
         section.SetActive(!section.activeSelf);
         if (click == false)
