@@ -12,6 +12,8 @@ public class WaitingView : ScreenView
     [SerializeField] TMP_Text textRoomId;
     [SerializeField] Button btnLeave;
 
+    public override ScreenId Id => ScreenId.Waiting;
+
     RoomService Room => RoomService.Instance;
 
     void Start()

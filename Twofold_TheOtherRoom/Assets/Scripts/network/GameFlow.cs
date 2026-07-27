@@ -21,14 +21,6 @@ public class GameFlow : MonoBehaviour
 {
     public static GameFlow Instance { get; private set; }
 
-    [Header("화면")]
-    [SerializeField] ScreenView title;
-    [SerializeField] ScreenView menu;
-    [SerializeField] ScreenView findRoom;
-    [SerializeField] ScreenView lobby;
-    [SerializeField] ScreenView modeSelect;
-    [SerializeField] ScreenView waiting;
-
     [Header("시작 씬 (모드)")]
     [Tooltip("모드1-방장 / 모드2-일반 이 로드. Build Settings에 등록되어 있어야 함.")]
     [SerializeField] string sceneA = "ceb-network-2d-1";
@@ -40,9 +32,16 @@ public class GameFlow : MonoBehaviour
     // Phase가 여러 번 감지돼도 씬은 한 번만 로드
     bool _gameplayStarted;
 
+    // View의 ScreenId 넣음
+    ScreenView[] _screens;
+
     void Awake()
     {
         Instance = this;
+
+        _screens = GetComponents<ScreenView>();
+        if (_screens.Length == 0)
+            Debug.LogError("[Flow] View가 하나도 없음 — GameFlow와 같은 오브젝트에 붙일 것");
     }
 
     void Start()
@@ -66,18 +65,8 @@ public class GameFlow : MonoBehaviour
     {
         Current = id;
 
-        Apply(title,      id == ScreenId.Title);
-        Apply(menu,       id == ScreenId.Menu);
-        Apply(findRoom,   id == ScreenId.FindRoom);
-        Apply(lobby,      id == ScreenId.Lobby);
-        Apply(modeSelect, id == ScreenId.ModeSelect);
-        Apply(waiting,    id == ScreenId.Waiting);
-    }
-
-    static void Apply(ScreenView view, bool on)
-    {
-        if (view != null)
-            view.SetVisible(on);
+        foreach (var screen in _screens)
+            screen.SetVisible(screen.Id == id);
     }
 
     public void QuitGame()

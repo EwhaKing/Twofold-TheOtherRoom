@@ -16,6 +16,8 @@ public class MenuView : ScreenView
     [Tooltip("\"접속 중...\" 등. 없어도 동작함.")]
     [SerializeField] StatusLabel status;
 
+    public override ScreenId Id => ScreenId.Menu;
+
     RoomService Room => RoomService.Instance;
 
     void Start()

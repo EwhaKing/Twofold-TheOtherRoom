@@ -18,6 +18,8 @@ public class FindRoomView : ScreenView
     [Tooltip("입력 오류 / 접속 실패 문구. 없어도 동작함.")]
     [SerializeField] StatusLabel status;
 
+    public override ScreenId Id => ScreenId.FindRoom;
+
     RoomService Room => RoomService.Instance;
 
     void Start()

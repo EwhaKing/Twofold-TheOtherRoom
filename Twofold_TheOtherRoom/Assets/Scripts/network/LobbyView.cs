@@ -30,6 +30,8 @@ public class LobbyView : ScreenView
     const int MaxLogLines = 6;
     readonly List<string> _logLines = new List<string>();
 
+    public override ScreenId Id => ScreenId.Lobby;
+
     RoomService Room => RoomService.Instance;
 
     void Start()

@@ -32,6 +32,8 @@ public class ModeSelectView : ScreenView
     // 알림창에서 "예"를 눌렀을 때 확정할 모드. -1이면 알림창이 닫혀 있음
     int _pendingMode = -1;
 
+    public override ScreenId Id => ScreenId.ModeSelect;
+
     RoomService Room => RoomService.Instance;
 
     void Start()

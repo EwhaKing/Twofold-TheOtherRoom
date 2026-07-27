@@ -11,6 +11,9 @@ public abstract class ScreenView : MonoBehaviour
     [FormerlySerializedAs("canvasLobby")]
     [SerializeField] protected GameObject canvas;
 
+    /// 이 View가 담당하는 화면. GameFlow가 이걸 보고 켤 하나를 고름
+    public abstract ScreenId Id { get; }
+
     public bool IsVisible => canvas != null && canvas.activeSelf;
 
     public void SetVisible(bool on)

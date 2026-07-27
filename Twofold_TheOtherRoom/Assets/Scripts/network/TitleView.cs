@@ -13,6 +13,8 @@ public class TitleView : ScreenView
     [SerializeField] Button btnOptions;
     [SerializeField] Button btnQuit;
 
+    public override ScreenId Id => ScreenId.Title;
+
     void Start()
     {
         btnStart.onClick.AddListener(() => GameFlow.Instance.Show(ScreenId.Menu));
