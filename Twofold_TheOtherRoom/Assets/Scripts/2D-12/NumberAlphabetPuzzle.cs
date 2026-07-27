@@ -10,166 +10,139 @@ public class NumberAlphabetPuzzle : MonoBehaviour
         Alphabet
     }
 
-    [Header("PuzzleManager 설정")]
+    [Header("Puzzle 정보")]
     [SerializeField] private string puzzleId = "2D-12";
     [SerializeField] private PuzzleDimension dimension = PuzzleDimension.TwoD;
 
-    [Header("문제 화면")]
+    [Header("UI")]
     [SerializeField] private GameObject numberPanel;
     [SerializeField] private GameObject alphabetPanel;
     [SerializeField] private GameObject clearPanel;
 
-    [Header("입력 제한")]
+    [Header("잠금 UI")]
     [SerializeField] private CanvasGroup puzzleCanvasGroup;
     [SerializeField] private GameObject lockPanel;
     [SerializeField] private TMP_Text lockTimerText;
-
-    [Header("오답 제한")]
-    [SerializeField] private int maxWrongAnswers = 3;
-    [SerializeField] private float lockDuration = 60f;
 
     [Header("정답")]
     [SerializeField] private int correctNumber = 4;
     [SerializeField] private string correctAlphabet = "H";
 
-    [Header("선택 사항")]
+    [Header("오답 설정")]
+    [SerializeField] private int maxWrongAnswers = 3;
+    [SerializeField] private float lockTime = 60f;
+
+    [Header("텍스트")]
     [SerializeField] private TMP_Text wrongCountText;
     [SerializeField] private TMP_Text resultText;
 
-    private PuzzleStep currentStep = PuzzleStep.Number;
-
-    // 현재 문제에서 틀린 횟수만 저장
-    private int currentWrongCount;
+    private PuzzleStep currentStep;
+    private int wrongCount;
 
     private bool isLocked;
     private bool isSolved;
-    private Coroutine lockCoroutine;
+
+    private Coroutine lockRoutine;
 
     private void Start()
     {
-        ShowNumberQuestion();
-
-        if (clearPanel != null)
-            clearPanel.SetActive(false);
-
-        if (lockPanel != null)
-            lockPanel.SetActive(false);
-
-        UpdateWrongCountText();
-        SetResultText(string.Empty);
+        ResetPuzzle();
     }
 
-    public void SelectNumber(int selectedNumber)
+    public void SelectNumber(int number)
     {
-        if (!CanReceiveInput())
-            return;
+        if (!CanInput()) return;
+        if (currentStep != PuzzleStep.Number) return;
 
-        if (currentStep != PuzzleStep.Number)
-            return;
-
-        if (selectedNumber == correctNumber)
+        if (number == correctNumber)
         {
-            // 숫자 문제를 통과했으므로 오답 횟수를 초기화
-            currentWrongCount = 0;
+            wrongCount = 0;
+            UpdateWrongCount();
 
-            SetResultText("정답입니다!");
             ShowAlphabetQuestion();
-            UpdateWrongCountText();
+            SetResult("정답입니다!");
         }
         else
         {
-            RegisterWrongAnswer();
+            WrongAnswer();
         }
     }
 
-    public void SelectAlphabet(string selectedAlphabet)
+    public void SelectAlphabet(string alphabet)
     {
-        if (!CanReceiveInput())
-            return;
+        if (!CanInput()) return;
+        if (currentStep != PuzzleStep.Alphabet) return;
 
-        if (currentStep != PuzzleStep.Alphabet)
-            return;
-
-        bool isCorrect = string.Equals(
-            selectedAlphabet.Trim(),
-            correctAlphabet.Trim(),
-            System.StringComparison.OrdinalIgnoreCase
-        );
-
-        if (isCorrect)
+        if (alphabet.Trim().ToUpper() == correctAlphabet.Trim().ToUpper())
         {
-            CompletePuzzle();
+            PuzzleClear();
         }
         else
         {
-            RegisterWrongAnswer();
+            WrongAnswer();
         }
     }
 
-    private bool CanReceiveInput()
+    private bool CanInput()
     {
         return !isLocked && !isSolved;
     }
 
-    private void RegisterWrongAnswer()
+    private void WrongAnswer()
     {
-        currentWrongCount++;
+        wrongCount++;
 
-        SetResultText("틀렸습니다.");
-        UpdateWrongCountText();
+        UpdateWrongCount();
+        SetResult("틀렸습니다.");
 
-        if (currentWrongCount >= maxWrongAnswers)
+        if (wrongCount >= maxWrongAnswers)
         {
-            if (lockCoroutine != null)
-                StopCoroutine(lockCoroutine);
+            if (lockRoutine != null)
+                StopCoroutine(lockRoutine);
 
-            lockCoroutine = StartCoroutine(LockPuzzleCoroutine());
+            lockRoutine = StartCoroutine(LockCoroutine());
         }
     }
 
-    private IEnumerator LockPuzzleCoroutine()
+    private IEnumerator LockCoroutine()
     {
         isLocked = true;
-        SetPuzzleInputEnabled(false);
+        SetInput(false);
 
         if (lockPanel != null)
             lockPanel.SetActive(true);
 
-        float remainingTime = lockDuration;
+        float time = lockTime;
 
-        while (remainingTime > 0f)
+        while (time > 0)
         {
             if (lockTimerText != null)
             {
-                int seconds = Mathf.CeilToInt(remainingTime);
-
                 lockTimerText.text =
-                        ///$"현재 문제에서 3번 틀렸습니다.\n" +
-                        ///$"{seconds}초 후 다시 시도할 수 있습니다.";
-                        $"Wait {seconds}s";
+                    $"3번 연속 틀렸습니다.\n{Mathf.CeilToInt(time)}초 후 다시 시도";
             }
 
-            remainingTime -= Time.unscaledDeltaTime;
+            time -= Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // 대기가 끝나면 현재 문제의 오답 횟수만 초기화
-        currentWrongCount = 0;
         isLocked = false;
-        lockCoroutine = null;
+        wrongCount = 0;
+
+        SetInput(true);
 
         if (lockPanel != null)
             lockPanel.SetActive(false);
 
-        SetPuzzleInputEnabled(true);
-        UpdateWrongCountText();
-        SetResultText("다시 시도할 수 있습니다.");
+        UpdateWrongCount();
+        SetResult("다시 시도할 수 있습니다.");
+
+        lockRoutine = null;
     }
 
     private void ShowNumberQuestion()
     {
         currentStep = PuzzleStep.Number;
-        currentWrongCount = 0;
 
         if (numberPanel != null)
             numberPanel.SetActive(true);
@@ -181,7 +154,6 @@ public class NumberAlphabetPuzzle : MonoBehaviour
     private void ShowAlphabetQuestion()
     {
         currentStep = PuzzleStep.Alphabet;
-        currentWrongCount = 0;
 
         if (numberPanel != null)
             numberPanel.SetActive(false);
@@ -190,13 +162,15 @@ public class NumberAlphabetPuzzle : MonoBehaviour
             alphabetPanel.SetActive(true);
     }
 
-    private void CompletePuzzle()
+    private void PuzzleClear()
     {
-        if (isSolved)
-            return;
+        if (isSolved) return;
 
         isSolved = true;
-        SetPuzzleInputEnabled(false);
+
+        Debug.Log("스테이지 클리어!");
+
+        SetInput(false);
 
         if (numberPanel != null)
             numberPanel.SetActive(false);
@@ -210,7 +184,7 @@ public class NumberAlphabetPuzzle : MonoBehaviour
         if (clearPanel != null)
             clearPanel.SetActive(true);
 
-        SetResultText("스테이지 클리어!");
+        SetResult("스테이지 클리어!");
 
         if (PuzzleManager.Instance != null)
         {
@@ -218,64 +192,59 @@ public class NumberAlphabetPuzzle : MonoBehaviour
         }
         else
         {
-            Debug.LogError(
-                $"[{name}] PuzzleManager가 씬에 없습니다."
-            );
+            Debug.LogError("PuzzleManager를 찾을 수 없습니다.");
         }
     }
 
-    private void SetPuzzleInputEnabled(bool enabled)
+    private void SetInput(bool enable)
     {
         if (puzzleCanvasGroup == null)
             return;
 
-        puzzleCanvasGroup.interactable = enabled;
-        puzzleCanvasGroup.blocksRaycasts = enabled;
+        puzzleCanvasGroup.interactable = enable;
+        puzzleCanvasGroup.blocksRaycasts = enable;
     }
 
-    private void UpdateWrongCountText()
+    private void UpdateWrongCount()
     {
         if (wrongCountText == null)
             return;
 
-        string stepName =
-            currentStep == PuzzleStep.Number
-                ? "숫자 문제"
-                : "알파벳 문제";
+        string name = currentStep == PuzzleStep.Number ? "숫자 문제" : "알파벳 문제";
 
-        wrongCountText.text =
-            $"{stepName} 오답 {currentWrongCount} / {maxWrongAnswers}";
+        wrongCountText.text = $"{name} 오답 {wrongCount}/{maxWrongAnswers}";
     }
 
-    private void SetResultText(string message)
+    private void SetResult(string message)
     {
         if (resultText != null)
             resultText.text = message;
     }
 
-    [ContextMenu("Reset This Puzzle")]
+    [ContextMenu("Reset Puzzle")]
     public void ResetPuzzle()
     {
-        if (lockCoroutine != null)
+        if (lockRoutine != null)
         {
-            StopCoroutine(lockCoroutine);
-            lockCoroutine = null;
+            StopCoroutine(lockRoutine);
+            lockRoutine = null;
         }
 
-        currentWrongCount = 0;
-        isLocked = false;
         isSolved = false;
-
-        SetPuzzleInputEnabled(true);
-
-        if (lockPanel != null)
-            lockPanel.SetActive(false);
+        isLocked = false;
+        wrongCount = 0;
 
         if (clearPanel != null)
             clearPanel.SetActive(false);
 
+        if (lockPanel != null)
+            lockPanel.SetActive(false);
+
+        SetInput(true);
+
         ShowNumberQuestion();
-        UpdateWrongCountText();
-        SetResultText(string.Empty);
+
+        UpdateWrongCount();
+        SetResult("");
     }
 }
