@@ -13,7 +13,8 @@ public class ModeSelectView : ScreenView
     [SerializeField] TMP_Text textRoomId;
     [SerializeField] Button btnMode1;
     [SerializeField] Button btnMode2;
-    [SerializeField] Button btnBack;
+    [Tooltip("방을 아예 닫음. 게스트도 같이 나가진다.")]
+    [SerializeField] Button btnLeave;
 
     [Header("확인 알림창")]
     [Tooltip("평소엔 꺼둘 것")]
@@ -37,7 +38,8 @@ public class ModeSelectView : ScreenView
     {
         btnMode1.onClick.AddListener(() => OpenConfirm(0));
         btnMode2.onClick.AddListener(() => OpenConfirm(1));
-        btnBack.onClick.AddListener(() => GameSession.Instance?.CancelModeSelect());
+        // 방장이 나가면 게스트도 자동으로 나감 (RoomService.OnPlayerLeft가 처리)
+        btnLeave.onClick.AddListener(() => Room.Leave());
 
         btnYes.onClick.AddListener(OnClickYes);
         btnNo.onClick.AddListener(CloseConfirm);

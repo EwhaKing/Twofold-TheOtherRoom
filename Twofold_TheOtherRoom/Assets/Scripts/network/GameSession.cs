@@ -25,12 +25,6 @@ public class GameSession : NetworkBehaviour
     /// 방 단계. 바뀌는 순간 양쪽 GameFlow가 화면을 바꿈
     [Networked] public RoomPhase Phase { get; set; }
 
-    /// 방장 이름. 방장이 Spawned에서 자기 걸 씀
-    [Networked] public NetworkString<_16> HostName { get; set; }
-
-    /// 게스트 이름. 게스트가 RPC로 요청하면 방장이 씀. 비어 있으면 아직 안 들어온 것
-    [Networked] public NetworkString<_16> GuestName { get; set; }
-
     ChangeDetector _changes;
 
     public override void Spawned()
@@ -38,16 +32,8 @@ public class GameSession : NetworkBehaviour
         Instance = this;
         _changes = GetChangeDetector(ChangeDetector.Source.SnapshotFrom);
 
-        // [Networked]는 StateAuthority(방장)만 쓸 수 있어서, 게스트는 RPC로 부탁한다
         if (Object.HasStateAuthority)
-        {
-            HostName = PlayerProfile.Nickname;
-            Phase    = RoomPhase.Lobby;
-        }
-        else
-        {
-            RpcSubmitName(PlayerProfile.Nickname);
-        }
+            Phase = RoomPhase.Lobby;
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
@@ -83,13 +69,6 @@ public class GameSession : NetworkBehaviour
             Phase = RoomPhase.ModeSelect;
     }
 
-    /// 모드 선택 화면의 "뒤로가기" — 둘 다 로비로 되돌림
-    public void CancelModeSelect()
-    {
-        if (Object.HasStateAuthority)
-            Phase = RoomPhase.Lobby;
-    }
-
     /// 알림창에서 "예" — 모드를 확정하고 바로 게임 시작
     public void ConfirmMode(int mode)
     {
@@ -98,26 +77,13 @@ public class GameSession : NetworkBehaviour
         Phase = RoomPhase.Playing;
     }
 
-    /// 게스트가 나갔을 때. 이름을 지우고 방장을 로비로 되돌림
+    /// 게스트가 나갔을 때. 모드 선택 중이었다면 방장을 로비로 되돌림
     public void HandleGuestLeft()
     {
-        if (!Object.HasStateAuthority) return;
-        GuestName = string.Empty;
-        Phase     = RoomPhase.Lobby;
-    }
-
-    // ---------- 게스트 → 방장 ----------
-
-    /// 게스트는 [Networked] 값을 직접 못 쓰므로 방장에게 이름을 대신 써 달라고 보낸다
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RpcSubmitName(NetworkString<_16> name, RpcInfo info = default)
-    {
-        if (info.Source == Object.StateAuthority)
-            HostName = name;
-        else
-            GuestName = name;
+        if (Object.HasStateAuthority)
+            Phase = RoomPhase.Lobby;
     }
 
     // 타이머 / 거울 조각이 여기 들어옴. 필드 이름과 틱 계산법은 ARCHITECTURE.md.
-    // 주의: [Networked]는 방장만 쓸 수 있음. 게스트가 바꿔야 하는 값은 위 RPC처럼 요청해야 함.
+    // 주의: [Networked]는 방장만 쓸 수 있음. 게스트가 바꿔야 하는 값은 RPC로 요청해야 함.
 }

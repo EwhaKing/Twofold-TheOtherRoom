@@ -14,7 +14,7 @@ public class LobbyView : ScreenView
     [SerializeField] TMP_Text textRoomId;
     [Tooltip("1번 칸 — 항상 방장. 왕관 아이콘은 씬에 고정해 둘 것.")]
     [SerializeField] TMP_Text textHostName;
-    [Tooltip("2번 칸 — 게스트 이름. 아무도 없으면 꺼짐.")]
+    [Tooltip("2번 칸 — 게스트. 아무도 없으면 꺼짐.")]
     [SerializeField] TMP_Text textGuestName;
     [Tooltip("\"다른 플레이어를 기다리는 중...\" 게스트가 들어오면 꺼짐.")]
     [SerializeField] GameObject waitingLabel;
@@ -34,6 +34,10 @@ public class LobbyView : ScreenView
 
     void Start()
     {
+        // 이름이 고정이라 한 번만 써두면 됨
+        textHostName.text  = PlayerNames.Host;
+        textGuestName.text = PlayerNames.Guest;
+
         btnStart.onClick.AddListener(() => GameSession.Instance?.RequestModeSelect());
         btnLeave.onClick.AddListener(() => Room.Leave());
 
@@ -63,22 +67,8 @@ public class LobbyView : ScreenView
         var gs = GameSession.Instance;
         bool isHost = Room.IsHost;
 
-        // GameSession Spawn 전이거나 상대 이름 RPC가 아직 안 왔을 수 있음
-        string hostName  = gs != null ? gs.HostName.ToString()  : string.Empty;
-        string guestName = gs != null ? gs.GuestName.ToString() : string.Empty;
-
-        // 내 이름은 네트워크를 기다릴 필요가 없다
-        if (string.IsNullOrEmpty(hostName) && isHost)
-            hostName = PlayerProfile.Nickname;
-        if (string.IsNullOrEmpty(guestName) && !isHost)
-            guestName = PlayerProfile.Nickname;
-
-        textHostName.text = PlayerProfile.OrDefault(hostName);
-
         bool guestHere = count >= 2;
         textGuestName.gameObject.SetActive(guestHere);
-        if (guestHere)
-            textGuestName.text = PlayerProfile.OrDefault(guestName);
         if (waitingLabel != null)
             waitingLabel.SetActive(!guestHere);
 
