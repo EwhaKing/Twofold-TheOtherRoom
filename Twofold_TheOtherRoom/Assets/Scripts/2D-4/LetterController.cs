@@ -12,30 +12,36 @@ public class LetterController : MonoBehaviour
 
     void Start()
     {
-        letterText.text = currentLetter.ToString();
+        UpdateLetter();
     }
 
     public void IncreaseLetter()
     {
-        if (currentLetter < 'D')
-        {
+        // A → B → C → D → A
+        if (currentLetter == 'D')
+            currentLetter = 'A';
+        else
             currentLetter++;
-            letterText.text = currentLetter.ToString();
 
-            if (checker != null)
-                checker.CheckAnswer();
-        }
+        UpdateLetter();
     }
 
     public void DecreaseLetter()
     {
-        if (currentLetter > 'A')
-        {
+        // A → D → C → B → A
+        if (currentLetter == 'A')
+            currentLetter = 'D';
+        else
             currentLetter--;
-            letterText.text = currentLetter.ToString();
 
-            if (checker != null)
-                checker.CheckAnswer();
-        }
+        UpdateLetter();
+    }
+
+    private void UpdateLetter()
+    {
+        letterText.text = currentLetter.ToString();
+
+        if (checker != null)
+            checker.CheckAnswer();
     }
 }
