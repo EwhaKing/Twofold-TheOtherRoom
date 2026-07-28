@@ -25,6 +25,20 @@ public class GameSession : NetworkBehaviour
     /// 방 단계. 바뀌는 순간 양쪽 GameFlow가 화면을 바꿈
     [Networked] public RoomPhase Phase { get; set; }
 
+    // 타이머
+    [Networked] public bool P1Loaded { get; set; }
+    [Networked] public bool P2Loaded { get; set; }
+    [Networked] public int StartedTick { get; set; }
+    public const float TotalSeconds = 15f * 60f;
+    public float ElapsedSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
+    {
+        get
+        {
+            if (StartedTick == 0) return 0f;
+            return (Runner.Tick - StartedTick) * Runner.DeltaTime;
+        }
+    }
+
     ChangeDetector _changes;
 
     public override void Spawned()
@@ -73,6 +87,7 @@ public class GameSession : NetworkBehaviour
     public void ConfirmMode(int mode)
     {
         if (!Object.HasStateAuthority) return;
+        ResetTimer();
         Mode  = mode;
         Phase = RoomPhase.Playing;
     }
@@ -84,6 +99,21 @@ public class GameSession : NetworkBehaviour
             Phase = RoomPhase.Lobby;
     }
 
-    // 타이머 / 거울 조각이 여기 들어옴. 필드 이름과 틱 계산법은 ARCHITECTURE.md.
-    // 주의: [Networked]는 방장만 쓸 수 있음. 게스트가 바꿔야 하는 값은 RPC로 요청해야 함.
+    // 씬 로드 완료 시 호출하는 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportLoaded(bool isHost)
+    {
+        if(isHost) P1Loaded = true;
+        else P2Loaded = true;
+
+        if(P1Loaded && P2Loaded && StartedTick == 0) StartedTick = Runner.Tick;
+    }
+
+    // 타이머 초기화
+    private void ResetTimer()
+    {
+        P1Loaded = false;
+        P2Loaded = false;
+        StartedTick = 0;
+    }
 }

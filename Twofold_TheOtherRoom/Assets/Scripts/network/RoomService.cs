@@ -144,23 +144,21 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
 
     /// <param name="allowCreate">
     /// true = 없으면 새로 만듦(방 만들기). false = 없으면 GameNotFound로 실패(방 찾기).
-    /// 구분 안 하면 코드 잘못 쳤을 때 조용히 새 방의 방장이 됨.
+    /// 구분 안 하면 코드 잘못 쳤을 때 새 방 만듦.
     /// </param>
     async Task StartRoomAsync(string code, bool allowCreate)
     {
         _connecting = true;
-        // 언제 끝날지 모르니 자동으로 안 지움. 성공/실패 시 다음 메시지가 덮음
         StatusChanged?.Invoke($"접속 중... ({code})", true);
 
-        // 던져놓고 기다리지 않는 Task라 try/catch가 없으면 예외가 조용히 묻히고 UI만 멈춤
+        // 던져놓고 기다리지 않는 Task라 try/catch 문 필요
         try
         {
-            // 실패하면 await 도중 OnShutdown이 _runner를 비움.
-            // 그래서 지역 변수로 들고 있어야 반환 후에도 결과를 읽을 수 있음
+            // 실패하면 await 도중 OnShutdown이 _runner를 비우므로 지역변수로 가지고 있기
             var runner = GetOrCreateRunner();
             _runner = runner;
 
-            // 코드 재시도는 "랜덤 코드로 방 만들기"만. 고정 코드는 일부러 고른 거라 안 바꿈
+            // 디버그로 방 코드 고정 시 코드 재시도 안함
             bool canRetryWithNewCode = allowCreate && string.IsNullOrWhiteSpace(debugFixedCode);
 
             var sw = System.Diagnostics.Stopwatch.StartNew();

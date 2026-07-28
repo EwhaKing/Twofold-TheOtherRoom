@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -135,9 +136,15 @@ public class GameFlow : MonoBehaviour
         Debug.Log($"[Flow] 게임 시작 — mode: {mode}, host: {isHost}, scene: {scene}");
 
         Show(ScreenId.None);
-        SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
+        StartCoroutine(LoadAndReport(scene, isHost));
+    }
 
-        // TODO(타이머): 씬 로드 완료를 기다렸다가 GameSession에 로드 완료를 알릴 것.
-        //               둘 다 보고되면 StartedTick 기록 → 타이머 시작. ARCHITECTURE.md 참고
+    // 씬 로딩 후 보고하기 위한 코루틴
+    IEnumerator LoadAndReport(string scene, bool isHost)
+    {
+        var op = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
+        yield return op;
+        Debug.Log($"[Flow] 로드 완료 보고 | host:{isHost}");
+        GameSession.Instance?.RpcReportLoaded(isHost);
     }
 }
