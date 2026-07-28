@@ -16,12 +16,45 @@ public class PlayerInteractor : MonoBehaviour
 
     private IInteractable currentInteractable;
 
+    public static PlayerInteractor Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    
+
     private void Start()
     {
         if (playerCamera == null)
             playerCamera = Camera.main;
 
-        interactText.gameObject.SetActive(false);
+         interactText.gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        currentInteractable = null;
+        HideInteractionPrompt();
+    }
+
+    public void HideInteractionPrompt()
+    {
+        if (interactText != null)
+            interactText.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -58,8 +91,11 @@ public class PlayerInteractor : MonoBehaviour
                 Vector3 screenPosition =
                     playerCamera.WorldToScreenPoint(hit.point);
 
-                interactText.transform.position = screenPosition;
-                interactText.gameObject.SetActive(true);
+                if (interactText != null)
+                {
+                    interactText.transform.position = screenPosition;
+                    interactText.gameObject.SetActive(true);
+                }
             }
         }
     }
