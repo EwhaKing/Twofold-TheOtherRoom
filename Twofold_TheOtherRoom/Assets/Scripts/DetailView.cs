@@ -10,7 +10,7 @@ using UnityEngine.EventSystems;
 ///    해당 물체의 Detail Prefab을 연결합니다.
 /// 3. BackButton의 OnClick에는 Canvas에 붙인 컴포넌트의 CloseDetail을 연결합니다.
 /// </summary>
-public class DetailView : MonoBehaviour , IPointerClickHandler
+public class DetailView : MonoBehaviour
 {
     [Header("Canvas에서 설정")]
     [SerializeField] private GameObject detailView;
@@ -96,14 +96,14 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
         detailView.SetActive(false);
     }
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        // Canvas의 관리자 자신은 클릭 대상이 아닙니다.
-        if (!IsManager)
-        {
-            OpenDetail();
-        }
-    }
+    // public void OnPointerClick(PointerEventData eventData)
+    // {
+    //     // Canvas의 관리자 자신은 클릭 대상이 아닙니다.
+    //     if (!IsManager)
+    //     {
+    //         OpenDetail();
+    //     }
+    // }
 
     private void OnMouseDown()
     {
