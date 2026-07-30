@@ -19,15 +19,15 @@ public class PuzzleChecker : MonoBehaviour
         if (solved) return;
 
         bool colorCorrect =
-            rowA.BlockCount == 4 &&
+            rowA.BlockCount == 3 &&
             rowB.BlockCount == 2 &&
-            rowC.BlockCount == 3 &&
+            rowC.BlockCount == 4 &&
             rowD.BlockCount == 5;
 
         bool letterCorrect =
             letter1.CurrentLetter == 'D' &&
-            letter2.CurrentLetter == 'C' &&
-            letter3.CurrentLetter == 'A' &&
+            letter2.CurrentLetter == 'A' &&
+            letter3.CurrentLetter == 'C' &&
             letter4.CurrentLetter == 'B';
 
         if (colorCorrect && letterCorrect)
