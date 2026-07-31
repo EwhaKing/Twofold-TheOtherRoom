@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlantPuzzleOpener : MonoBehaviour
+public class PlantMove : MonoBehaviour
 {
     [SerializeField] private RectTransform plantRect;
     [SerializeField] private Button plantButton;
@@ -124,11 +124,6 @@ public class PlantPuzzleOpener : MonoBehaviour
             puzzlePanel.SetActive(true);
         }
 
-        // 퍼즐을 한 번 연 뒤 display를 다시 누르지 못하게 함
-        if (displayButton != null)
-        {
-            displayButton.interactable = false;
-        }
     }
 
     private void OnDestroy()
