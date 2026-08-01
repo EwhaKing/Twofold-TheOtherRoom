@@ -12,7 +12,6 @@ public enum RoomPhase
 /// <summary>
 /// 방 전체가 공유하는 네트워크 상태. 방장이 Spawn하고 방장만 씀.
 /// 두 사람이 같은 값을 봐야 하는 것만 [Networked]로 둘 것.
-/// 타이머 / 거울 조각 추가 방법은 ARCHITECTURE.md 참고.
 /// </summary>
 public class GameSession : NetworkBehaviour
 {
@@ -25,7 +24,7 @@ public class GameSession : NetworkBehaviour
     /// 방 단계. 바뀌는 순간 양쪽 GameFlow가 화면을 바꿈
     [Networked] public RoomPhase Phase { get; set; }
 
-    // 타이머
+    // 타이머 - 기본
     [Networked] public bool P1Loaded { get; set; }
     [Networked] public bool P2Loaded { get; set; }
     [Networked] public int StartedTick { get; set; }
@@ -35,9 +34,16 @@ public class GameSession : NetworkBehaviour
         get
         {
             if (StartedTick == 0) return 0f;
-            return (Runner.Tick - StartedTick) * Runner.DeltaTime;
+            int now = IsPaused ? PausedTick : Runner.Tick;
+            return (now - StartedTick - TotalPausedTicks) * Runner.DeltaTime;
         }
     }
+
+    // 타이머 - 일시정지
+    [Networked] public bool IsPaused { get; set; }
+    [Networked] public int PausedTick { get; set; }
+    [Networked] public int TotalPausedTicks { get; set; }
+    [Networked] public PlayerRef PausedBy { get; set; }
 
     ChangeDetector _changes;
 
@@ -115,5 +121,28 @@ public class GameSession : NetworkBehaviour
         P1Loaded = false;
         P2Loaded = false;
         StartedTick = 0;
+        IsPaused = false;
+        PausedTick = 0;
+        TotalPausedTicks = 0;
+        PausedBy = PlayerRef.None;
+    }
+
+    // 일시정지 시 호출하는 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestPaused(RpcInfo info = default)
+    {
+        if(IsPaused != false) return;
+        PausedTick = Runner.Tick;
+        IsPaused = true;
+        PausedBy = info.Source;
+    }
+
+    // 재개 시 호출하는 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestResume(RpcInfo info = default)
+    {
+        if(info.Source != PausedBy || IsPaused != true) return; // 멈춘 플레이어만 재개 가능
+        IsPaused = false;
+        TotalPausedTicks += Runner.Tick - PausedTick;
     }
 }
