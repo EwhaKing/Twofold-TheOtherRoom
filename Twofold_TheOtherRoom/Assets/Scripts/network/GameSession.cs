@@ -129,7 +129,7 @@ public class GameSession : NetworkBehaviour
 
     // 일시정지 시 호출하는 RPC
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RpcRequestPaused(RpcInfo info = default)
+    public void RpcRequestPause(RpcInfo info = default)
     {
         if(IsPaused != false) return;
         PausedTick = Runner.Tick;
