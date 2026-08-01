@@ -25,7 +25,7 @@ public class Timer : MonoBehaviour
         else
         {
             float remainTime = GameSession.TotalSeconds - GameSession.Instance.ElapsedSeconds;
-            t = Mathf.CeilToInt(Mathf.Max(0f, remainTime));
+            t = Mathf.CeilToInt(Mathf.Clamp(remainTime, 0f, GameSession.TotalSeconds));
         }
 
         if (t == _lastTime) return;
