@@ -11,7 +11,7 @@ public class PlantMove : MonoBehaviour
     [SerializeField] private Button displayButton;
     [SerializeField] private GameObject puzzlePanel;
 
-    [SerializeField] private float moveDistance = 150f;
+    [SerializeField] private float moveDistance = 200f;
     [SerializeField] private float moveDuration = 0.4f;
 
     private bool plantMoved;
@@ -99,7 +99,7 @@ public class PlantMove : MonoBehaviour
             plantButton.interactable = false;
         }
 
-        // 식물 이미지가 display 클릭을 가로채지 않도록 설정
+
         if (plantImage != null)
         {
             plantImage.raycastTarget = false;
