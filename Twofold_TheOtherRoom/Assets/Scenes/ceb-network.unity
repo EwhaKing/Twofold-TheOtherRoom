@@ -3805,7 +3805,6 @@ GameObject:
   m_Component:
   - component: {fileID: 706705159}
   - component: {fileID: 706705158}
-  - component: {fileID: 706705157}
   - component: {fileID: 706705160}
   - component: {fileID: 706705161}
   m_Layer: 0
@@ -3815,14 +3814,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &706705157
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 706705156}
-  m_Enabled: 1
 --- !u!20 &706705158
 Camera:
   m_ObjectHideFlags: 0
@@ -3903,7 +3894,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fusion.Unity::Fusion.EnableOnSingleRunner
   PreferredRunner: 0
   Components:
-  - {fileID: 706705157}
+  - {fileID: 0}
   _guid: 53f56ffc-88e8-4bfa-
 --- !u!114 &706705161
 MonoBehaviour:

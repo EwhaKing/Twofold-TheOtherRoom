@@ -36,6 +36,8 @@ public class GameFlow : MonoBehaviour
     // View의 ScreenId 넣음
     ScreenView[] _screens;
 
+    string _loadedGamePlayScene;
+
     void Awake()
     {
         Instance = this;
@@ -79,7 +81,7 @@ public class GameFlow : MonoBehaviour
 #endif
     }
 
-    // ---------- RoomService 이벤트 ----------
+    #region RoomService Event
 
     void OnRoomJoined()
     {
@@ -89,9 +91,18 @@ public class GameFlow : MonoBehaviour
 
     void OnRoomLeft()
     {
+        bool wasPlaying = _gameplayStarted;
         _gameplayStarted = false;
-        Show(ScreenId.Menu);
+
+        if(wasPlaying && _loadedGamePlayScene != null)
+        {
+            SceneManager.UnloadSceneAsync(_loadedGamePlayScene);
+            _loadedGamePlayScene = null;
+        }
+        Show(wasPlaying ? ScreenId.Title : ScreenId.Menu);
     }
+
+    #endregion
 
     // ---------- Phase ----------
 
@@ -131,18 +142,18 @@ public class GameFlow : MonoBehaviour
         bool isHost  = room.IsHost;
         bool isMode1 = mode == 0;
         // 모드1-방장 sceneA 일반 sceneB. 모드2는 반대로
-        string scene = (isHost == isMode1) ? sceneA : sceneB;
+        _loadedGamePlayScene = (isHost == isMode1) ? sceneA : sceneB;
 
-        Debug.Log($"[Flow] 게임 시작 — mode: {mode}, host: {isHost}, scene: {scene}");
+        Debug.Log($"[Flow] 게임 시작 — mode: {mode}, host: {isHost}, scene: {_loadedGamePlayScene}");
 
         Show(ScreenId.None);
-        StartCoroutine(LoadAndReport(scene, isHost));
+        StartCoroutine(LoadAndReport(isHost));
     }
 
     // 씬 로딩 후 보고하기 위한 코루틴
-    IEnumerator LoadAndReport(string scene, bool isHost)
+    IEnumerator LoadAndReport(bool isHost)
     {
-        var op = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
+        var op = SceneManager.LoadSceneAsync(_loadedGamePlayScene, LoadSceneMode.Additive);
         yield return op;
         Debug.Log($"[Flow] 로드 완료 보고 | host:{isHost}");
         GameSession.Instance?.RpcReportLoaded(isHost);

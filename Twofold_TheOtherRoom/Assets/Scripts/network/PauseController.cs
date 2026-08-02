@@ -1,0 +1,113 @@
+using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
+using System.Collections;
+
+public class PauseController : MonoBehaviour
+{
+    [SerializeField] Button pauseButton;
+
+    [Header("Pause Panel")]
+    [SerializeField] GameObject pausePanel;
+    [SerializeField] TMP_Text headerText;
+    [SerializeField] Button resumeButton;
+    [SerializeField] Button exitButton;
+
+    [Header("Exit Confirm Panel")]
+    [SerializeField] GameObject exitConfirmPanel;
+    [SerializeField] Button exitConfirmYes;
+    [SerializeField] Button exitConfirmNo;
+
+    [Header("Notice Panel")]
+    [SerializeField] GameObject noticePanel;
+    [SerializeField] TMP_Text noticeText;
+
+    bool _lastPause;
+
+    void Start()
+    {
+        // 버튼 메서드 등록
+        pauseButton.onClick.AddListener(OnPause);
+        resumeButton.onClick.AddListener(OnResume);
+        exitButton.onClick.AddListener(OpenExitConfirm);
+        exitConfirmYes.onClick.AddListener(OnExit);
+        exitConfirmNo.onClick.AddListener(CloseExitConfirm);
+
+        // 이벤트 구독
+        RoomService.Instance.PeerLeftDuringGamePlay += OnPeerLeft;
+    }
+
+    void Update()
+    {
+        var gs = GameSession.Instance;
+        bool pause = gs != null && gs.IsPaused;
+
+        if (pause == _lastPause) return;
+        _lastPause = pause;
+
+        // 값 바뀔 때마다 적용: 게임 멈춤/진행, 패널 상태 바꾸고, 텍스트 ui 적용, 재개 버튼 클릭 설정
+        Time.timeScale = pause ? 0f : 1f;
+        pausePanel.SetActive(pause);
+        if (pause)
+        {
+            bool pausedByHost = gs.PausedBy == gs.Object.StateAuthority;
+            headerText.text = pausedByHost ? $"{PlayerNames.Host}님이 일시정지했습니다." : $"{PlayerNames.Guest}님이 일시정지했습니다.";
+            resumeButton.interactable = gs.PausedBy == RoomService.Instance.Runner.LocalPlayer;
+        }
+    }
+
+    void OnDestroy()
+    {
+        // 이벤트 구독 해제
+        if(RoomService.Instance != null)
+            RoomService.Instance.PeerLeftDuringGamePlay -= OnPeerLeft;
+    }
+
+    #region Button Method
+    void OnPause()
+    {
+        // RPC 호출
+        GameSession.Instance?.RpcRequestPause();
+    }
+
+    void OnResume()
+    {
+        // RPC 호출
+        GameSession.Instance?.RpcRequestResume();
+    }
+
+    void OpenExitConfirm()
+    {
+        exitConfirmPanel.SetActive(true);
+    }
+
+    void CloseExitConfirm()
+    {
+        exitConfirmPanel.SetActive(false);
+    }
+
+    void OnExit()
+    {
+        Time.timeScale = 1f;
+        RoomService.Instance.Leave();
+    }
+    #endregion
+
+    #region When Other Player Exit
+    void OnPeerLeft(string nickname)
+    {
+        StartCoroutine(LeaveNoticeRoutine(nickname));
+    }
+
+    IEnumerator LeaveNoticeRoutine(string nickname)
+    {
+        noticeText.text = $"{nickname}님이 나갔습니다.\n 5초 뒤 타이틀 화면으로 돌아갑니다.";
+        noticePanel.SetActive(true);
+
+        yield return new WaitForSecondsRealtime(5f);
+
+        Time.timeScale = 1f;
+        RoomService.Instance.Leave();
+    }
+    #endregion
+}

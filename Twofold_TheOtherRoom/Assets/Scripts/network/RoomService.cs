@@ -51,6 +51,8 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
     /// 방에서 나옴 (퇴장 / 방장 이탈 / 연결 끊김 전부)
     public event Action RoomLeft;
 
+    public event Action<string> PeerLeftDuringGamePlay;
+
     // ---------- 상태 조회 ----------
 
     public bool IsConnecting => _connecting;
@@ -300,20 +302,29 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
-        // 대기방에 있을 때만 처리. 게임 중 이탈은 다음 마일스톤
         if (!_inRoom) return;
+        bool isPlaying = GameFlow.Instance != null && GameFlow.Instance.Current == ScreenId.None;
 
-        if (player == _hostRef)
+        if (player == _hostRef) // 방장이 나감 → 남은 사람도 메뉴 화면으로
         {
-            // 방장이 나감 → 남은 사람도 첫 화면으로
-            LogLine?.Invoke("방장이 나갔습니다.");
-            StatusChanged?.Invoke("방장이 나갔습니다", false);
+            LogLine?.Invoke($"{PlayerNames.Host}님이 나갔습니다.");
+            if (isPlaying) // 플레이 중 나간 경우
+            {
+                PeerLeftDuringGamePlay?.Invoke(PlayerNames.Host);
+                return;
+            }
+            StatusChanged?.Invoke($"{PlayerNames.Host}님이 나갔습니다", false);
             Leave();
             return;
         }
 
         // 게스트가 나감 → 방장은 로비로 돌아감
-        LogLine?.Invoke($"{PlayerNames.Guest} 님이 나갔습니다.");
+        LogLine?.Invoke($"{PlayerNames.Guest}님이 나갔습니다.");
+        if (isPlaying) // 플레이 중 나간 경우
+        {
+            PeerLeftDuringGamePlay?.Invoke(PlayerNames.Guest);
+            return;
+        }
         GameSession.Instance?.HandleGuestLeft();
     }
 
