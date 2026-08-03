@@ -2,20 +2,20 @@ using UnityEngine;
 
 public class PuzzleChecker : MonoBehaviour
 {
-    [Header("색 네모칸")]
+    [Header("색 블록")]
     [SerializeField] private ColorBlockController rowA;
     [SerializeField] private ColorBlockController rowB;
     [SerializeField] private ColorBlockController rowC;
     [SerializeField] private ColorBlockController rowD;
 
-    [Header("문자 입력")]
+    [Header("알파벳")]
     [SerializeField] private LetterController letter1;
     [SerializeField] private LetterController letter2;
     [SerializeField] private LetterController letter3;
     [SerializeField] private LetterController letter4;
 
-    [Header("스테이지 진행 관리")]
-    [SerializeField] private Stage2D4Controller stageController;
+    [Header("2D-4 진행 관리")]
+    [SerializeField] private PlantMove plantMove;
 
     private bool solved;
 
@@ -52,14 +52,14 @@ public class PuzzleChecker : MonoBehaviour
 
         Debug.Log("2D-4 퍼즐 성공");
 
-        if (stageController != null)
+        if (plantMove != null)
         {
-            stageController.NotifyPuzzleCleared();
+            plantMove.NotifyPuzzleCleared();
         }
         else
         {
             Debug.LogWarning(
-                "PuzzleChecker: Stage2D4Controller가 연결되지 않았습니다."
+                "PuzzleChecker: PlantMove가 연결되지 않았습니다."
             );
         }
 
@@ -86,7 +86,7 @@ public class PuzzleChecker : MonoBehaviour
             rowD == null)
         {
             Debug.LogError(
-                "PuzzleChecker: ColorBlockController 연결을 확인하세요."
+                "PuzzleChecker: 색상 행 연결을 확인하세요."
             );
 
             return false;
@@ -98,7 +98,7 @@ public class PuzzleChecker : MonoBehaviour
             letter4 == null)
         {
             Debug.LogError(
-                "PuzzleChecker: LetterController 연결을 확인하세요."
+                "PuzzleChecker: 문자 입력 연결을 확인하세요."
             );
 
             return false;

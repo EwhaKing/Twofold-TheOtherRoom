@@ -1983,7 +1983,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 398, y: 58}
+  m_AnchoredPosition: {x: 393, y: 58}
   m_SizeDelta: {x: 350, y: 380}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2038951117
@@ -2085,8 +2085,16 @@ MonoBehaviour:
   plantImage: {fileID: 2038951117}
   displayButton: {fileID: 1057474966}
   puzzlePanel: {fileID: 450627574}
+  puzzleBackButton: {fileID: 223893185}
   moveDistance: 270
   moveDuration: 0.4
+  holeButton: {fileID: 1068987440}
+  holeButtonComponent: {fileID: 1068987442}
+  mirrorDisplay: {fileID: 591046278}
+  holeZoomPanel: {fileID: 1850832459}
+  zoomMirrorPiece: {fileID: 561879932}
+  zoomMirrorPieceButton: {fileID: 561879934}
+  holeBackButton: {fileID: 1511540391}
 --- !u!1 &2052113254
 GameObject:
   m_ObjectHideFlags: 0
@@ -2224,63 +2232,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2052113254}
   m_CullTransparentMesh: 1
---- !u!1 &2065751812
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2065751814}
-  - component: {fileID: 2065751813}
-  m_Layer: 5
-  m_Name: Stage2D4Controller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2065751813
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065751812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c012019f78c278740b1aa0dfe1a2e746, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Stage2D4Controller
-  puzzlePanel: {fileID: 450627574}
-  puzzleBackButton: {fileID: 223893185}
-  holeButton: {fileID: 1068987440}
-  holeButtonComponent: {fileID: 1068987442}
-  mirrorDisplay: {fileID: 591046278}
-  holeZoomPanel: {fileID: 1850832459}
-  zoomMirrorPiece: {fileID: 561879932}
-  zoomMirrorPieceButton: {fileID: 561879934}
-  holeBackButton: {fileID: 1511540391}
---- !u!224 &2065751814
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065751812}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 960, y: 540}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &7071301960089813753
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2298,9 +2249,13 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2596165371547163867, guid: f32cac8233873eb4a9d050c0a3a1a993, type: 3}
+      propertyPath: plantMove
+      value: 
+      objectReference: {fileID: 2038951120}
+    - target: {fileID: 2596165371547163867, guid: f32cac8233873eb4a9d050c0a3a1a993, type: 3}
       propertyPath: stageController
       value: 
-      objectReference: {fileID: 2065751813}
+      objectReference: {fileID: 0}
     - target: {fileID: 3497829614557659106, guid: f32cac8233873eb4a9d050c0a3a1a993, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2396,6 +2351,5 @@ SceneRoots:
   - {fileID: 603772888}
   - {fileID: 1253249460}
   - {fileID: 804782022}
-  - {fileID: 2065751814}
   - {fileID: 1140464899}
   - {fileID: 486360243}
