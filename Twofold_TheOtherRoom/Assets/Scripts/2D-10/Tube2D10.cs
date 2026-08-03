@@ -6,7 +6,7 @@ public class Tube2D10 : MonoBehaviour
     public GameManager2D10 gameManager;
     public Ball2D10[] ball;
     
-    private float ballSize=1.6f;   //확인필요구간
+    private float ballSize=1.6f;
     private float noneballPosY=-1.85f;
 
     public void OnMouseDown()
@@ -20,8 +20,26 @@ public class Tube2D10 : MonoBehaviour
             if (gameManager.isSelected)
             {
                 gameManager.nextTube=this;
-                gameManager.isSelected=false;
-                StartCoroutine(gameManager.GoMove());
+                if (gameManager.nextTube.GetTopBall()==null)
+                {
+                    gameManager.isSelected=false;
+                    StartCoroutine(gameManager.GoMove());
+                }
+                else
+                {
+                    if(gameManager.currentTube.GetTopBall().GetColor()!=gameManager.nextTube.GetTopBall().GetColor())
+                    {
+                        gameManager.nextTube=gameManager.currentTube;
+                        gameManager.isSelected=false;
+                        StartCoroutine(gameManager.GoMove());
+                    }
+                    else
+                    {
+                        gameManager.isSelected=false;
+                        StartCoroutine(gameManager.GoMove());
+                    }
+                }
+
             }
             else
             {

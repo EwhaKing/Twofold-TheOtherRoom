@@ -41,8 +41,8 @@ public class GameManager2D10 : MonoBehaviour
         targetPos.y = nextTube.GetNextBallPositionY();
         yield return StartCoroutine(MoveBall(topball, targetPos));
         currentTube.Pop();
-        currentTube=null;
         nextTube.Push(topball);
+        currentTube=null;
         nextTube=null;
         isAnimating = false;
     }
