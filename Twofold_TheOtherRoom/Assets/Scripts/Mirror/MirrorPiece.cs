@@ -11,8 +11,8 @@ public class MirrorPiece : MonoBehaviour, IPointerClickHandler
 
     private void Start()
     {
-        if (PuzzleManager2.Instance != null &&
-            PuzzleManager2.Instance.HasMirrorPiece(puzzleId))
+        if (MirrorManager.Instance != null &&
+            MirrorManager.Instance.HasMirrorPiece(puzzleId))
         {
             HidePickup();
         }
@@ -23,9 +23,9 @@ public class MirrorPiece : MonoBehaviour, IPointerClickHandler
         if (lastClickFrame == Time.frameCount) return;
         lastClickFrame = Time.frameCount;
 
-        if (PuzzleManager2.Instance == null) return;
+        if (MirrorManager.Instance == null) return;
         Debug.Log("퍼즐매니저한테"+ puzzleId + "보낼꺼임!");
-        PuzzleManager2.Instance.GetMirrorPiece(puzzleId);
+        MirrorManager.Instance.GetMirrorPiece(puzzleId);
         HidePickup();
     }
 

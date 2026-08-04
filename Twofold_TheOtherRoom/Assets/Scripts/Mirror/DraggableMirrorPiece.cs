@@ -72,7 +72,7 @@ public class DraggableMirrorPiece : MonoBehaviour, IBeginDragHandler, IDragHandl
             rectTransform.localScale = Vector3.one;
             canvasGroup.blocksRaycasts = false;
             enabled = false;
-            PuzzleManager2.Instance?.MirrorPiecePlaced(puzzleId);
+            MirrorManager.Instance?.MirrorPiecePlaced(puzzleId);
             return;
         }
 

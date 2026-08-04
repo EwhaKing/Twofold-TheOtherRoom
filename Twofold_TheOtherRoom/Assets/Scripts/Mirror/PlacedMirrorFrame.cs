@@ -22,23 +22,23 @@ public class PlacedMirrorFrame : MonoBehaviour
 
     private void OnEnable()
     {
-        PuzzleManager2.OnMirrorPiecePlaced += HandlePiecePlaced;
+        MirrorManager.OnMirrorPiecePlaced += HandlePiecePlaced;
         Rebuild();
     }
 
     private void OnDisable()
     {
-        PuzzleManager2.OnMirrorPiecePlaced -= HandlePiecePlaced;
+        MirrorManager.OnMirrorPiecePlaced -= HandlePiecePlaced;
     }
 
     public void Rebuild()
     {
         ClearPieces();
-        if (PuzzleManager2.Instance == null || commonPiecePrefab == null) return;
+        if (MirrorManager.Instance == null || commonPiecePrefab == null) return;
 
         foreach (PlacedPieceEntry entry in pieces)
         {
-            if (!PuzzleManager2.Instance.IsMirrorPiecePlaced(entry.puzzleId)) continue;
+            if (!MirrorManager.Instance.IsMirrorPiecePlaced(entry.puzzleId)) continue;
             if (entry.sprite == null || entry.placedPosition == null) continue;
 
             GameObject instance = Instantiate(commonPiecePrefab, entry.placedPosition, false);

@@ -6,9 +6,9 @@ using UnityEngine;
 /// 2D/3D 거울 조각의 획득 및 배치 상태를 통합 관리합니다.
 /// 기존 PuzzleManager는 변경하지 않습니다.
 /// </summary>
-public class PuzzleManager2 : MonoBehaviour
+public class MirrorManager : MonoBehaviour
 {
-    public static PuzzleManager2 Instance { get; private set; }
+    public static MirrorManager Instance { get; private set; }
 
     [Header("Required Mirror Piece IDs")]
     [SerializeField] private List<string> required2DPieceIds = new();
@@ -51,7 +51,7 @@ public class PuzzleManager2 : MonoBehaviour
 
         if (!obtainedMirrorPieces.Contains(id))
         {
-            Debug.LogWarning($"[PuzzleManager2] 획득하지 않은 거울 조각입니다: {id}", this);
+            Debug.LogWarning($"[MirrorManager] 획득하지 않은 거울 조각입니다: {id}", this);
             return;
         }
 
@@ -95,7 +95,7 @@ public class PuzzleManager2 : MonoBehaviour
     private bool ValidateId(string puzzleId)
     {
         if (!string.IsNullOrEmpty(puzzleId)) return true;
-        Debug.LogWarning("[PuzzleManager2] puzzleId가 비어 있습니다.", this);
+        Debug.LogWarning("[MirrorManager] puzzleId가 비어 있습니다.", this);
         return false;
     }
 

@@ -9,10 +9,10 @@ public class DisplayMirrorPiece : MonoBehaviour
 
     private void OnEnable()
     {
-        PuzzleManager2.OnMirrorPieceObtained += HandleObtained;
+        MirrorManager.OnMirrorPieceObtained += HandleObtained;
 
-        if (PuzzleManager2.Instance != null &&
-            PuzzleManager2.Instance.HasMirrorPiece(puzzleId))
+        if (MirrorManager.Instance != null &&
+            MirrorManager.Instance.HasMirrorPiece(puzzleId))
         {
             gameObject.SetActive(false);
         }
@@ -20,7 +20,7 @@ public class DisplayMirrorPiece : MonoBehaviour
 
     private void OnDisable()
     {
-        PuzzleManager2.OnMirrorPieceObtained -= HandleObtained;
+        MirrorManager.OnMirrorPieceObtained -= HandleObtained;
     }
 
     private void HandleObtained(string obtainedId)
