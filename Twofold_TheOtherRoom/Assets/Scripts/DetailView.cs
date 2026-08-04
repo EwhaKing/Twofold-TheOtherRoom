@@ -20,6 +20,8 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
     [SerializeField] private DetailView manager;
     [SerializeField] private GameObject detailPrefab;
 
+
+
     private GameObject currentDetail;
     private int lastOpenedFrame = -1;
 

@@ -35,6 +35,16 @@ public enum PuzzleDimension { TwoD, ThreeD }
 ///       void OnDisable() => PuzzleManager.OnPuzzleSolved -= OnSolved;
 ///       void OnSolved(string id) { if (id == "3D-6") door.Open(); }
 /// </summary>
+/// 
+[Serializable]
+public class PuzzleDisplayPosition
+{
+    public string puzzleID;
+
+    
+    public GameObject displayPosition;
+}
+
 public class PuzzleManager : MonoBehaviour
 {
     #region Singleton
@@ -55,6 +65,8 @@ public class PuzzleManager : MonoBehaviour
     #endregion
 
     #region Settings
+    [Header("각 물체에서 거울 위치 설정")]
+    [SerializeField] private List<PuzzleDisplayPosition> displayPositions;
 
     [Tooltip("차원별 전체 퍼즐 개수 (진행도 표시용)")]
     public int total2DPuzzles = 5;
@@ -86,12 +98,45 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
+
+        ActivateDisplayPosition(puzzleId);
+
         if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
         _solved[puzzleId] = dimension;
+
+
 
         OnPuzzleSolved?.Invoke(puzzleId);
         OnProgressChanged?.Invoke(dimension, SolvedCountOf(dimension), TotalOf(dimension));
     }
+
+
+    private void ActivateDisplayPosition(string puzzleId)
+{
+    string normalizedId = puzzleId.Trim();
+
+    foreach (PuzzleDisplayPosition entry in displayPositions)
+    {
+        if (entry == null || entry.displayPosition == null)
+            continue;
+
+        if (!string.Equals(
+                entry.puzzleID?.Trim(),
+                normalizedId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            continue;
+        }
+        // HoleButton(display)을 활성화
+        entry.displayPosition.SetActive(true);
+        return;
+    }
+
+    Debug.LogWarning(
+        $"[PuzzleManager] {puzzleId}에 해당하는 displayPosition이 없습니다.",
+        this
+    );
+}
 
     #endregion
 

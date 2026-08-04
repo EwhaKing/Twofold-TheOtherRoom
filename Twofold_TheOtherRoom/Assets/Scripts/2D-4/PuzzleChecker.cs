@@ -14,27 +14,27 @@ public class PuzzleChecker : MonoBehaviour
     [SerializeField] private LetterController letter3;
     [SerializeField] private LetterController letter4;
 
-    [Header("2D-4 진행 관리")]
-    [SerializeField] private PlantMove plantMove;
+    // [Header("2D-4 진행 관리")]
+    // [SerializeField] private PlantMove plantMove;
 
     private bool solved;
 
     private void Awake()
     {
-        if (plantMove == null)
-        {
-            plantMove = FindAnyObjectByType<PlantMove>(
-                FindObjectsInactive.Include
-            );
-        }
+        // if (plantMove == null)
+        // {
+        //     plantMove = FindAnyObjectByType<PlantMove>(
+        //         FindObjectsInactive.Include
+        //     );
+        // }
 
-        if (plantMove == null)
-        {
-            Debug.LogWarning(
-                "PuzzleChecker: 씬에서 PlantMove 컴포넌트를 찾을 수 없습니다.",
-                this
-            );
-        }
+        // if (plantMove == null)
+        // {
+        //     Debug.LogWarning(
+        //         "PuzzleChecker: 씬에서 PlantMove 컴포넌트를 찾을 수 없습니다.",
+        //         this
+        //     );
+        // }
     }
 
     public void CheckAnswer()
@@ -70,30 +70,30 @@ public class PuzzleChecker : MonoBehaviour
 
         Debug.Log("2D-4 퍼즐 성공");
 
-        if (plantMove != null)
-        {
-            plantMove.NotifyPuzzleCleared();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "PuzzleChecker: PlantMove가 연결되지 않았습니다."
-            );
-        }
-
-        // if (PuzzleManager.Instance != null)
+        // if (plantMove != null)
         // {
-        //     PuzzleManager.Instance.ReportSolved(
-        //         "2D-4",
-        //         PuzzleDimension.TwoD
-        //     );
+        //     plantMove.NotifyPuzzleCleared();
         // }
         // else
         // {
         //     Debug.LogWarning(
-        //         "PuzzleChecker: PuzzleManager를 찾을 수 없습니다."
+        //         "PuzzleChecker: PlantMove가 연결되지 않았습니다."
         //     );
         // }
+
+        if (PuzzleManager.Instance != null)
+        {
+            PuzzleManager.Instance.ReportSolved(
+                "2D-4",
+                PuzzleDimension.TwoD
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "PuzzleChecker: PuzzleManager를 찾을 수 없습니다."
+            );
+        }
     }
 
     private bool ReferencesAreValid()

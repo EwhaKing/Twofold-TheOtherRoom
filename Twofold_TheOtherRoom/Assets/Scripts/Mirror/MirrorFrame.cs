@@ -21,28 +21,28 @@ public class MirrorFrame : MonoBehaviour
 
     private void OnEnable()
     {
-        PuzzleManager2.OnMirrorPieceObtained += HandleStateChanged;
-        PuzzleManager2.OnMirrorPiecePlaced += HandleStateChanged;
+        MirrorManager.OnMirrorPieceObtained += HandleStateChanged;
+        MirrorManager.OnMirrorPiecePlaced += HandleStateChanged;
         Rebuild();
     }
 
     private void OnDisable()
     {
-        PuzzleManager2.OnMirrorPieceObtained -= HandleStateChanged;
-        PuzzleManager2.OnMirrorPiecePlaced -= HandleStateChanged;
+        MirrorManager.OnMirrorPieceObtained -= HandleStateChanged;
+        MirrorManager.OnMirrorPiecePlaced -= HandleStateChanged;
     }
 
     public void Rebuild()
     {
         ClearPieces();
-        if (PuzzleManager2.Instance == null || commonPiecePrefab == null) return;
+        if (MirrorManager.Instance == null || commonPiecePrefab == null) return;
 
         foreach (PieceEntry entry in pieces)
         {
-            if (!PuzzleManager2.Instance.HasMirrorPiece(entry.puzzleId)) continue;
+            if (!MirrorManager.Instance.HasMirrorPiece(entry.puzzleId)) continue;
             if (entry.sprite == null) continue;
 
-            bool isPlaced = PuzzleManager2.Instance.IsMirrorPiecePlaced(entry.puzzleId);
+            bool isPlaced = MirrorManager.Instance.IsMirrorPiecePlaced(entry.puzzleId);
             RectTransform parent = isPlaced ? entry.correctPosition : entry.spawnPoint;
             if (parent == null) continue;
 
