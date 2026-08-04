@@ -9,22 +9,22 @@ public class PlantMove : MonoBehaviour
     [SerializeField] private Button plantButton;
     [SerializeField] private Image plantImage;
 
-    [Header("퍼즐 화면")]
-    [SerializeField] private Button displayButton;
-    [SerializeField] private GameObject puzzlePanel;
-    [SerializeField] private Button puzzleBackButton;
+    // [Header("퍼즐 화면")]
+    // [SerializeField] private Button displayButton;
+    // [SerializeField] private GameObject puzzlePanel;
+    // [SerializeField] private Button puzzleBackButton;
 
     [Header("식물 이동 설정")]
     [SerializeField] private float moveDistance = 150f;
     [SerializeField] private float moveDuration = 0.4f;
 
-    [Header("벽 구멍")]
-    [SerializeField] private GameObject holeButton;
-    [SerializeField] private Button holeButtonComponent;
+    // [Header("벽 구멍")]
+     [SerializeField] private GameObject holeButton;
+    // [SerializeField] private Button holeButtonComponent;
 
-    [Header("벽 구멍 확대 화면")]
-    [SerializeField] private GameObject holeZoomPanel;
-    [SerializeField] private Button holeBackButton;
+    // [Header("벽 구멍 확대 화면")]
+    // [SerializeField] private GameObject holeZoomPanel;
+    // [SerializeField] private Button holeBackButton;
 
     private bool plantMoved;
     private bool isMoving;
@@ -34,32 +34,32 @@ public class PlantMove : MonoBehaviour
 
     private void Start()
     {
-        SetInitialState();
+        //SetInitialState();
         RegisterButtonEvents();
     }
 
-    private void SetInitialState()
-    {
-        if (puzzlePanel != null)
-        {
-            puzzlePanel.SetActive(false);
-        }
+    // private void SetInitialState()
+    // {
+    //     if (puzzlePanel != null)
+    //     {
+    //         puzzlePanel.SetActive(false);
+    //     }
 
-        if (displayButton != null)
-        {
-            displayButton.interactable = false;
-        }
+    //     if (displayButton != null)
+    //     {
+    //         displayButton.interactable = false;
+    //     }
 
-        if (holeButton != null)
-        {
-            holeButton.SetActive(false);
-        }
+    //     if (holeButton != null)
+    //     {
+    //         holeButton.SetActive(false);
+    //     }
 
-        if (holeZoomPanel != null)
-        {
-            holeZoomPanel.SetActive(false);
-        }
-    }
+    //     if (holeZoomPanel != null)
+    //     {
+    //         holeZoomPanel.SetActive(false);
+    //     }
+    // }
 
     private void RegisterButtonEvents()
     {
@@ -68,25 +68,25 @@ public class PlantMove : MonoBehaviour
             plantButton.onClick.AddListener(MovePlant);
         }
 
-        if (displayButton != null)
-        {
-            displayButton.onClick.AddListener(OpenPuzzle);
-        }
+        // if (displayButton != null)
+        // {
+        //     displayButton.onClick.AddListener(OpenPuzzle);
+        // }
 
-        if (puzzleBackButton != null)
-        {
-            puzzleBackButton.onClick.AddListener(ClosePuzzle);
-        }
+        // if (puzzleBackButton != null)
+        // {
+        //     puzzleBackButton.onClick.AddListener(ClosePuzzle);
+        // }
 
-        if (holeButtonComponent != null)
-        {
-            holeButtonComponent.onClick.AddListener(OpenHoleZoom);
-        }
+        // if (holeButtonComponent != null)
+        // {
+        //     holeButtonComponent.onClick.AddListener(OpenHoleZoom);
+        // }
 
-        if (holeBackButton != null)
-        {
-            holeBackButton.onClick.AddListener(CloseHoleZoom);
-        }
+        // if (holeBackButton != null)
+        // {
+        //     holeBackButton.onClick.AddListener(CloseHoleZoom);
+        // }
     }
 
     public void MovePlant()
@@ -159,52 +159,52 @@ public class PlantMove : MonoBehaviour
             plantImage.raycastTarget = false;
         }
 
-        if (displayButton != null)
-        {
-            displayButton.interactable = true;
-        }
+        // if (displayButton != null)
+        // {
+        //     displayButton.interactable = true;
+        // }
     }
 
-    public void OpenPuzzle()
-    {
-        if (!plantMoved)
-        {
-            return;
-        }
+    // public void OpenPuzzle()
+    // {
+    //     if (!plantMoved)
+    //     {
+    //         return;
+    //     }
 
-        if (puzzleCleared)
-        {
-            return;
-        }
+    //     if (puzzleCleared)
+    //     {
+    //         return;
+    //     }
 
-        if (puzzlePanel != null)
-        {
-            puzzlePanel.SetActive(true);
-        }
-    }
+    //     if (puzzlePanel != null)
+    //     {
+    //         puzzlePanel.SetActive(true);
+    //     }
+    // }
 
-    public void ClosePuzzle()
-    {
-        if (puzzlePanel != null)
-        {
-            puzzlePanel.SetActive(false);
-        }
+    // public void ClosePuzzle()
+    // {
+    //     if (puzzlePanel != null)
+    //     {
+    //         puzzlePanel.SetActive(false);
+    //     }
 
-        if (!puzzleCleared)
-        {
-            return;
-        }
+    //     if (!puzzleCleared)
+    //     {
+    //         return;
+    //     }
 
-        if (holeButton != null)
-        {
-            holeButton.SetActive(true);
-        }
+    //     if (holeButton != null)
+    //     {
+    //         holeButton.SetActive(true);
+    //     }
 
-        if (displayButton != null)
-        {
-            displayButton.interactable = false;
-        }
-    }
+    //     if (displayButton != null)
+    //     {
+    //         displayButton.interactable = false;
+    //     }
+    // }
 
     public void NotifyPuzzleCleared()
     {
@@ -215,55 +215,58 @@ public class PlantMove : MonoBehaviour
 
         puzzleCleared = true;
 
-        Debug.Log("2D-4 퍼즐 완료");
-    }
-
-    public void OpenHoleZoom()
-    {
-        if (!puzzleCleared)
+        if (holeButton != null)
         {
-            return;
-        }
-
-        if (holeZoomPanel != null)
-        {
-            holeZoomPanel.SetActive(true);
+            holeButton.SetActive(true);
         }
     }
 
-    public void CloseHoleZoom()
-    {
-        if (holeZoomPanel != null)
-        {
-            holeZoomPanel.SetActive(false);
-        }
-    }
+    // public void OpenHoleZoom()
+    // {
+    //     if (!puzzleCleared)
+    //     {
+    //         return;
+    //     }
 
-    private void OnDestroy()
-    {
-        if (plantButton != null)
-        {
-            plantButton.onClick.RemoveListener(MovePlant);
-        }
+        // if (holeZoomPanel != null)
+        // {
+        //     holeZoomPanel.SetActive(true);
+        // }
+    // }
 
-        if (displayButton != null)
-        {
-            displayButton.onClick.RemoveListener(OpenPuzzle);
-        }
+    // public void CloseHoleZoom()
+    // {
+    //     if (holeZoomPanel != null)
+    //     {
+    //         holeZoomPanel.SetActive(false);
+    //     }
+    // }
 
-        if (puzzleBackButton != null)
-        {
-            puzzleBackButton.onClick.RemoveListener(ClosePuzzle);
-        }
+    // private void OnDestroy()
+    // {
+    //     if (plantButton != null)
+    //     {
+    //         plantButton.onClick.RemoveListener(MovePlant);
+    //     }
 
-        if (holeButtonComponent != null)
-        {
-            holeButtonComponent.onClick.RemoveListener(OpenHoleZoom);
-        }
+    //     if (displayButton != null)
+    //     {
+    //         displayButton.onClick.RemoveListener(OpenPuzzle);
+    //     }
 
-        if (holeBackButton != null)
-        {
-            holeBackButton.onClick.RemoveListener(CloseHoleZoom);
-        }
-    }
+    //     if (puzzleBackButton != null)
+    //     {
+    //         puzzleBackButton.onClick.RemoveListener(ClosePuzzle);
+    //     }
+
+    //     if (holeButtonComponent != null)
+    //     {
+    //         holeButtonComponent.onClick.RemoveListener(OpenHoleZoom);
+    //     }
+
+    //     if (holeBackButton != null)
+    //     {
+    //         holeBackButton.onClick.RemoveListener(CloseHoleZoom);
+    //     }
+    // }
 }

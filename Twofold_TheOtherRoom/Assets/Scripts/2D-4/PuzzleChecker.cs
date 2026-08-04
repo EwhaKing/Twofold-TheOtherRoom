@@ -19,6 +19,24 @@ public class PuzzleChecker : MonoBehaviour
 
     private bool solved;
 
+    private void Awake()
+    {
+        if (plantMove == null)
+        {
+            plantMove = FindAnyObjectByType<PlantMove>(
+                FindObjectsInactive.Include
+            );
+        }
+
+        if (plantMove == null)
+        {
+            Debug.LogWarning(
+                "PuzzleChecker: 씬에서 PlantMove 컴포넌트를 찾을 수 없습니다.",
+                this
+            );
+        }
+    }
+
     public void CheckAnswer()
     {
         if (solved)
@@ -63,19 +81,19 @@ public class PuzzleChecker : MonoBehaviour
             );
         }
 
-        if (PuzzleManager.Instance != null)
-        {
-            PuzzleManager.Instance.ReportSolved(
-                "2D-4",
-                PuzzleDimension.TwoD
-            );
-        }
-        else
-        {
-            Debug.LogWarning(
-                "PuzzleChecker: PuzzleManager를 찾을 수 없습니다."
-            );
-        }
+        // if (PuzzleManager.Instance != null)
+        // {
+        //     PuzzleManager.Instance.ReportSolved(
+        //         "2D-4",
+        //         PuzzleDimension.TwoD
+        //     );
+        // }
+        // else
+        // {
+        //     Debug.LogWarning(
+        //         "PuzzleChecker: PuzzleManager를 찾을 수 없습니다."
+        //     );
+        // }
     }
 
     private bool ReferencesAreValid()
