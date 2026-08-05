@@ -44,7 +44,7 @@ public class PuzzleDisplayPosition
     
     public GameObject ActivateObjectdisplay;
 
-    public GameObject UnactivateObjectdisplay;
+    public GameObject DeactivateObjectdisplay;
 }
 
 public class PuzzleManager : MonoBehaviour
@@ -130,9 +130,9 @@ public class PuzzleManager : MonoBehaviour
             continue;
         }
         // 비어 있거나 Missing이면 비활성화를 건너뜁니다.
-        if (entry.UnactivateObjectdisplay != null)
+        if (entry.DeactivateObjectdisplay != null)
         {
-            entry.UnactivateObjectdisplay.SetActive(false);
+            entry.DeactivateObjectdisplay.SetActive(false);
         }
 
         // gameobject를 활성화
