@@ -42,9 +42,9 @@ public class PuzzleDisplayPosition
     public string puzzleID;
 
     
-    public GameObject ActivateObjectdisplay;
+    public GameObject activateObjectDisplay;
 
-    public GameObject DeactivateObjectdisplay;
+    public GameObject deactivateObjectDisplay;
 }
 
 public class PuzzleManager : MonoBehaviour
@@ -119,7 +119,7 @@ public class PuzzleManager : MonoBehaviour
 
     foreach (PuzzleDisplayPosition entry in displayPositions)
     {
-        if (entry == null || entry.ActivateObjectdisplay == null)
+        if (entry == null || entry.activateObjectDisplay == null)
             continue;
 
         if (!string.Equals(
@@ -130,13 +130,13 @@ public class PuzzleManager : MonoBehaviour
             continue;
         }
         // 비어 있거나 Missing이면 비활성화를 건너뜁니다.
-        if (entry.DeactivateObjectdisplay != null)
+        if (entry.deactivateObjectDisplay != null)
         {
-            entry.DeactivateObjectdisplay.SetActive(false);
+            entry.deactivateObjectDisplay.SetActive(false);
         }
 
         // gameobject를 활성화
-        entry.ActivateObjectdisplay.SetActive(true);
+        entry.activateObjectDisplay.SetActive(true);
         return;
     }
 
