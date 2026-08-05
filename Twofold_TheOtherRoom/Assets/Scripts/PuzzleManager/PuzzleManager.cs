@@ -42,7 +42,9 @@ public class PuzzleDisplayPosition
     public string puzzleID;
 
     
-    public GameObject displayPosition;
+    public GameObject activateObjectDisplay;
+
+    public GameObject deactivateObjectDisplay;
 }
 
 public class PuzzleManager : MonoBehaviour
@@ -117,7 +119,7 @@ public class PuzzleManager : MonoBehaviour
 
     foreach (PuzzleDisplayPosition entry in displayPositions)
     {
-        if (entry == null || entry.displayPosition == null)
+        if (entry == null || entry.activateObjectDisplay == null)
             continue;
 
         if (!string.Equals(
@@ -127,8 +129,14 @@ public class PuzzleManager : MonoBehaviour
         {
             continue;
         }
-        // HoleButton(display)을 활성화
-        entry.displayPosition.SetActive(true);
+        // 비어 있거나 Missing이면 비활성화를 건너뜁니다.
+        if (entry.deactivateObjectDisplay != null)
+        {
+            entry.deactivateObjectDisplay.SetActive(false);
+        }
+
+        // gameobject를 활성화
+        entry.activateObjectDisplay.SetActive(true);
         return;
     }
 
