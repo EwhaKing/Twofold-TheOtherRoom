@@ -1,25 +1,17 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class Tube2D10 : MonoBehaviour
+public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 {
     public GameManager2D10 gameManager;
-
-    private Image ballImage;
-    private RectTransform rect;
-
-    private void Awake()
-    {
-        ballImage = GetComponent<Image>();
-        rect = GetComponent<RectTransform>();
-    }
 
     public Ball2D10[] ball;
     
     private float ballSize=1.6f;
-    private float noneballPosY=-1.85f;
+    private float noneballPosY=-1.15f;
 
-    public void OnMouseDown()
+    public void OnPointerClick(PointerEventData eventData)
     {   
         if (gameManager.isAnimating)
         {
