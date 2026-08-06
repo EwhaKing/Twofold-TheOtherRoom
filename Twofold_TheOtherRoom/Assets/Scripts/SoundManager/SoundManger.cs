@@ -3,6 +3,15 @@ using UnityEngine;
 /// <summary>
 /// 게임에서 사용할 모든 효과음 종류(효과음 추가할때마다 하나씩 추가해야함)
 /// </summary>
+public enum BGMType
+{
+    TestBGM,
+    Title,
+    Lobby,
+    Stage1,
+    Stage2,
+    Ending
+}
 public enum SFXType
 {
     TestSe,
@@ -19,15 +28,56 @@ public enum SFXType
 /// 게임 전체의 BGM과 효과음을 관리하는 싱글톤 SoundManager
 ///
 /// 사용 예시)
+/// <BGM>
+/// SoundManager.Instance.PlayBGM(BGMType.Title);
+/// SoundManager.Instance.StopBGM();
+/// SoundManager.Instance.PauseBGM();
+/// SoundManager.Instance.ResumeBGM();
+/// 
+/// <SFX>
 /// SoundManager.Instance.PlaySFX(SFXType.ButtonClick);
 /// SoundManager.Instance.PlaySFX(SFXType.PuzzleClear);
+/// 
 /// </summary>
+/// 
 public class SoundManager : MonoBehaviour
 {
     /// <summary>
+    /// setting 키고 끄기
+    /// </summary>
+    private bool _press;
+    [Header("Setting")]
+    public KeyCode interactKey = KeyCode.Escape;
+    public GameObject settingLayer;
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(interactKey))
+        {   if(_press)
+            {
+                settingLayer.SetActive(false);
+                _press=false;
+            }
+            else
+            {
+                settingLayer.SetActive(true);
+                _press=true;
+            }
+        }
+    }
+    
+    /// <summary>
     /// 싱글톤 인스턴스
     /// </summary>
+
     public static SoundManager Instance { get; private set; }
+
+    [System.Serializable]
+    public class BGMData
+    {
+        public BGMType type;
+        public AudioClip clip;
+    }
 
     [System.Serializable]
     public class SFXData
@@ -40,11 +90,18 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
 
-    [Header("BGM")]
-    [SerializeField] private AudioClip defaultBGM;
+    [Header("Default BGM")]
+    [SerializeField] private BGMType defaultBGM;
+
+    [Header("BGM")]        
+    [SerializeField] private BGMData[] bgmList;
 
     [Header("Sound Effects")]
     [SerializeField] private SFXData[] sfxList;
+
+
+    private readonly System.Collections.Generic.Dictionary<BGMType, AudioClip> bgmDictionary
+        = new System.Collections.Generic.Dictionary<BGMType, AudioClip>();
 
     private readonly System.Collections.Generic.Dictionary<SFXType, AudioClip> sfxDictionary
         = new System.Collections.Generic.Dictionary<SFXType, AudioClip>();
@@ -66,8 +123,8 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        if (defaultBGM != null)
-            PlayBGM(defaultBGM);
+        _press=false;
+        PlayBGM(defaultBGM);
     }
 
     /// <summary>
@@ -75,7 +132,18 @@ public class SoundManager : MonoBehaviour
     /// </summary>
     private void InitializeDictionary()
     {
+        bgmDictionary.Clear();
         sfxDictionary.Clear();
+
+        foreach (BGMData bgm in bgmList)
+        {
+            if (bgm != null &&
+                bgm.clip != null &&
+                !bgmDictionary.ContainsKey(bgm.type))
+            {
+                bgmDictionary.Add(bgm.type, bgm.clip);
+            }
+        }
 
         foreach (SFXData sound in sfxList)
         {
@@ -103,14 +171,21 @@ public class SoundManager : MonoBehaviour
     /// <summary>
     /// BGM 재생
     /// </summary>
-    public void PlayBGM(AudioClip clip)
+    public void PlayBGM(BGMType type)
     {
-        if (clip == null)
-            return;
+        if (bgmDictionary.TryGetValue(type, out AudioClip clip))
+        {
+            if (bgmSource.clip == clip && bgmSource.isPlaying)
+                return;
 
-        bgmSource.clip = clip;
-        bgmSource.loop = true;
-        bgmSource.Play();
+            bgmSource.clip = clip;
+            bgmSource.loop = true;
+            bgmSource.Play();
+        }
+        else
+        {
+            Debug.LogWarning($"등록되지 않은 BGM : {type}");
+        }
     }
 
     /// <summary>
@@ -120,20 +195,44 @@ public class SoundManager : MonoBehaviour
     {
         bgmSource.Stop();
     }
-
-    /// <summary>
-    /// BGM 볼륨 설정
-    /// </summary>
-    public void SetBGMVolume(float volume)
+    public void PauseBGM()
     {
-        bgmSource.volume = Mathf.Clamp01(volume);
+        bgmSource.Pause();
+    }
+
+    public void ResumeBGM()
+    {
+        bgmSource.UnPause();
     }
 
     /// <summary>
-    /// 효과음 볼륨 설정
+    /// 볼륨 설정
     /// </summary>
+    private float masterVolume = 1f;
+    private float bgmVolume = 1f;
+    private float sfxVolume = 1f;
+
+    private void ApplyVolume()
+    {
+        bgmSource.volume = masterVolume * bgmVolume;
+        sfxSource.volume = masterVolume * sfxVolume;
+    }
+
+    public void SetMasterVolume(float volume)
+    {
+        masterVolume = Mathf.Clamp01(volume);
+        ApplyVolume();
+    }
+
+    public void SetBGMVolume(float volume)
+    {
+        bgmVolume = Mathf.Clamp01(volume);
+        ApplyVolume();
+    }
+
     public void SetSFXVolume(float volume)
     {
-        sfxSource.volume = Mathf.Clamp01(volume);
+        sfxVolume = Mathf.Clamp01(volume);
+        ApplyVolume();
     }
 }
