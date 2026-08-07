@@ -20,34 +20,32 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
         else
         {
             if (gameManager.isSelected)
-            {
+            {  
                 gameManager.nextTube=this;
-                if (gameManager.nextTube.GetTopBall()==null)
+                gameManager.beforeball=this.GetTopBall();
+                if(gameManager.CanMove())
                 {
                     gameManager.isSelected=false;
                     StartCoroutine(gameManager.GoMove());
                 }
                 else
                 {
-                    if(gameManager.currentTube.GetTopBall().GetColor()!=gameManager.nextTube.GetTopBall().GetColor())
-                    {
-                        gameManager.nextTube=gameManager.currentTube;
-                        gameManager.isSelected=false;
-                        StartCoroutine(gameManager.GoMove());
-                    }
-                    else
-                    {
-                        gameManager.isSelected=false;
-                        StartCoroutine(gameManager.GoMove());
-                    }
+                    gameManager.nextTube=gameManager.currentTube;
+                    gameManager.isSelected=false;
+                    StartCoroutine(gameManager.GoMove());
                 }
-
             }
-            else
+            else //첫번째 튜브 선택
             {
                 gameManager.currentTube=this;
-                gameManager.isSelected=true;
-                StartCoroutine(gameManager.GoUp());            
+                gameManager.currentball=this.GetTopBall();
+                if(gameManager.currentball!=null){
+                    gameManager.isSelected=true;
+                    StartCoroutine(gameManager.GoUp()); 
+                }
+                else{
+                    gameManager.currentTube=null;
+                }
             }
         }
     }
