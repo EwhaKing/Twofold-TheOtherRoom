@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Plug가 Outlet collider에 들어오고 나갈 때 Plug Controller에게 알림
-// Plug가 꽂힘 관리
+// Outlet에 Plug 꽂혀있는지 관리
 public class PlugOutlet : MonoBehaviour
 {
     [SerializeField] Transform dockPoint;
