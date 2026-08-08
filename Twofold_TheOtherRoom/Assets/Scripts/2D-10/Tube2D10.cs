@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Linq;
+
 
 public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 {
@@ -8,7 +10,9 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 
     public Ball2D10[] ball;
     
-    private float ballSize=1.6f;
+    public Image LightImage;
+
+    private float ballSize=1.5f;
     private float noneballPosY=-1.15f;
 
     public void OnPointerClick(PointerEventData eventData)
@@ -30,6 +34,7 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
                 }
                 else
                 {
+                    gameManager.beforeball=gameManager.currentTube.GetTopBall();
                     gameManager.nextTube=gameManager.currentTube;
                     gameManager.isSelected=false;
                     StartCoroutine(gameManager.GoMove());
@@ -58,15 +63,7 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
         }
         return null;
     }
-    public bool IsEmpty()
-    {
-        return GetTopBall() == null;
-    }
 
-    public bool IsFull()
-    {
-        return ball[ball.Length - 1] != null;
-    }
     public Ball2D10 Pop()//공 빼낼때, Tube에서 topball 뺀 정보 저장
     {
         for (int i = ball.Length - 1; i >= 0; i--)
@@ -107,5 +104,20 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
         }
 
         return noneballPosY + (count * ballSize);
+    }
+    public void Answer()
+    {
+        if (ball[3]!=null)
+        {
+            Ball2D10.BallColor color = ball[0].GetColor();
+
+            if (ball.All(ball => ball.GetColor() == color))
+            {   
+                if(LightImage!=null)
+                {
+                    LightImage.color = new Color32(51, 255, 51, 255);
+                }
+            }
+        }
     }
 }
