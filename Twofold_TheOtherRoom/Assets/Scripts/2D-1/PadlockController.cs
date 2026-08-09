@@ -5,56 +5,46 @@ using UnityEngine.UI;
 
 public class PadlockController : MonoBehaviour
 {
-    [Header("UI Panels & Boxes")]
-    public GameObject lockZoomPanel;    // 자물쇠 확대 패널
-    public GameObject closedBoxUI;      // 메인 화면 닫힌 상자 (Box_Closed)
-    public GameObject openBoxUI;        // 메인 화면 열린 상자 (Box_Open)
+    // [Header("Zoom Panel & Box Swap")]
+    // public GameObject closedBoxUI;       // 메인 화면 닫힌 상자 (Box_Closed)
+    // public GameObject openBoxUI;         // 메인 화면 열린 상자 (Box_Open)
 
     [Header("Zoom Panel - Shackle Swap")]
-    public Image zoomShackleImage;      // 확대창 자물쇠 고리 UI Image Component
-    public Sprite zoomOpenShackleSprite;// 확대창 자물쇠 '열린 고리(Shackle_Open)' Sprite
+    public Image zoomShackleImage;       // 자물쇠 고리 UI Image Component
+    public Sprite zoomOpenShackleSprite; // '열린 고리' Sprite
 
     [Header("Keypad - Sprite Swap")]
-    public List<Image> buttonUIImages;       // 자판 UI의 Image 컴포넌트 10개 (0 ~ 9)
-    public List<Sprite> normalButtonSprites; // 평상시(밝은) 버튼 Sprite 10개 (0 ~ 9)
-    public List<Sprite> pressedButtonSprites;// 눌렸을 때(어두운) 버튼 Sprite 10개 (0 ~ 9)
+    public List<Image> buttonUIImages;       // Button 1 ~ Button 8 순서대로 등록 (Element 0 = Button 1)
+    public List<Sprite> normalButtonSprites; // 평상시 Sprite (8개)
+    public List<Sprite> pressedButtonSprites;// 눌렸을 때 Sprite (8개)
 
     [Header("Password Settings")]
-    public List<int> correctPassword = new List<int> { 5, 3, 2 }; // 정답 비밀번호 532
+    public List<int> correctPassword = new List<int> { 5, 3, 2 }; // 직관적으로 '5, 3, 2' 입력하면 됨!
 
     private List<int> currentInputs = new List<int>();
     private bool isUnlocked = false;
 
-    // 1. 메인 닫힌 상자 클릭 시 자물쇠 확대창 켜기
-    public void OpenLockZoom()
-    {
-        if (isUnlocked) return;
-        if (lockZoomPanel != null) lockZoomPanel.SetActive(true);
-    }
+    public bool IsUnlocked => isUnlocked;
 
-    // 2. 자물쇠 확대창 닫기
-    public void CloseLockZoom()
-    {
-        if (lockZoomPanel != null) lockZoomPanel.SetActive(false);
-    }
-
-    // 3. 자판 버튼 눌렀을 때 (0 ~ 9)
+    // 자판 버튼 클릭시 (1 ~ 8 전달)
     public void OnKeypadClicked(int digit)
     {
         if (isUnlocked || currentInputs.Count >= 3) return;
 
         currentInputs.Add(digit);
 
-        // [연출 1] 눌린 버튼의 Sprite를 어두운 버전 Sprite로 즉시 교체!
-        if (digit >= 0 && digit < buttonUIImages.Count && buttonUIImages[digit] != null)
+        // 버튼 1이 클릭되었을 때 리스트 0번 인덱스(Element 0)에 접근하도록 (digit - 1) 처리
+        int index = digit - 1;
+
+        if (index >= 0 && index < buttonUIImages.Count && buttonUIImages[index] != null)
         {
-            if (digit < pressedButtonSprites.Count && pressedButtonSprites[digit] != null)
+            if (index < pressedButtonSprites.Count && pressedButtonSprites[index] != null)
             {
-                buttonUIImages[digit].sprite = pressedButtonSprites[digit];
+                buttonUIImages[index].sprite = pressedButtonSprites[index];
             }
         }
 
-        // 3개 입력 완료 시 정답 검사
+        // 3자리 입력 시 검사
         if (currentInputs.Count == 3)
         {
             StartCoroutine(CheckPasswordRoutine());
@@ -63,7 +53,7 @@ public class PadlockController : MonoBehaviour
 
     private IEnumerator CheckPasswordRoutine()
     {
-        yield return new WaitForSeconds(0.25f); // 눌림 연출을 잠시 보여주기 위한 대기
+        yield return new WaitForSeconds(0.25f);
 
         if (IsCorrect())
         {
@@ -71,7 +61,6 @@ public class PadlockController : MonoBehaviour
         }
         else
         {
-            // [연출 2] 3개 틀리면 리셋 및 다시 밝은 버전 Sprite로 원복
             ResetInputs();
         }
     }
@@ -86,38 +75,32 @@ public class PadlockController : MonoBehaviour
         return true;
     }
 
-    // 4. 해제 성공 시 연출 시퀀스
     private IEnumerator UnlockSequence()
     {
         isUnlocked = true;
 
-        // [확대창 연출] 큰 자물쇠 고리 이미지를 '열린 고리(Shackle_Open)' Sprite로 교체
+        // 1. 자물쇠 고리 열림 연출 (자동으로 줌아웃 안 됨!)
         if (zoomShackleImage != null && zoomOpenShackleSprite != null)
         {
             zoomShackleImage.sprite = zoomOpenShackleSprite;
         }
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(0.3f);
 
-        // [축소 연출] 자물쇠 확대창 닫기
-        CloseLockZoom();
+        // 메인 화면 닫힌 상자 -> 열린 상자로 상태 전환
+        // if (closedBoxUI != null) closedBoxUI.SetActive(false);
+        // if (openBoxUI != null) openBoxUI.SetActive(true);
 
-        // [메인 화면 연출] 메인 닫힌 상자 Off -> 상자열린거 On
-        if (closedBoxUI != null) closedBoxUI.SetActive(false);
-        if (openBoxUI != null) openBoxUI.SetActive(true);
-
-        // [시스템 연동] PuzzleManager에 2D-1 퍼즐 해결 보고!
         if (PuzzleManager.Instance != null)
         {
-            PuzzleManager.Instance.ReportSolved("2D-1", PuzzleDimension.TwoD);
+            PuzzleManager.Instance.ReportSolved("2D_1", PuzzleDimension.TwoD);
         }
         else
         {
-            Debug.LogWarning("[PadlockController] PuzzleManager 인스턴스를 찾을 수 없습니다.");
+            Debug.LogWarning("[PadlockController] PuzzleManager.Instance를 찾을 수 없습니다.");
         }
     }
 
-    // [연출 2] 틀렸을 때 리셋 함수 (모든 자판을 밝은 Sprite로 복구)
     private void ResetInputs()
     {
         currentInputs.Clear();
