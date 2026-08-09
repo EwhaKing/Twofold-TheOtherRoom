@@ -10,7 +10,7 @@ public class PlugController : MonoBehaviour
     public enum PlugState { Free, Dragging, Docked, Inserted }
     public PlugState State { get; private set; } = PlugState.Free;
     public PlugOutlet CurrentOutlet => currentOutlet;
-    public event Action<PlugController> OnInserted;
+    public event Action OnPlugStateChanged;
 
     [SerializeField] float rejectDuration = 0.16f; // 걸렸다가 되돌아오는 데 걸리는 전체 시간
 
@@ -184,9 +184,10 @@ public class PlugController : MonoBehaviour
                 // 회전은 이미 정렬돼 있으므로 위치만 이동.
                 transform.position = currentOutlet.InsertPosition;
                 // if (SoundManager.Instance != null) SoundManager.Instance.PlaySFX(SFXType.???);
-                OnInserted?.Invoke(this);
                 break;
         }
+        
+        OnPlugStateChanged?.Invoke();
     }
     #endregion
 }
