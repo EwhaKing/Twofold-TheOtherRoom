@@ -5,11 +5,13 @@ using UnityEngine;
 public class PlugOutlet : MonoBehaviour
 {
     [SerializeField] Transform dockPoint;
-    [SerializeField] float insertDepth = 0.05f; // dockPoint에서 들어가는 깊이
+    [SerializeField] float insertDepth = -0.17f; // dockPoint에서 들어가는 깊이
+    [SerializeField] float rejectDepth = -0.14f; // 방향이 안 맞을 때 걸리는 깊이
 
     public Vector3 DockPosition => dockPoint.position;
     public Quaternion DockRotation => dockPoint.rotation;
     public Vector3 InsertPosition => dockPoint.position + dockPoint.up * insertDepth;
+    public Vector3 RejectPosition => dockPoint.position + dockPoint.up * rejectDepth;
 
     PlugController occupant;
 

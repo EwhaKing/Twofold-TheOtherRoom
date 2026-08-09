@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 // 각 plug 회전, 꽂힌 것 다시 뽑는 담당
@@ -7,17 +8,17 @@ public class PlugController : MonoBehaviour
     // Free: 케이블에 매달려 흔들림 / Dragging: 마우스로 끄는 중
     // Docked: outlet 앞에 붙어서 우클릭으로 회전 가능 / Inserted: 방향이 맞아 꽂힘
     public enum PlugState { Free, Dragging, Docked, Inserted }
-
-    [SerializeField][Range(1, 3)] int dockRotationIndex = 2;
-
     public PlugState State { get; private set; } = PlugState.Free;
     public PlugOutlet CurrentOutlet => currentOutlet;
     public event Action<PlugController> OnInserted;
+
+    [SerializeField] float rejectDuration = 0.16f; // 걸렸다가 되돌아오는 데 걸리는 전체 시간
 
     int rotationIndex;
     DragAndDrop3D currentDrag;
     PlugOutlet currentOutlet;
     Rigidbody plugRigid;
+    Coroutine rejectRoutine;
 
     void Awake()
     {
@@ -29,12 +30,14 @@ public class PlugController : MonoBehaviour
     {
         currentDrag.OnPickUp += HandlePickUp;
         currentDrag.OnRelease += HandleRelease;
+        currentDrag.OnClick += HandleClick;
     }
 
     void OnDisable()
     {
         currentDrag.OnPickUp -= HandlePickUp;
         currentDrag.OnRelease -= HandleRelease;
+        currentDrag.OnClick -= HandleClick;
     }
 
     void OnMouseOver()
@@ -71,6 +74,13 @@ public class PlugController : MonoBehaviour
         bool canDock = currentOutlet != null && currentOutlet.TryOccupy(this);
         SetState(canDock ? PlugState.Docked : PlugState.Free);
     }
+
+    private void HandleClick()
+    {
+        // 드래그X, 클릭O = insert 시도
+        if (State != PlugState.Docked) return;
+        TryInsert();
+    }
     #endregion
 
     #region Plug Rotate/Insert
@@ -80,9 +90,64 @@ public class PlugController : MonoBehaviour
 
         rotationIndex = (rotationIndex + 1) % 4;
         ApplyDockRotation();
+    }
 
-        // 0번 칸이 outlet과 정렬된 방향 -> 그대로 꽂힘
-        if (rotationIndex == 0) SetState(PlugState.Inserted);
+    private void TryInsert()
+    {
+        if (currentOutlet == null) return;
+
+        // 방향이 안 맞으면 걸려서 도로 나옴. Docked 유지
+        if (rotationIndex != 0)
+        {
+            RejectInsert();
+            return;
+        }
+
+        SetState(PlugState.Inserted);
+    }
+
+    private void RejectInsert()
+    {
+        StopRejectRoutine();
+        rejectRoutine = StartCoroutine(RejectRoutine());
+    }
+
+    private IEnumerator RejectRoutine()
+    {
+        Vector3 dockPosition = currentOutlet.DockPosition;
+        Vector3 caughtPosition = currentOutlet.RejectPosition;
+        float half = rejectDuration * 0.5f;
+
+        // if (SoundManager.Instance != null) SoundManager.Instance.PlaySFX(SFXType.???);
+
+        yield return MovePosition(dockPosition, caughtPosition, half);
+        yield return MovePosition(caughtPosition, dockPosition, half);
+
+        rejectRoutine = null;
+    }
+
+    private IEnumerator MovePosition(Vector3 from, Vector3 to, float duration)
+    {
+        for (float elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+        {
+            transform.position = Vector3.Lerp(from, to, elapsed / duration);
+            yield return null;
+        }
+        transform.position = to;
+    }
+
+    // 드래그나 삽입으로 상태가 바뀌면 되돌아오는 중이던 연출 취소
+    private void StopRejectRoutine()
+    {
+        if (rejectRoutine == null) return;
+        StopCoroutine(rejectRoutine);
+        rejectRoutine = null;
+    }
+
+    private int IndexFromCurrentRotation()
+    {
+        Quaternion local = Quaternion.Inverse(currentOutlet.DockRotation) * transform.rotation;
+        return Mathf.RoundToInt(local.eulerAngles.y / 90f) % 4;
     }
 
     // 회전은 항상 outlet 기준으로 새로 계산
@@ -95,6 +160,7 @@ public class PlugController : MonoBehaviour
     #region State
     private void SetState(PlugState next)
     {
+        StopRejectRoutine();
         State = next;
 
         switch (next)
@@ -109,14 +175,15 @@ public class PlugController : MonoBehaviour
 
             case PlugState.Docked:
                 plugRigid.isKinematic = true;
-                rotationIndex = dockRotationIndex;
+                rotationIndex = IndexFromCurrentRotation();
                 transform.position = currentOutlet.DockPosition;
                 ApplyDockRotation();
                 break;
 
             case PlugState.Inserted:
-                // 회전은 이미 정렬돼 있으므로 위치만 이동. 추후 애니메이션 및 효과음
+                // 회전은 이미 정렬돼 있으므로 위치만 이동.
                 transform.position = currentOutlet.InsertPosition;
+                // if (SoundManager.Instance != null) SoundManager.Instance.PlaySFX(SFXType.???);
                 OnInserted?.Invoke(this);
                 break;
         }

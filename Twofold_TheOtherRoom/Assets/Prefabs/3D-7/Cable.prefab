@@ -112,6 +112,7 @@ MonoBehaviour:
   puzzleCamera: {fileID: 0}
   topLeft: {fileID: 0}
   bottomRight: {fileID: 0}
+  dragThreshold: 8
 --- !u!65 &3903750109914972105
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -196,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ada0788f7fc520d48b56c753d762c18f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlugController
-  dockRotationIndex: 2
+  rejectDuration: 0.16
 --- !u!1 &7973317907755432155
 GameObject:
   m_ObjectHideFlags: 0
