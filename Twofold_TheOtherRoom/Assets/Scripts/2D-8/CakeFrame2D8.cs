@@ -5,7 +5,7 @@ public class CakeFrame2D8 : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private GameObject cakeframe;
     [SerializeField] private GameObject cakeframeOpen;
-    [SerializeField] private GameObject display2D8;
+    [SerializeField] private GameObject puzzlePanel;
 
     private bool opened = false;
 
@@ -18,6 +18,6 @@ public class CakeFrame2D8 : MonoBehaviour, IPointerClickHandler
 
         cakeframe.SetActive(false);
         cakeframeOpen.SetActive(true);
-        display2D8.SetActive(true);
+        puzzlePanel.SetActive(true);
     }
 }
