@@ -31,6 +31,9 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     [SerializeField] Camera playerCamera;
     [SerializeField] Camera puzzleCamera;
 
+    [Header("Align View")]
+    [SerializeField] PlugAlignView alignView;
+
     [Header("Frame")]
     [Tooltip("Frame Mesh")]
     [SerializeField] Transform frameTransform;
@@ -118,7 +121,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
         foreach (var plug in plugs) plug.OnPlugStateChanged -= HandlePlugStateChanged;
     }
 
-    // plugs를 인스펙터에서 비워두면 answers에 등록된 plug로 채운다
+    // plugs를 인스펙터에서 비워두면 answers에 등록된 plug로 채움
     private void BuildPlugList()
     {
         if (plugs != null && plugs.Length > 0) return;
@@ -169,6 +172,11 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
             frameTransform.localRotation = frameOpenedRotation;
         }
 
+        UndockAll(); // 나갈 때 Docked 풂, Inserted는 유지
+
+        if (alignView != null)
+            alignView.Hide();
+
         if (puzzleCamera != null)
             puzzleCamera.enabled = false;
         if (playerCamera != null)
@@ -194,7 +202,23 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     private void HandlePlugStateChanged(PlugController changed)
     {
         EnforceSingleDock(changed);
+        UpdateAlignView(changed);
         CheckAnswer();
+    }
+
+    // Docked인 plug가 있을 때 정렬 뷰 활성화
+    private void UpdateAlignView(PlugController changed)
+    {
+        if (alignView == null) return;
+
+        if (changed.State == PlugController.PlugState.Docked && changed.CurrentOutlet != null)
+            alignView.Show(changed.CurrentOutlet);
+        else
+            alignView.Hide();
+    }
+    private void UndockAll()
+    {
+        foreach (var plug in plugs) plug.Undock();
     }
 
     // Docked는 항상 최대 하나. 다른 plug를 집는 순간 도킹돼 있던 건 풀려서 다시 매달림
