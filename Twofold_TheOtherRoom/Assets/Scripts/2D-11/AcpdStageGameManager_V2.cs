@@ -56,6 +56,12 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         SetupExactPhotoPatterns();
     }
 
+    // 🌟 외부 연결 없이도 이 퍼즐이 켜질 때마다 즉시 1단계 타이머 자동 시작!
+    private void OnEnable()
+    {
+        ResetToFirstStep();
+    }
+
     // 📸 정답 패턴 세팅
     private void SetupExactPhotoPatterns()
     {
@@ -90,6 +96,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     public void ResetToFirstStep()
     {
         StopAllCoroutines();
+        activeTimerCoroutine = null;
         isShowingWrongFeedback = false;
         currentStepIndex = 0;
         subStepIndex = 0;
@@ -103,19 +110,29 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         ResetToFirstStep();
     }
 
-    // 🌟 단계 시작: 알파벳 표시 + 3초 타임바 연출
+    // 🌟 단계 시작: 알파벳 표시 + 타임바 리셋 + 3초 타임바 연출
     private void StartStepSequence()
     {
-        if (activeTimerCoroutine != null) StopCoroutine(activeTimerCoroutine);
+        if (activeTimerCoroutine != null)
+        {
+            StopCoroutine(activeTimerCoroutine);
+            activeTimerCoroutine = null;
+        }
 
         if (currentStepIndex < patternSteps.Count)
         {
+            // 타임바 게이지를 1f(100%)로 채운 후 시작
+            if (timerBarImage != null)
+            {
+                timerBarImage.fillAmount = 1f;
+            }
+
             displayAlphabetText.text = patternSteps[currentStepIndex].alphabetText;
             activeTimerCoroutine = StartCoroutine(TimerAndHideRoutine(3.0f));
         }
     }
 
-    // 🌟 3초 동안 바가 줄어들고 글자만 사라짐 (어느 단계든 스테이지 유지!)
+    // 🌟 3초 동안 바가 줄어들고 글자만 사라짐
     private IEnumerator TimerAndHideRoutine(float duration)
     {
         float elapsed = 0f;
@@ -132,26 +149,32 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             yield return null;
         }
 
-        // 3초 후 글자와 타임바만 끄고 그대로 대기!
+        // 3초 후 글자와 타임바만 끄고 대기
         displayAlphabetText.text = "";
         if (timerBarImage != null)
         {
             timerBarImage.fillAmount = 0f;
         }
+
+        activeTimerCoroutine = null;
     }
 
-    // ❌ 오답 반응 연출 (스테이지는 유지하고 현재 단계 입력만 원점 처리)
+    // ❌ 오답 반응 연출
     private IEnumerator WrongAnswerFeedbackRoutine()
     {
         isShowingWrongFeedback = true;
-        if (activeTimerCoroutine != null) StopCoroutine(activeTimerCoroutine);
+
+        if (activeTimerCoroutine != null)
+        {
+            StopCoroutine(activeTimerCoroutine);
+            activeTimerCoroutine = null;
+        }
 
         displayAlphabetText.text = "X";
         if (timerBarImage != null) timerBarImage.fillAmount = 0f;
 
-        yield return new WaitForSeconds(0.8f); // 0.8초 동안 X 표시
+        yield return new WaitForSeconds(0.8f);
 
-        // 현재 단계 입력 순서만 초기화하고, 현재 단계 글자를 다시 3초간 보여주며 기회 부여
         subStepIndex = 0;
         isShowingWrongFeedback = false;
         StartStepSequence();
@@ -173,7 +196,13 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
                 if (subStepIndex >= targetSequence.Length)
                 {
-                    // 단계 클리어 -> 다음 단계로 진행!
+                    // 해당 단계를 완전히 클리어했을 때 잔여 타이머 멈춤
+                    if (activeTimerCoroutine != null)
+                    {
+                        StopCoroutine(activeTimerCoroutine);
+                        activeTimerCoroutine = null;
+                    }
+
                     currentStepIndex++;
                     subStepIndex = 0;
 
@@ -183,14 +212,14 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
                     }
                     else
                     {
-                        StartStepSequence(); // 다음 단계 알파벳 표시 및 3초 타이머 시작
+                        StartStepSequence(); 
                     }
                 }
             }
             else
             {
-                Debug.Log($"❌ [{currentStepIndex + 1}단계] 틀린 도형 클릭! 스테이지 유지, 재시도 가능");
-                StartCoroutine(WrongAnswerFeedbackRoutine()); // 오답 표출 후 해당 단계 유지
+                Debug.Log($"❌ [{currentStepIndex + 1}단계] 틀린 도형 클릭!");
+                StartCoroutine(WrongAnswerFeedbackRoutine()); 
             }
         }
     }
@@ -198,8 +227,10 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     private void OnPuzzleSuccess()
     {
         StopAllCoroutines();
+        activeTimerCoroutine = null;
         isShowingWrongFeedback = false;
-        displayAlphabetText.text = patternSteps[patternSteps.Count - 1].alphabetText; // "R B H X T"
+
+        displayAlphabetText.text = patternSteps[patternSteps.Count - 1].alphabetText; 
 
         if (timerBarImage != null)
         {

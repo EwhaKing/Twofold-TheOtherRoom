@@ -14,12 +14,17 @@ public class NetPuzzleGameManager : MonoBehaviour
     [Header("퍼즐 판 전체 (Puzzle_Net)")]
     public GameObject puzzleContainer;
 
+    [Header("깨지는 연출 스크립트 연결")]
+    public PuzzleBreakEffect breakEffect; // 깨지는 연출 그룹 스크립트
+
+    [Header("줌 컨트롤러 연결")]
+    public NetPuzzleZoomController zoomController; // 줌 컨트롤러 추가
+
     public void CheckPuzzleComplete()
     {
         StartCoroutine(DelayedCheck());
     }
 
-    // OnDrop 처리 직후 자식 계층구조가 완료된 한 프레임 뒤 검사
     private IEnumerator DelayedCheck()
     {
         yield return null; 
@@ -43,7 +48,6 @@ public class NetPuzzleGameManager : MonoBehaviour
             }
         }
 
-        // 5개 슬롯이 전부 채워졌다면!
         if (filledCount == puzzleSlots.Length)
         {
             if (!hasWrongItem)
@@ -85,6 +89,26 @@ public class NetPuzzleGameManager : MonoBehaviour
             Debug.LogWarning("PuzzleManager가 씬에 배치되지 않았습니다!");
         }
 
-        // 추가 성공 연출(소리, 이펙트 등)이 있다면 여기에 작성하시면 됩니다.
+        // 1. 기존 슬롯(조각들) 비활성화
+        if (puzzleSlots != null)
+        {
+            foreach (NetPuzzleSlot slot in puzzleSlots)
+            {
+                if (slot != null) slot.gameObject.SetActive(false);
+            }
+        }
+
+        // 2. 줌 컨트롤러에 확대 상태임을 확실히 전달
+        if (zoomController != null)
+        {
+            zoomController.ZoomInToPuzzle();
+        }
+
+        // 3. 깨지는 연출 오브젝트 활성화 및 시작
+        if (breakEffect != null)
+        {
+            breakEffect.gameObject.SetActive(true);
+            breakEffect.PrepareEffect();
+        }
     }
 }
