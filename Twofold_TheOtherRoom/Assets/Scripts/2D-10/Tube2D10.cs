@@ -8,6 +8,9 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 {
     public GameManager2D10 gameManager;
 
+    private Ball2D10[] startBalls;
+    private Vector3[] startPositions;
+
     public Ball2D10[] ball;
     public enum TubeColor
     {
@@ -23,8 +26,22 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     private float ballSize=1.5f;
     private float noneballPosY=-1.15f;
 
-    public void Start(){
+    public void Start()
+    {
         solve=false;
+
+        startBalls = new Ball2D10[ball.Length];
+        startPositions = new Vector3[ball.Length];
+
+        for (int i = 0; i < ball.Length; i++)
+        {
+            startBalls[i] = ball[i];
+
+            if (ball[i] != null)
+            {
+                startPositions[i] = ball[i].transform.position;
+            }
+        }
     }
     public void OnPointerClick(PointerEventData eventData)
     {   
@@ -134,6 +151,25 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
                     solve=true;
                 }
             }
+        }
+    }
+    public void ResetTube()
+    {
+        for (int i = 0; i < ball.Length; i++)
+        {
+            ball[i] = startBalls[i];
+
+            if (ball[i] != null)
+            {
+                ball[i].transform.position = startPositions[i];
+            }
+        }
+
+        solve = false;
+
+        if (lightImage != null)
+        {
+            lightImage.color = Color.white;
         }
     }
 }

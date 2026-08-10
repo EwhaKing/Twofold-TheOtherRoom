@@ -95,5 +95,24 @@ public class GameManager2D10 : MonoBehaviour
             return true;
         }
     }
+    public void RestartGame()
+    {
+        if (isAnimating)
+        {
+            return;
+        }
 
+        foreach (Tube2D10 currentTube in tube)
+        {
+            currentTube.ResetTube();
+        }
+
+        currentTube = null;
+        nextTube = null;
+        currentball=null;
+        beforeball = null;
+
+        isSelected = false;
+        isAnimating = false;
+    }
 }
