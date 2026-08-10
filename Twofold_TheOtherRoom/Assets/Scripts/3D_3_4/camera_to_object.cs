@@ -18,11 +18,12 @@ public class camera_to_object : MonoBehaviour, IInteractable
     [Header("Inspection UI")]
     [Tooltip("검사 중에만 표시할 뒤로가기 버튼 오브젝트입니다.")]
     [SerializeField] private GameObject backButton;
+     [SerializeField] private GameObject initializeButton;
 
 
     [Header("Rotation")]
     [SerializeField, Min(1f)] private float rotationSpeed = 50f;
-    [SerializeField, Range(1f, 89f)] private float verticalRotationLimit = 80f;
+    [SerializeField] private float verticalRotationLimit = 180f;
 
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
@@ -45,6 +46,10 @@ public class camera_to_object : MonoBehaviour, IInteractable
     private float inspectionPitch;
     private Quaternion objectRotationInCameraSpace;
 
+
+    private float dragStartPitch;
+    private float dragPitchDelta;
+
     private void Awake()
     {
         if (inspectionCamera == null)
@@ -55,6 +60,8 @@ public class camera_to_object : MonoBehaviour, IInteractable
 
         if (backButton != null)
             backButton.SetActive(false);
+        if (initializeButton != null)
+            initializeButton.SetActive(false);
     }
 
     private void Update()
@@ -70,25 +77,34 @@ public class camera_to_object : MonoBehaviour, IInteractable
             return;
         }
 
-        if (!Input.GetMouseButton(0))
-            return;
+        // 마우스를 처음 누른 순간의 회전값 저장
+if (Input.GetMouseButtonDown(0))
+{
+    dragStartPitch = inspectionPitch;
+    dragPitchDelta = 0f;
+}
 
-        float mouseX = Input.GetAxis("Mouse X") * -1f;
-        float mouseY = Input.GetAxis("Mouse Y");
-        float amount = rotationSpeed * Time.unscaledDeltaTime;
+if (!Input.GetMouseButton(0))
+    return;
 
-        inspectionYaw += mouseX * amount;
-        inspectionPitch = Mathf.Clamp(
-            inspectionPitch + mouseY * amount,
-            -verticalRotationLimit,
-            verticalRotationLimit);
+float mouseX = Input.GetAxis("Mouse X") * -1f;
+float mouseY = Input.GetAxis("Mouse Y");
+float amount = rotationSpeed * Time.unscaledDeltaTime;
 
-        // 월드 회전을 계속 누적하지 않고 카메라 기준 yaw/pitch로 다시 계산합니다.
-        // 좌우와 상하 회전이 섞일 때 생기는 불필요한 Z축 기울기를 방지합니다.
-        transform.rotation =
-            inspectionCamera.transform.rotation
-            * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
-            * objectRotationInCameraSpace;
+inspectionYaw += mouseX * amount;
+
+    // 이번 드래그에서 움직인 양만 제한
+    dragPitchDelta = Mathf.Clamp(
+        dragPitchDelta + mouseY * amount,
+        -verticalRotationLimit,
+        verticalRotationLimit);
+
+    inspectionPitch = dragStartPitch + dragPitchDelta;
+
+    transform.rotation =
+        inspectionCamera.transform.rotation
+        * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
+        * objectRotationInCameraSpace;
     }
 
     public void Interact()
@@ -131,6 +147,8 @@ public class camera_to_object : MonoBehaviour, IInteractable
         Cursor.visible = true;
         if (backButton != null)
             backButton.SetActive(true);
+        if (initializeButton != null)
+            initializeButton.SetActive(true);
 
         isInspecting = true;
         enteredFrame = Time.frameCount;
@@ -149,9 +167,36 @@ public class camera_to_object : MonoBehaviour, IInteractable
         Cursor.visible = originalCursorVisible;
         if (backButton != null)
             backButton.SetActive(false);
+        if (initializeButton != null)
+            initializeButton.SetActive(false);
+
 
         isInspecting = false;
     }
+
+    public void ResetInspectionView()
+{
+    if (!isInspecting || inspectionCamera == null)
+        return;
+
+    // E를 누르기 전의 원래 회전으로 복원
+    transform.rotation = originalRotation;
+
+    // 마우스 회전 누적값 초기화
+    inspectionYaw = 0f;
+    inspectionPitch = 0f;
+
+    // 현재 카메라 기준으로 초기 회전 관계 재설정
+    objectRotationInCameraSpace =
+        Quaternion.Inverse(inspectionCamera.transform.rotation)
+        * originalRotation;
+
+    if (objectRigidbody != null)
+    {
+        objectRigidbody.linearVelocity = Vector3.zero;
+        objectRigidbody.angularVelocity = Vector3.zero;
+    }
+}
 
     /// UI Button의 OnClick 이벤트에 연결할 검사 종료 메서드입니다.
     public void CloseInspection()
