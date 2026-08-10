@@ -10,7 +10,7 @@ public class PlugController : MonoBehaviour
     public enum PlugState { Free, Dragging, Docked, Inserted }
     public PlugState State { get; private set; } = PlugState.Free;
     public PlugOutlet CurrentOutlet => currentOutlet;
-    public event Action OnPlugStateChanged;
+    public event Action<PlugController> OnPlugStateChanged;
 
     [SerializeField] float rejectDuration = 0.16f; // 걸렸다가 되돌아오는 데 걸리는 전체 시간
 
@@ -80,6 +80,15 @@ public class PlugController : MonoBehaviour
         // 드래그X, 클릭O = insert 시도
         if (State != PlugState.Docked) return;
         TryInsert();
+    }
+
+    // 다른 plug를 집었을 때 기존 dock 해제로 항상 docked 최대 1개 유지
+    public void Undock()
+    {
+        if (State != PlugState.Docked) return;
+
+        if (currentOutlet != null) currentOutlet.Release(this);
+        SetState(PlugState.Free);
     }
     #endregion
 
@@ -187,7 +196,7 @@ public class PlugController : MonoBehaviour
                 break;
         }
         
-        OnPlugStateChanged?.Invoke();
+        OnPlugStateChanged?.Invoke(this);
     }
     #endregion
 }

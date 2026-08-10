@@ -56,6 +56,10 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     [Header("Answer")]
     [SerializeField] PlugAnswer[] answers;
 
+    [Header("Plugs")]
+    [Tooltip("퍼즐이 관리하는 plug 전체. 비워두면 answers에서 자동으로 채움")]
+    [SerializeField] PlugController[] plugs;
+
     [Header("Player Lock")]
     [Tooltip("PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾음")]
     [SerializeField] Behaviour[] behavioursToDisable;
@@ -92,6 +96,8 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
 
         if (puzzleCamera != null)
             puzzleCamera.enabled = false;
+
+        BuildPlugList();
     }
 
     private void Update()
@@ -104,12 +110,26 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
 
     private void OnEnable()
     {
-        foreach (var a in answers) a.plug.OnPlugStateChanged += CheckAnswer;
+        foreach (var plug in plugs) plug.OnPlugStateChanged += HandlePlugStateChanged;
     }
 
     private void OnDisable()
     {
-        foreach (var a in answers) a.plug.OnPlugStateChanged -= CheckAnswer;
+        foreach (var plug in plugs) plug.OnPlugStateChanged -= HandlePlugStateChanged;
+    }
+
+    // plugs를 인스펙터에서 비워두면 answers에 등록된 plug로 채운다
+    private void BuildPlugList()
+    {
+        if (plugs != null && plugs.Length > 0) return;
+
+        List<PlugController> found = new();
+        foreach (var a in answers)
+        {
+            if (a.plug != null && !found.Contains(a.plug)) found.Add(a.plug);
+        }
+
+        plugs = found.ToArray();
     }
 
     #region Puzzle Enter/Exit
@@ -167,6 +187,27 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     public void CloseInteraction()
     {
         Exit();
+    }
+    #endregion
+
+    #region Plug State
+    private void HandlePlugStateChanged(PlugController changed)
+    {
+        EnforceSingleDock(changed);
+        CheckAnswer();
+    }
+
+    // Docked는 항상 최대 하나. 다른 plug를 집는 순간 도킹돼 있던 건 풀려서 다시 매달림
+    // Undock()이 상태 변경 이벤트를 다시 쏘긴하는데 Free라 여기서 바로 빠져나감
+    private void EnforceSingleDock(PlugController changed)
+    {
+        if (changed.State != PlugController.PlugState.Dragging) return;
+
+        foreach (var plug in plugs)
+        {
+            if (plug == changed) continue;
+            if (plug.State == PlugController.PlugState.Docked) plug.Undock();
+        }
     }
     #endregion
 
