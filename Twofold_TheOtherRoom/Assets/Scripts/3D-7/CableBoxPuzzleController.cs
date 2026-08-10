@@ -10,8 +10,9 @@ using UnityEngine;
    [블록 콜라이더]
    콜라이더 하나가 세 역할 담당
    - E 상호작용 대상 / 밖에서 케이블 드래그 차단 / 액자 클릭 대상
-   꺼지는 건 "진입 + 액자 열림 + 미해결" 한 경우뿐. (SetCollider)
+   꺼지는 건 "진입 + 액자 열림 + 미해결" 한 경우뿐. (SetInteractable)
    그래서 정답 이후엔 자동으로 다시 켜지고 plug가 잠김
+   조작 안내 UI(guideUI)도 같은 조건으로 켜고 끔
 
    [progress]
    Closed -> Opened -> Solved 단방향. 
@@ -33,6 +34,10 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
 
     [Header("Align View")]
     [SerializeField] PlugAlignView alignView;
+
+    [Header("Guide UI")]
+    [Tooltip("드래그/클릭 조작 안내. 액자가 열려 plug를 만질 수 있는 동안만 켜짐")]
+    [SerializeField] GameObject guideUI;
 
     [Header("Frame")]
     [Tooltip("Frame Mesh")]
@@ -158,7 +163,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
         Cursor.visible = true;
 
         isEntered = true;
-        SetCollider();
+        SetInteractable();
     }
 
     private void Exit()
@@ -188,7 +193,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
         RestorePlayerControl();
 
         isEntered = false;
-        SetCollider();
+        SetInteractable();
     }
 
     /// UI 버튼 등에서 호출할 수 있는 종료 메서드
@@ -248,7 +253,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     {
         if (!IsAllCorrect()) return;
         progress = Progress.Solved;
-        SetCollider();
+        SetInteractable();
 
         if (doorTransform != null) StartCoroutine(OpenDoorRoutine());
 
@@ -293,10 +298,12 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     }
     #endregion
 
-    private void SetCollider()
+    private void SetInteractable()
     {
-        if (blockCollider == null) return;
-        blockCollider.enabled = !(isEntered && progress == Progress.Opened);
+        bool interactable = isEntered && progress == Progress.Opened;
+
+        if (blockCollider != null) blockCollider.enabled = !interactable;
+        if (guideUI != null) guideUI.SetActive(interactable);
     }
 
     #region Frame Open
@@ -328,7 +335,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     private void OnFrameOpened()
     {
         // 액자가 다 열리고 나서 케이블 클릭/드래그를 허용
-        SetCollider();
+        SetInteractable();
     }
 
     private void StopFrameRoutine()
