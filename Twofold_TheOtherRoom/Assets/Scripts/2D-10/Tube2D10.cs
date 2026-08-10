@@ -23,8 +23,8 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     public Image lightImage;
     public bool solve;
 
-    private float ballSize=1.5f;
-    private float noneballPosY=-1.15f;
+    private float ballSize=1.4f;
+    private float noneballPosY=-1.71f;
 
     public void Start()
     {
