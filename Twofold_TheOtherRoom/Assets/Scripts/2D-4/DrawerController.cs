@@ -2,9 +2,12 @@ using UnityEngine;
 
 public class DrawerController : MonoBehaviour
 {
-    [Header("열린 서랍")]
+    [Header("열린 서랍장")]
     [SerializeField] private GameObject leftDrawerOpen;
     [SerializeField] private GameObject rightDrawerOpen;
+
+    [Header("책")]
+    [SerializeField] private GameObject book;
 
     private void Start()
     {
@@ -16,6 +19,11 @@ public class DrawerController : MonoBehaviour
         if (rightDrawerOpen != null)
         {
             rightDrawerOpen.SetActive(false);
+        }
+
+        if (book != null)
+        {
+            book.SetActive(false);
         }
     }
 
@@ -38,8 +46,13 @@ public class DrawerController : MonoBehaviour
             return;
         }
 
-        rightDrawerOpen.SetActive(
-            !rightDrawerOpen.activeSelf
-        );
+        bool isOpen = !rightDrawerOpen.activeSelf;
+
+        rightDrawerOpen.SetActive(isOpen);
+
+        if (book != null)
+        {
+            book.SetActive(isOpen);
+        }
     }
 }
