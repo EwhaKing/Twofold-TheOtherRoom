@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Linq;
 
 public class GameManager2D10 : MonoBehaviour
 {    
@@ -12,7 +13,6 @@ public class GameManager2D10 : MonoBehaviour
     public Ball2D10 beforeball;
     private Image LightImage;
     
-    private bool _solved;
     public bool isSelected;
     public bool isAnimating;
 
@@ -20,14 +20,21 @@ public class GameManager2D10 : MonoBehaviour
     private Vector3 targetPos;
     void Start()
     {
-        _solved=false;
         isSelected=false;
         isAnimating=false;
     }
 
-    public void isSolved()
+    public void CheckAnswer()
     {
-        if(tube)
+
+        if (tube[0].solve == true &&
+            tube[1].solve == true &&
+            tube[2].solve == true){
+            PuzzleManager.Instance.ReportSolved(
+                "2D-10",
+                PuzzleDimension.TwoD
+            );
+        }
     }
     public IEnumerator GoUp()
     {
@@ -50,11 +57,12 @@ public class GameManager2D10 : MonoBehaviour
         yield return StartCoroutine(MoveBall(currentball, targetPos));
         nextTube.Push(currentball);
         currentTube=null;
-        nextTube.Answer();
+        nextTube.Answer(nextTube.GetColor());
         nextTube=null;
         currentball=null;
         beforeball=null;
         isAnimating = false;
+        CheckAnswer();
     }
 
     private IEnumerator MoveBall(Ball2D10 ball, Vector3 targetPos)

@@ -9,15 +9,26 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     public GameManager2D10 gameManager;
 
     public Ball2D10[] ball;
-    
-    public Image LightImage;
+    public enum TubeColor
+    {
+        Red,
+        Yellow,
+        Green
+    }  
+    public TubeColor tubeColor;
+ 
+    public Image lightImage;
+    public bool solve;
 
     private float ballSize=1.5f;
     private float noneballPosY=-1.15f;
 
+    public void Start(){
+        solve=false;
+    }
     public void OnPointerClick(PointerEventData eventData)
     {   
-        if (gameManager.isAnimating)
+        if (gameManager.isAnimating || solve==true)
         {
             return;
         }
@@ -54,6 +65,11 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
             }
         }
     }
+    public TubeColor GetColor()
+    {
+        return tubeColor;
+    }
+
     public Ball2D10 GetTopBall()
     {
         for (int i = ball.Length - 1; i >= 0; i--)
@@ -105,17 +121,17 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 
         return noneballPosY + (count * ballSize);
     }
-    public void Answer()
+    public void Answer(TubeColor tubeColor)
     {
         if (ball[3]!=null)
         {
-            Ball2D10.BallColor color = ball[0].GetColor();
-
+            Ball2D10.BallColor color = (Ball2D10.BallColor)tubeColor;
             if (ball.All(ball => ball.GetColor() == color))
             {   
-                if(LightImage!=null)
+                if(lightImage!=null)
                 {
-                    LightImage.color = new Color32(51, 255, 51, 255);
+                    lightImage.color = new Color32(51, 255, 51, 255);
+                    solve=true;
                 }
             }
         }
