@@ -145,9 +145,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 529765ec15ef814438545308b2ce3e68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrawerController
-  leftDrawerOpen: {fileID: 0}
-  rightDrawerOpen: {fileID: 0}
-  book: {fileID: 0}
+  leftDrawerOpen: {fileID: 7962227262933367313}
+  rightDrawerOpen: {fileID: 8849305247626741706}
+  book: {fileID: 6662507310284617897}
 --- !u!1 &6662507310284617897
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 6892119499293478321}
   - component: {fileID: 6570987729844149561}
   - component: {fileID: 7370450204946879444}
+  - component: {fileID: 6799719012780724563}
   m_Layer: 5
   m_Name: Book
   m_TagString: Untagged
@@ -223,6 +224,22 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6799719012780724563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6662507310284617897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 117f02b5d4fca09488782d71c215e922, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetailView
+  detailView: {fileID: 0}
+  detailRoot: {fileID: 0}
+  manager: {fileID: 0}
+  detailPrefab: {fileID: 0}
 --- !u!1 &7046222628985985395
 GameObject:
   m_ObjectHideFlags: 0

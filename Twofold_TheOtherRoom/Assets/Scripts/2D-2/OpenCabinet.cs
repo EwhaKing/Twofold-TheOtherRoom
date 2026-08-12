@@ -44,30 +44,40 @@ public class OpenCabinet : MonoBehaviour
                 drawer.hasCachedClosedHeight = true;
             }
 
-            if (!drawer.hasCachedSiblingIndex)
-            {
-                drawer.originalSiblingIndex = drawerRect.GetSiblingIndex();
-                drawer.hasCachedSiblingIndex = true;
-            }
-
             Vector2 size = drawerRect.sizeDelta;
-            size.y = drawer.isOpen ? drawer.closedHeight + 40f : drawer.closedHeight;
+            size.y = drawer.isOpen ? drawer.closedHeight + 60f : drawer.closedHeight;
             drawerRect.sizeDelta = size;
-
-            if (drawer.isOpen)
-            {
-                drawerRect.SetAsLastSibling(); // //그림이 앞으로 나오도록 
-            }
-            else
-            {
-                drawerRect.SetSiblingIndex(drawer.originalSiblingIndex);
-            }
         }
+
+        ReorderDrawers();
 
         // 서랍 안 종이가 있다면 서랍 상태에 맞춰 인스펙터 켜고 끄기
         if (drawer.itemInside != null)
         {
             drawer.itemInside.SetActive(drawer.isOpen);
+        }
+    }
+
+    private void ReorderDrawers()
+    {
+        // 닫힌 서랍은 모두 뒤에 둔다.
+        for (int i = 0; i < drawers.Count; i++)
+        {
+            DrawerData drawer = drawers[i];
+            if (!drawer.isOpen && drawer.drawerButton != null)
+            {
+                drawer.drawerButton.image.rectTransform.SetAsLastSibling();
+            }
+        }
+
+        // 열린 서랍은 index가 큰 것부터 올려서, index가 작은 서ㅁ랍이 가장 앞에 오게 한다.
+        for (int i = drawers.Count - 1; i >= 0; i--)
+        {
+            DrawerData drawer = drawers[i];
+            if (drawer.isOpen && drawer.drawerButton != null)
+            {
+                drawer.drawerButton.image.rectTransform.SetAsLastSibling();
+            }
         }
     }
 
