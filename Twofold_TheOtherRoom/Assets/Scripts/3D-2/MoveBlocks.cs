@@ -8,7 +8,7 @@ public class MoveBlocks : MonoBehaviour , IInteractable
     public int currentZone = 1;
 
     [Header("Move Settings")]
-    public float stepDistance = 4f;
+    public float stepDistance = 1f;
     public float moveDuration = 0.35f;
 
 
