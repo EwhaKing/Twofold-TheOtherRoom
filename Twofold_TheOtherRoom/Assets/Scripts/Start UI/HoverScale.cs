@@ -10,22 +10,27 @@ using UnityEngine.EventSystems;
 public class HoverScale : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Scale")]
+    [Tooltip("확대할 오브젝트 지정. 비워두면 자기 자신.")]
+    [SerializeField] RectTransform scaleTarget;
     [SerializeField] float hoverScale = 1.08f;
 
     [Header("Motion")]
     [SerializeField] float duration = 0.12f;
     [SerializeField] AnimationCurve ease = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    RectTransform rect;
     Coroutine routine;
 
-    void Awake() => rect = (RectTransform)transform;
+    void Awake()
+    {
+        if (scaleTarget == null)
+            scaleTarget = (RectTransform)transform;
+    }
 
     // 확대된 채로 화면이 꺼지면 코루틴이 죽어 커진 상태로 남으므로 되돌림
     void OnDisable()
     {
         routine = null;
-        rect.localScale = Vector3.one;
+        scaleTarget.localScale = Vector3.one;
     }
 
     public void OnPointerEnter(PointerEventData e) => Play(hoverScale);
@@ -42,11 +47,11 @@ public class HoverScale : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     IEnumerator ScaleRoutine(float to)
     {
-        Vector3 from = rect.localScale;
-        Vector3 target = Vector3.one * to;
+        Vector3 from = scaleTarget.localScale;
+        Vector3 toScale = Vector3.one * to;
 
         yield return Animate(duration, ease,
-            t => rect.localScale = Vector3.Lerp(from, target, t));
+            t => scaleTarget.localScale = Vector3.Lerp(from, toScale, t));
 
         routine = null;
     }
