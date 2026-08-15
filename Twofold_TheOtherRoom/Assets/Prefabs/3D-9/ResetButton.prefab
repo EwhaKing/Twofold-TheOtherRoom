@@ -5781,7 +5781,8 @@ GameObject:
   - component: {fileID: 5691907587613181782}
   - component: {fileID: 4640581138471442580}
   - component: {fileID: 5086666306717824509}
-  m_Layer: 0
+  - component: {fileID: 5855923997794936445}
+  m_Layer: 3
   m_Name: Press
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5881,3 +5882,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0000001, y: 2, z: 1.0000002}
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &5855923997794936445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8849436017017756718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6f48ff172cdc2947ae494d69c1b2c96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloorPanelPuzzleResetButton
+  controller: {fileID: 0}
+  pressDepth: 0.06
+  pressDuration: 0.1
