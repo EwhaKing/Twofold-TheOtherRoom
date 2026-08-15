@@ -1,5 +1,5 @@
 using UnityEngine;
-public class DiscPuzzleInteraction : MonoBehaviour, IInteractable
+public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspection
 {
     [Header("Cameras")]
     [Tooltip("탐험 중 사용하는 플레이어 카메라. 비우면 Camera.main")]
@@ -89,6 +89,9 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable
         if (switchCanvas != null)
             switchCanvas.SetActive(true);
 
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -103,6 +106,9 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable
 
         if (switchCanvas != null)
             switchCanvas.SetActive(false);
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
 
         if (puzzleCamera != null)
             puzzleCamera.enabled = false;
@@ -123,6 +129,11 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable
 
     /// UI 버튼 등에서 호출할 수 있는 종료 메서드
     public void CloseInteraction()
+    {
+        Exit();
+    }
+
+    public void CloseInspection()
     {
         Exit();
     }

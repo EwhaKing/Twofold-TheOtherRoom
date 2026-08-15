@@ -6,7 +6,7 @@ using UnityEngine;
 /// PlayerInteractor를 통해 물체를 카메라 앞에서 자세히 살펴보게 합니다.
 /// 이 컴포넌트를 살펴볼 프리팹의 루트에 추가하세요.
 /// </summary>
-public class camera_to_object : MonoBehaviour, IInteractable
+public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, IResetInspection
 {
   
 
@@ -15,14 +15,8 @@ public class camera_to_object : MonoBehaviour, IInteractable
     [SerializeField, Min(0.1f)] private float distanceFromCamera = 3f;
     public Vector3 screenOffset;
 
-    [Header("Inspection UI")]
-    [Tooltip("검사 중에만 표시할 뒤로가기 버튼 오브젝트입니다.")]
-    [SerializeField] private GameObject backButton;
-     [SerializeField] private GameObject initializeButton;
-
-
     [Header("Rotation")]
-    [SerializeField, Min(1f)] private float rotationSpeed = 50f;
+    [SerializeField, Min(1f)] private float rotationSpeed;
     [SerializeField] private float verticalRotationLimit = 180f;
 
     [Header("Player Lock")]
@@ -58,10 +52,6 @@ public class camera_to_object : MonoBehaviour, IInteractable
         objectColliders = GetComponentsInChildren<Collider>(true);
         objectRigidbody = GetComponent<Rigidbody>();
 
-        if (backButton != null)
-            backButton.SetActive(false);
-        if (initializeButton != null)
-            initializeButton.SetActive(false);
     }
 
     private void Update()
@@ -145,10 +135,8 @@ inspectionYaw += mouseX * amount;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        if (backButton != null)
-            backButton.SetActive(true);
-        if (initializeButton != null)
-            initializeButton.SetActive(true);
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         isInspecting = true;
         enteredFrame = Time.frameCount;
@@ -165,10 +153,8 @@ inspectionYaw += mouseX * amount;
 
         Cursor.lockState = originalCursorLockMode;
         Cursor.visible = originalCursorVisible;
-        if (backButton != null)
-            backButton.SetActive(false);
-        if (initializeButton != null)
-            initializeButton.SetActive(false);
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
 
 
         isInspecting = false;
@@ -202,6 +188,11 @@ inspectionYaw += mouseX * amount;
     public void CloseInspection()
     {
         EndInspection();
+    }
+
+    public void ResetInspection()
+    {
+        ResetInspectionView();
     }
 
     private void SaveObjectState()
