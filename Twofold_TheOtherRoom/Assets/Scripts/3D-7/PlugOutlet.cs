@@ -5,13 +5,14 @@ using UnityEngine;
 public class PlugOutlet : MonoBehaviour
 {
     [SerializeField] Transform dockPoint;
-    [SerializeField] float insertDepth = -0.17f; // dockPoint에서 들어가는 깊이
-    [SerializeField] float rejectDepth = -0.14f; // 방향이 안 맞을 때 걸리는 깊이
+    [SerializeField] Transform insertPoint; // 꽂혔을 때 plug가 놓일 자리
+    [SerializeField] Transform rejectPoint; // 방향이 안 맞아 걸렸을 때 자리
 
     public Vector3 DockPosition => dockPoint.position;
     public Quaternion DockRotation => dockPoint.rotation;
-    public Vector3 InsertPosition => dockPoint.position + dockPoint.up * insertDepth;
-    public Vector3 RejectPosition => dockPoint.position + dockPoint.up * rejectDepth;
+    // 위치만 읽으므로 두 point의 회전은 무의미. 삽입은 순수 평행이동이고 회전은 dockPoint가 소유
+    public Vector3 InsertPosition => insertPoint.position;
+    public Vector3 RejectPosition => rejectPoint.position;
 
     PlugController occupant;
 
