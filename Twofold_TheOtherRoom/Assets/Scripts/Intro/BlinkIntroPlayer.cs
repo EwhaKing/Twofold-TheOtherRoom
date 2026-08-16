@@ -28,7 +28,8 @@ public class BlinkIntroPlayer : MonoBehaviour
 
     // 눈은 감을 때가 뜰 때보다 2~3배 빠름. 접선을 비대칭으로 설정해 이 비율을 고정.
     // 골짜기마다 키를 두 개 두어 감은 채 머무는 구간 생성.
-    [Tooltip("X = 진행도(0~1), Y = 눈 뜬 정도(0 감김 / 1 뜸)")]
+    // 1 을 넘는 구간은 눈꺼풀이 화면 밖까지 벌어져 전체 화면이 되는 마무리.
+    [Tooltip("X = 진행도(0~1), Y = 눈 뜬 정도(0 감김 / 1 뜸 / 2 전체 화면)")]
     [SerializeField]
     private AnimationCurve blinkCurve = new AnimationCurve(
         new Keyframe(0.00f, 0.00f,  0.0f,  0.0f),   // 감긴 채 시작
@@ -39,17 +40,9 @@ public class BlinkIntroPlayer : MonoBehaviour
         new Keyframe(0.50f, 0.70f,  0.8f, -9.5f),   // 70% → 다시 닫힘
         new Keyframe(0.57f, 0.00f, -2.0f,  0.0f),
         new Keyframe(0.65f, 0.00f,  0.0f,  6.0f),   // 감은 채 유지
-        new Keyframe(0.85f, 1.00f,  0.0f,  0.0f),   // 완전히 뜸
-        new Keyframe(1.00f, 1.00f,  0.0f,  0.0f)    // 뜬 채로 유지
-    );
-
-    [Tooltip("X = 진행도(0~1), Y = 걷히는 정도(0 눈 모양 / 1 전체 시야).\n" +
-             "눈 크기는 그대로 두고 어두운 부분만 옅어짐")]
-    [SerializeField]
-    private AnimationCurve revealCurve = new AnimationCurve(
-        new Keyframe(0.00f, 0.00f, 0.0f, 0.0f),
-        new Keyframe(0.72f, 0.00f, 0.0f, 0.0f),
-        new Keyframe(1.00f, 1.00f, 0.0f, 0.0f)
+        new Keyframe(0.85f, 1.00f,  0.0f,  3.0f),   // 완전히 뜸 (정상 눈 크기)
+        new Keyframe(0.97f, 2.00f,  9.0f,  0.0f),   // 눈꺼풀이 화면 밖까지 확 열림
+        new Keyframe(1.00f, 2.00f,  0.0f,  0.0f)    // 전체 화면으로 유지
     );
 
     [Header("Look (씬마다 맞게 설정)")]
@@ -96,8 +89,10 @@ public class BlinkIntroPlayer : MonoBehaviour
     /// <summary>연출이 끝났을 때 호출됨.</summary>
     public event Action OnFinished;
 
+    /// 눈꺼풀이 화면 밖까지 벌어져 전체 화면이 되는 _Blink 값.
+    private const float FullyOpenBlink = 2f;
+
     private static readonly int BlinkID       = Shader.PropertyToID("_Blink");
-    private static readonly int RevealID      = Shader.PropertyToID("_Reveal");
     private static readonly int EyeWidthID    = Shader.PropertyToID("_EyeWidth");
     private static readonly int UpperPeakID   = Shader.PropertyToID("_EyeHeight");
     private static readonly int LowerPeakID   = Shader.PropertyToID("_EyeHeightDown");
@@ -191,19 +186,16 @@ public class BlinkIntroPlayer : MonoBehaviour
         ApplyNormalizedTime(0f);
     }
 
-    /// <summary>진행도(0~1)를 넣으면 두 커브를 평가해 화면에 반영.</summary>
+    /// <summary>진행도(0~1)를 넣으면 커브를 평가해 화면에 반영.</summary>
     public void ApplyNormalizedTime(float t01)
     {
-        float t = Mathf.Clamp01(t01);
-        SetBlink(blinkCurve.Evaluate(t));
-        SetReveal(revealCurve.Evaluate(t));
+        SetBlink(blinkCurve.Evaluate(Mathf.Clamp01(t01)));
     }
 
-    /// <summary>완전히 뜨고 걷힌 상태로 고정한 뒤 풀스크린 패스를 끔.</summary>
+    /// <summary>화면 전체가 드러난 상태로 고정한 뒤 풀스크린 패스를 끔.</summary>
     public void Finish()
     {
-        SetBlink(1f);
-        SetReveal(1f);   // 1 이 아니면 패스를 끄는 순간 눈 모양이 툭 사라짐
+        SetBlink(FullyOpenBlink);   // 1 로 두면 패스를 끄는 순간 눈 모양이 툭 사라짐
 
         Unhook();
         OnFinished?.Invoke();
@@ -254,11 +246,5 @@ public class BlinkIntroPlayer : MonoBehaviour
     {
         if (_runtimeMaterial != null)
             _runtimeMaterial.SetFloat(BlinkID, blink);
-    }
-
-    private void SetReveal(float reveal)
-    {
-        if (_runtimeMaterial != null)
-            _runtimeMaterial.SetFloat(RevealID, reveal);
     }
 }
