@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BlinkIntroPlayer
   blinkFeature: {fileID: 6770154252242034124, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
   blinkMaterial: {fileID: 2100000, guid: 63b746cbc04a00b4da834ce1666ec015, type: 2}
-  duration: 6
+  duration: 7
   blinkCurve:
     serializedVersion: 2
     m_Curve:
@@ -63,7 +63,7 @@ MonoBehaviour:
       time: 0.05
       value: 0
       inSlope: 0
-      outSlope: 3.6
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -72,7 +72,7 @@ MonoBehaviour:
       time: 0.2
       value: 0.45
       inSlope: 0.8
-      outSlope: -7
+      outSlope: 0.8
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -81,7 +81,7 @@ MonoBehaviour:
       time: 0.27
       value: 0
       inSlope: -1.5
-      outSlope: 0
+      outSlope: -1.5
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -90,7 +90,7 @@ MonoBehaviour:
       time: 0.35
       value: 0
       inSlope: 0
-      outSlope: 5.5
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -99,7 +99,7 @@ MonoBehaviour:
       time: 0.5
       value: 0.7
       inSlope: 0.8
-      outSlope: -9.5
+      outSlope: 0.8
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
       time: 0.57
       value: 0
       inSlope: -2
-      outSlope: 0
+      outSlope: -2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -117,56 +117,23 @@ MonoBehaviour:
       time: 0.65
       value: 0
       inSlope: 0
-      outSlope: 6
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.85
-      value: 1
-      inSlope: 0
-      outSlope: 0
+      time: 0.97
+      value: 2
+      inSlope: 9
+      outSlope: 9
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  revealCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.7
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
+      value: 2
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -180,6 +147,7 @@ MonoBehaviour:
   upperLidPeak: 0.42
   lowerLidPeak: 0.4
   upperLidBias: 0.1
+  widenTiming: 0.25
   softness: 0.12
   exposureWhenClosed: 2
   lightBleed: 0.6

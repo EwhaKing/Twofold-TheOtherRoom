@@ -24,20 +24,19 @@ public class BlinkIntroPlayer : MonoBehaviour
 
     [Header("Timing")]
     [Tooltip("연출 전체 길이(초)")]
-    [SerializeField] private float duration = 6f;
+    [SerializeField] private float duration = 7f;
 
     // 눈은 감을 때가 뜰 때보다 2~3배 빠름. 접선을 비대칭으로 설정해 이 비율을 고정.
     // 골짜기마다 키를 두 개 두어 감은 채 머무는 구간 생성.
-    // 1 을 넘는 구간은 눈꺼풀이 화면 밖까지 벌어져 전체 화면이 되는 마무리.
     [Tooltip("X = 진행도(0~1), Y = 눈 뜬 정도(0 감김 / 1 뜸 / 2 전체 화면)")]
     [SerializeField]
     private AnimationCurve blinkCurve = new AnimationCurve(
         new Keyframe(0.00f, 0.00f,  0.0f,  0.0f),   // 감긴 채 시작
         new Keyframe(0.05f, 0.00f,  0.0f,  3.6f),
-        new Keyframe(0.20f, 0.45f,  0.8f, -7.0f),   // 45% → 급격히 닫힘
+        new Keyframe(0.20f, 0.45f,  0.8f, -7.0f),   // 1회차 45% → 닫힘
         new Keyframe(0.27f, 0.00f, -1.5f,  0.0f),
         new Keyframe(0.35f, 0.00f,  0.0f,  5.5f),   // 감은 채 유지
-        new Keyframe(0.50f, 0.70f,  0.8f, -9.5f),   // 70% → 다시 닫힘
+        new Keyframe(0.50f, 0.70f,  0.8f, -9.5f),   // 2회차 70% → 닫힘
         new Keyframe(0.57f, 0.00f, -2.0f,  0.0f),
         new Keyframe(0.65f, 0.00f,  0.0f,  6.0f),   // 감은 채 유지
         new Keyframe(0.85f, 1.00f,  0.0f,  3.0f),   // 완전히 뜸 (정상 눈 크기)
@@ -61,6 +60,10 @@ public class BlinkIntroPlayer : MonoBehaviour
     [Tooltip("윗눈꺼풀에 움직임을 몰아주는 정도. 0 = 위아래 동일, 1 = 아랫눈꺼풀 거의 고정")]
     [Range(0f, 1f)]
     [SerializeField] private float upperLidBias = 0.1f;
+
+    [Tooltip("마무리에서 좌우 끝점이 벌어지는 시점. 1 = 세로와 동시, 1 미만 = 가로가 먼저, 1 초과 = 가로가 나중")]
+    [Range(0.25f, 6f)]
+    [SerializeField] private float widenTiming = 0.25f;
 
     [Tooltip("눈꺼풀 경계가 번지는 정도")]
     [Range(0.001f, 0.3f)]
@@ -97,6 +100,7 @@ public class BlinkIntroPlayer : MonoBehaviour
     private static readonly int UpperPeakID   = Shader.PropertyToID("_EyeHeight");
     private static readonly int LowerPeakID   = Shader.PropertyToID("_EyeHeightDown");
     private static readonly int LidBiasID     = Shader.PropertyToID("_LidBias");
+    private static readonly int WidenTimingID = Shader.PropertyToID("_WidenTiming");
     private static readonly int SoftnessID    = Shader.PropertyToID("_Softness");
     private static readonly int ExposureID    = Shader.PropertyToID("_Exposure");
     private static readonly int BleedID       = Shader.PropertyToID("_Bleed");
@@ -235,6 +239,7 @@ public class BlinkIntroPlayer : MonoBehaviour
         _runtimeMaterial.SetFloat(UpperPeakID,   upperLidPeak);
         _runtimeMaterial.SetFloat(LowerPeakID,   lowerLidPeak);
         _runtimeMaterial.SetFloat(LidBiasID,     upperLidBias);
+        _runtimeMaterial.SetFloat(WidenTimingID, widenTiming);
         _runtimeMaterial.SetFloat(SoftnessID,    softness);
         _runtimeMaterial.SetFloat(ExposureID,    exposureWhenClosed);
         _runtimeMaterial.SetFloat(BleedID,       lightBleed);
