@@ -14,14 +14,32 @@ public enum BGMType
 }
 public enum SFXType
 {
-    TestSe,
-    ButtonClick,
+    Paper,
+    LockOpen,
+    DrawerOpen,
+    FloorHole,
+    CabinetOpen,
+    DefaultClick,
+
+    SteppingNormal,
+    SteppingCorrect,
+    Scrape,
+    Knife,
     DoorOpen,
-    PuzzleClear,
-    WrongAnswer,
-    CorrectAnswer,
-    ItemPickup,
-    UIClick
+    ButtonPush,
+
+    TickTok,
+    Ding,
+    WrongBtn,
+    CorrectBtn,
+    CompleteCorrectBtn,
+    Beep1,
+    Beep2,
+    UIClick,
+    AlphaS,
+    AlphaE,
+    AlphaL,
+    AlphaF
 }
 
 /// <summary>
