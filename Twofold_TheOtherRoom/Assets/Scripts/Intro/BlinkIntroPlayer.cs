@@ -1,14 +1,12 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Full Screen Pass Renderer Feature 에 물린 BlinkIntro 머티리얼을 움직여 눈 깜빡임 연출을 그림.
 ///
-/// 그리기만 담당하고 진행 시점은 밖에서 결정.
+/// 그리기만 담당하고 진행 시점은 밖에서 결정. 구동은 IntroSequencer 담당.
 /// Begin → ApplyNormalizedTime(0~1) → Finish 순서로 호출.
-/// playOnStart 는 이 순서를 코루틴으로 대신 돌려주는 단독 테스트용.
 ///
 /// 재생 중에는 머티리얼 복사본을 Feature 에 끼워 넣고 끝나면 원상 복구.
 /// 원본 .mat 과 Renderer Data 에셋을 런타임에 더럽히지 않기 위함.
@@ -23,9 +21,6 @@ public class BlinkIntroPlayer : MonoBehaviour
     [SerializeField] private Material blinkMaterial;
 
     [Header("Timing")]
-    [Tooltip("연출 전체 길이(초)")]
-    [SerializeField] private float duration = 7f;
-
     // 눈은 감을 때가 뜰 때보다 2~3배 빠름. 접선을 비대칭으로 설정해 이 비율을 고정.
     // 골짜기마다 키를 두 개 두어 감은 채 머무는 구간 생성.
     [Tooltip("X = 진행도(0~1), Y = 눈 뜬 정도(0 감김 / 1 뜸 / 2 전체 화면)")]
@@ -85,10 +80,6 @@ public class BlinkIntroPlayer : MonoBehaviour
     [Range(0.25f, 3f)]
     [SerializeField] private float focusRecovery = 1f;
 
-    [Header("Playback")]
-    [Tooltip("단독 테스트용. 시퀀서가 Begin / ApplyNormalizedTime 을 호출하면 해제")]
-    [SerializeField] private bool playOnStart = true;
-
     /// <summary>연출이 끝났을 때 호출됨.</summary>
     public event Action OnFinished;
 
@@ -114,8 +105,6 @@ public class BlinkIntroPlayer : MonoBehaviour
     private bool _originalFeatureActive;
     private bool _hooked;
 
-    private Coroutine _routine;
-
     private void Awake()
     {
         if (blinkFeature == null || blinkMaterial == null)
@@ -127,11 +116,6 @@ public class BlinkIntroPlayer : MonoBehaviour
 
         _runtimeMaterial = new Material(blinkMaterial) { name = blinkMaterial.name + " (Runtime)" };
         ApplyLook();
-    }
-
-    private void Start()
-    {
-        if (playOnStart) Play();
     }
 
     private void OnDisable()
@@ -151,34 +135,7 @@ public class BlinkIntroPlayer : MonoBehaviour
         _runtimeMaterial = null;
     }
 
-    // ---------- 자체 재생 (단독 테스트용) ----------
-
-    /// <summary>duration 동안 커브를 따라 한 번 재생.</summary>
-    public void Play()
-    {
-        if (!enabled) return;
-        if (_routine != null) StopCoroutine(_routine);
-        _routine = StartCoroutine(PlayRoutine());
-    }
-
-    private IEnumerator PlayRoutine()
-    {
-        Begin();
-        yield return null;   // Feature 가 켜진 다음 프레임부터 그려짐
-
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;   // 타임스케일 0 에서도 재생되도록
-            ApplyNormalizedTime(elapsed / duration);
-            yield return null;
-        }
-
-        Finish();
-        _routine = null;
-    }
-
-    // ---------- 외부 구동 (시퀀서 / 네트워크 시계) ----------
+    // ---------- 외부 구동 (IntroSequencer) ----------
 
     /// <summary>풀스크린 패스를 켜고 시작 상태로 전환.</summary>
     public void Begin()
