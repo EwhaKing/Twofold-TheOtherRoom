@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -23,7 +21,7 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Collider[] objectColliders;
     private Rigidbody objectRigidbody;
 
@@ -32,8 +30,6 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     private bool[] originalColliderStates;
     private bool originalIsKinematic;
     private bool originalUseGravity;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
     private bool isInspecting;
     private int enteredFrame;
     private float inspectionYaw;
@@ -118,7 +114,8 @@ inspectionYaw += mouseX * amount;
         }
 
         SaveObjectState();
-        DisablePlayerControl();
+        //playercontrollock
+        playerControlLock.Lock(this, behavioursToDisable);
 
         Transform cameraTransform = inspectionCamera.transform;
         // 카메라는 변경하지 않고 물체만 현재 카메라 정면으로 이동합니다.
@@ -133,8 +130,6 @@ inspectionYaw += mouseX * amount;
         objectRotationInCameraSpace =
             Quaternion.Inverse(cameraTransform.rotation) * transform.rotation;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
 
@@ -149,10 +144,8 @@ inspectionYaw += mouseX * amount;
 
         transform.SetPositionAndRotation(originalPosition, originalRotation);
         RestoreObjectState();
-        RestorePlayerControl();
-
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
+        //playerControlunLock
+        playerControlLock.Unlock();
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Hide(this);
 
@@ -199,9 +192,6 @@ inspectionYaw += mouseX * amount;
     {
         originalPosition = transform.position;
         originalRotation = transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
-
         originalColliderStates = new bool[objectColliders.Length];
         for (int i = 0; i < objectColliders.Length; i++)
         {
@@ -230,42 +220,6 @@ inspectionYaw += mouseX * amount;
             objectRigidbody.isKinematic = originalIsKinematic;
             objectRigidbody.useGravity = originalUseGravity;
         }
-    }
-
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
-        disabledBehaviours.Clear();
     }
 
 }

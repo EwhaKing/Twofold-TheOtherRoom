@@ -19,11 +19,7 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
-    private readonly System.Collections.Generic.List<Behaviour> disabledBehaviours =
-        new System.Collections.Generic.List<Behaviour>();
-
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private bool isEntered;
     private int enteredFrame;
 
@@ -67,10 +63,8 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
 
     private void Enter()
     {
-        DisablePlayerControl();
-
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
+           //playercontrollock
+        playerControlLock.Lock(this, behavioursToDisable);
 
         // 카메라 전환: 플레이어 카메라 끄고 퍼즐 카메라 켜기
         if (playerCamera != null)
@@ -91,9 +85,6 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
 
         isEntered = true;
         enteredFrame = Time.frameCount;
@@ -119,10 +110,8 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         if (interactionCollider != null)
             interactionCollider.enabled = true;
 
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
-
-        RestorePlayerControl();
+         //playercontrolunlock
+        playerControlLock.Unlock();
 
         isEntered = false;
     }
@@ -138,39 +127,4 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         Exit();
     }
 
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
-        disabledBehaviours.Clear();
-    }
 }
