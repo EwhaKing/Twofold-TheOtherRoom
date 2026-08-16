@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>수집한 조각을 공용 프리팹으로 생성하고 드래그 퍼즐을 구성합니다.</summary>
 public class MirrorFrame : MonoBehaviour
@@ -22,14 +23,13 @@ public class MirrorFrame : MonoBehaviour
     private void OnEnable()
     {
         MirrorManager.OnMirrorPieceObtained += HandleStateChanged;
-        MirrorManager.OnMirrorPiecePlaced += HandleStateChanged;
+        HideCorrectPieces();
         Rebuild();
     }
 
     private void OnDisable()
     {
         MirrorManager.OnMirrorPieceObtained -= HandleStateChanged;
-        MirrorManager.OnMirrorPiecePlaced -= HandleStateChanged;
     }
 
     public void Rebuild()
@@ -61,6 +61,22 @@ public class MirrorFrame : MonoBehaviour
     }
 
     private void HandleStateChanged(string puzzleId) => Rebuild();
+
+    private void HideCorrectPieces()
+    {
+        foreach (PieceEntry entry in pieces)
+        {
+            if (entry.correctPosition == null) continue;
+
+            Image guideImage = entry.correctPosition.GetComponent<Image>();
+            if (guideImage == null) continue;
+
+            Color color = guideImage.color;
+            color.a = 0f;
+            guideImage.color = color;
+            guideImage.raycastTarget = false;
+        }
+    }
 
     private void ClearPieces()
     {

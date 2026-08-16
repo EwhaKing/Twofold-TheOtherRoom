@@ -9,7 +9,7 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     public GameManager2D10 gameManager;
 
     private Ball2D10[] startBalls;
-    private Vector3[] startPositions;
+    private Vector2[] startPositions;
 
     public Ball2D10[] ball;
     public enum TubeColor
@@ -23,15 +23,15 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     public Image lightImage;
     public bool solve;
 
-    private float ballSize=1.4f;
-    private float noneballPosY=-1.71f;
+    [SerializeField] private float ballSpacing = 145f;
+    [SerializeField] private float bottomBallOffset = -270f;
 
     public void Start()
     {
         solve=false;
 
         startBalls = new Ball2D10[ball.Length];
-        startPositions = new Vector3[ball.Length];
+        startPositions = new Vector2[ball.Length];
 
         for (int i = 0; i < ball.Length; i++)
         {
@@ -39,7 +39,7 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 
             if (ball[i] != null)
             {
-                startPositions[i] = ball[i].transform.position;
+                startPositions[i] = ball[i].GetComponent<RectTransform>().anchoredPosition;
             }
         }
     }
@@ -121,12 +121,35 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
             }
         }
     }
-    public Vector3 GetTubePosition()
+    public Vector2 GetPositionForBall(Ball2D10 targetBall)
     {
-        return transform.position;
+        // The ball moves with anchoredPosition.
+        RectTransform ballRect = targetBall.GetComponent<RectTransform>();
+
+        // Get the ball's coordinate-space parent.
+        Transform ballParent = ballRect.parent;
+
+        // Convert the tube position to the ball parent's local space.
+        Vector2 localPoint = ballParent.InverseTransformPoint(transform.position);
+
+        RectTransform ballParentRect = ballParent as RectTransform;
+
+        // A normal Transform has no anchor offset.
+        if (ballParentRect == null)
+        {
+            return localPoint;
+        }
+
+        // Get the ball's anchor point in the parent rect.
+        Vector2 anchorReference = new Vector2(
+            Mathf.Lerp(ballParentRect.rect.xMin, ballParentRect.rect.xMax, ballRect.anchorMin.x),
+            Mathf.Lerp(ballParentRect.rect.yMin, ballParentRect.rect.yMax, ballRect.anchorMin.y));
+
+        // Return the matching anchoredPosition.
+        return localPoint - anchorReference;
     }
 
-    public float GetNextBallPositionY() 
+    public Vector2 GetNextBallPosition(Ball2D10 targetBall)
     {
         int count = 0;
 
@@ -136,7 +159,9 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
                 count++;
         }
 
-        return noneballPosY + (count * ballSize);
+        Vector2 position = GetPositionForBall(targetBall);
+        position.y += bottomBallOffset + (count * ballSpacing);
+        return position;
     }
     public void Answer(TubeColor tubeColor)
     {
@@ -161,7 +186,7 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
 
             if (ball[i] != null)
             {
-                ball[i].transform.position = startPositions[i];
+                ball[i].GetComponent<RectTransform>().anchoredPosition = startPositions[i];
             }
         }
 

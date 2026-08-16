@@ -11,13 +11,15 @@ public class GameManager2D10 : MonoBehaviour
     public Tube2D10 nextTube;
     public Ball2D10 currentball;
     public Ball2D10 beforeball;
+    
     private Image LightImage;
     
     public bool isSelected;
     public bool isAnimating;
 
-    private float tubeTopPos=5.5f;
-    private Vector3 targetPos;
+    [SerializeField] private float liftHeight = 400f;
+    [SerializeField] private float ballMoveSpeed = 1900f;
+    private Vector2 targetPos;
     void Start()
     {
         isSelected=false;
@@ -39,8 +41,8 @@ public class GameManager2D10 : MonoBehaviour
     public IEnumerator GoUp()
     {
         isAnimating = true;
-        targetPos = currentTube.GetTubePosition();
-        targetPos.y = tubeTopPos;
+        targetPos = currentTube.GetPositionForBall(currentball);
+        targetPos.y += liftHeight;
         yield return StartCoroutine(MoveBall(currentball, targetPos));
         currentTube.Pop();
         isAnimating = false;
@@ -49,11 +51,11 @@ public class GameManager2D10 : MonoBehaviour
     {
         isAnimating = true;
 
-        targetPos = nextTube.GetTubePosition();
-        targetPos.y = tubeTopPos;
+        targetPos = nextTube.GetPositionForBall(currentball);
+        targetPos.y += liftHeight;
         yield return StartCoroutine(MoveBall(currentball, targetPos));
 
-        targetPos.y = nextTube.GetNextBallPositionY();
+        targetPos = nextTube.GetNextBallPosition(currentball);
         yield return StartCoroutine(MoveBall(currentball, targetPos));
         nextTube.Push(currentball);
         currentTube=null;
@@ -65,19 +67,21 @@ public class GameManager2D10 : MonoBehaviour
         CheckAnswer();
     }
 
-    private IEnumerator MoveBall(Ball2D10 ball, Vector3 targetPos)
-    {   
-        while (Vector3.Distance(ball.transform.position, targetPos) > 0.01f)
+    private IEnumerator MoveBall(Ball2D10 ball, Vector2 targetPos)
+    {
+        RectTransform ballRect = ball.GetComponent<RectTransform>();
+
+        while (Vector2.Distance(ballRect.anchoredPosition, targetPos) > 0.1f)
         {
-            ball.transform.position = Vector3.MoveTowards(
-                ball.transform.position,
+            ballRect.anchoredPosition = Vector2.MoveTowards(
+                ballRect.anchoredPosition,
                 targetPos,
-                10f * Time.deltaTime); 
+                ballMoveSpeed * Time.deltaTime);
 
             yield return null;
         }
 
-        ball.transform.position = targetPos;
+        ballRect.anchoredPosition = targetPos;
     }
 
     public bool CanMove()

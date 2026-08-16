@@ -73,6 +73,7 @@ GameObject:
   - component: {fileID: 7475628944886990602}
   - component: {fileID: 6380345820552063941}
   - component: {fileID: 2719684256638963478}
+  - component: {fileID: 9126065155927677561}
   m_Layer: 0
   m_Name: End
   m_TagString: Untagged
@@ -198,6 +199,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlugController
   rejectDuration: 0.16
+--- !u!114 &9126065155927677561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6202865944091176084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20d0fa72e34d01b48962d930230a218b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpringJointScaleCompensator
+  baseSpring: 50
+  baseMinDistance: 0
+  baseMaxDistance: 0.8
 --- !u!1 &7973317907755432155
 GameObject:
   m_ObjectHideFlags: 0
@@ -211,7 +227,8 @@ GameObject:
   - component: {fileID: 5230380535257179746}
   - component: {fileID: 8129064313625952083}
   - component: {fileID: 706897010246970488}
-  - component: {fileID: 1533505745170742916}
+  - component: {fileID: 1919624807671090246}
+  - component: {fileID: 577241864556249931}
   m_Layer: 0
   m_Name: Cable
   m_TagString: Untagged
@@ -442,7 +459,7 @@ MonoBehaviour:
   ropeWidth: 0.1
   midPointWeight: 1
   midPointPosition: 0.5
---- !u!114 &1533505745170742916
+--- !u!114 &1919624807671090246
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -451,13 +468,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7973317907755432155}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5702366e18c47ef469ba2903e5846489, type: 3}
+  m_Script: {fileID: 11500000, guid: fd8f4f8fe1ee73c49a984fc609809215, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GogoGaga.OptimizedRopesAndCables.RopeMesh
-  OverallDivision: 6
-  ropeWidth: 0.04
+  m_EditorClassIdentifier: Assembly-CSharp::RopeScaleCompensator
+  baseRopeLength: 1.5
+--- !u!114 &577241864556249931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7973317907755432155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40ee1d68c5202114cac506c9b34b7384, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RopeTubeMesh
+  lengthDivision: 12
   radialDivision: 8
-  material: {fileID: 2100000, guid: c49732d7524c54d4cae2a19ed31eeabd, type: 2}
+  ropeWidth: 0.04
   tilingPerMeter: 1
 --- !u!1001 &4634356111623554630
 PrefabInstance:

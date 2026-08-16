@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -19,7 +20,11 @@ public class ModeSelectView : ScreenView
     [Header("확인 알림창")]
     [Tooltip("평소엔 꺼둘 것")]
     [SerializeField] GameObject confirmPanel;
-    [SerializeField] TMP_Text confirmText;
+    [Tooltip("\"정말 OO를 선택합니까?\" 줄")]
+    [FormerlySerializedAs("confirmText")]
+    [SerializeField] TMP_Text confirmQuestion;
+    [Tooltip("\"다른 플레이어는 자동으로 OO가 됩니다.\" 줄")]
+    [SerializeField] TMP_Text confirmDetail;
     [SerializeField] Button btnYes;
     [SerializeField] Button btnNo;
 
@@ -70,8 +75,11 @@ public class ModeSelectView : ScreenView
 
         string mine  = mode == 0 ? modeName1 : modeName2;
         string other = mode == 0 ? modeName2 : modeName1;
-        if (confirmText != null)
-            confirmText.text = $"정말 \"{mine}\"를 선택합니까?\n다른 플레이어는 자동으로 \"{other}\"가 됩니다.";
+        if (confirmQuestion != null)
+            confirmQuestion.text = $"정말 {mine}를 선택합니까?";
+
+        if (confirmDetail != null)
+            confirmDetail.text = $"* 다른 플레이어는 자동으로 {other}가 됩니다.";
 
         if (confirmPanel != null)
             confirmPanel.SetActive(true);

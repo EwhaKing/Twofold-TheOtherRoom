@@ -31,6 +31,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8184031409456101118}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3874965352639039576
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8386394465766796044}
+  m_Layer: 0
+  m_Name: InsertPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8386394465766796044
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3874965352639039576}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8184031409456101118}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7399711879180089337
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5326482554313177363}
+  m_Layer: 0
+  m_Name: RejectPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5326482554313177363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7399711879180089337}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8184031409456101118}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &8509899258377818389
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -109,6 +171,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5c479d273b8a26b4b900e874eb80cd4d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3362308137279068349}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5c479d273b8a26b4b900e874eb80cd4d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8386394465766796044}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5c479d273b8a26b4b900e874eb80cd4d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5326482554313177363}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c479d273b8a26b4b900e874eb80cd4d, type: 3}
       insertIndex: -1
@@ -161,5 +229,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlugOutlet
   dockPoint: {fileID: 3362308137279068349}
-  insertDepth: -0.17
-  rejectDepth: -0.14
+  insertPoint: {fileID: 8386394465766796044}
+  rejectPoint: {fileID: 5326482554313177363}

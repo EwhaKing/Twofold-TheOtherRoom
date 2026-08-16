@@ -93,7 +93,7 @@ public class PadlockController : MonoBehaviour
 
         if (PuzzleManager.Instance != null)
         {
-            PuzzleManager.Instance.ReportSolved("2D_1", PuzzleDimension.TwoD);
+            PuzzleManager.Instance.ReportSolved("2D-1", PuzzleDimension.TwoD);
         }
         else
         {

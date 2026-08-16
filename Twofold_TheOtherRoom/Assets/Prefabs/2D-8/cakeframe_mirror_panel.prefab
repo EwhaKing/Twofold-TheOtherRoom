@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 1675147561584362669}
   - component: {fileID: 739141534872531660}
   - component: {fileID: 4434982351780642691}
+  - component: {fileID: 1453684325139551739}
   m_Layer: 5
   m_Name: mirror_piece
   m_TagString: Untagged
@@ -150,6 +151,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1453684325139551739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3160258614726720902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a272f0e17193594bab3b4faeec4be07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorPiece
+  puzzleId: 2D-8
+  objectToHide: {fileID: 0}
 --- !u!1 &8209050401750871163
 GameObject:
   m_ObjectHideFlags: 0

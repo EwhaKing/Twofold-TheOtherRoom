@@ -50,11 +50,27 @@ public class DragAndDrop3D : MonoBehaviour
             OnPickUp?.Invoke();
         }
 
-        Vector3 clampedPosition = puzzleCamera.ScreenToWorldPoint(Input.mousePosition - mouseOffset);
-        clampedPosition.x = Mathf.Clamp(clampedPosition.x, topLeft.position.x, bottomRight.position.x);
-        clampedPosition.y = Mathf.Clamp(clampedPosition.y, bottomRight.position.y, topLeft.position.y);
-        transform.position = clampedPosition;
+        transform.position = ClampToRange(puzzleCamera.ScreenToWorldPoint(Input.mousePosition - mouseOffset));
     }
+
+    // topLeft/bottomRight의 부모 공간에서 자름
+    // 월드 축으로 자르면 부모가 회전된 배치에서 min/max가 뒤집혀 한쪽 경계로 튕겨나감
+    private Vector3 ClampToRange(Vector3 worldPosition)
+    {
+        Transform range = topLeft.parent;
+
+        Vector3 corner1 = ToRange(range, topLeft.position);
+        Vector3 corner2 = ToRange(range, bottomRight.position);
+        Vector3 local = ToRange(range, worldPosition);
+
+        local.x = Mathf.Clamp(local.x, Mathf.Min(corner1.x, corner2.x), Mathf.Max(corner1.x, corner2.x));
+        local.y = Mathf.Clamp(local.y, Mathf.Min(corner1.y, corner2.y), Mathf.Max(corner1.y, corner2.y));
+
+        return FromRange(range, local);
+    }
+
+    private static Vector3 ToRange(Transform range, Vector3 world) => range ? range.InverseTransformPoint(world) : world;
+    private static Vector3 FromRange(Transform range, Vector3 local) => range ? range.TransformPoint(local) : local;
 
     private void OnMouseUp()
     {
