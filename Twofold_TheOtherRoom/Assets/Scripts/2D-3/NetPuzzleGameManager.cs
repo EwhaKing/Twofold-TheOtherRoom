@@ -5,7 +5,7 @@ public class NetPuzzleGameManager : MonoBehaviour
 {
     [Header("퍼즐 설정")]
     [Tooltip("팀원과 약속한 이 퍼즐의 고유 ID (예: 2D-1, 2D-3 등)")]
-    public string puzzleID = "2D-1"; 
+    public string puzzleID = "2D-3"; 
     public PuzzleDimension dimension = PuzzleDimension.TwoD;
 
     [Header("검사할 전개도 슬롯들 (5개)")]
@@ -80,6 +80,7 @@ public class NetPuzzleGameManager : MonoBehaviour
 
     private void OnPuzzleSuccess()
     {
+        // 1. PuzzleManager에 퍼즐 해결 보고 
         if (PuzzleManager.Instance != null)
         {
             PuzzleManager.Instance.ReportSolved(puzzleID, dimension);
@@ -89,7 +90,7 @@ public class NetPuzzleGameManager : MonoBehaviour
             Debug.LogWarning("PuzzleManager가 씬에 배치되지 않았습니다!");
         }
 
-        // 1. 기존 슬롯(조각들) 비활성화
+        // 2. 기존 퍼즐 슬롯(조각들) 비활성화
         if (puzzleSlots != null)
         {
             foreach (NetPuzzleSlot slot in puzzleSlots)
@@ -98,13 +99,13 @@ public class NetPuzzleGameManager : MonoBehaviour
             }
         }
 
-        // 2. 줌 컨트롤러에 확대 상태임을 확실히 전달
+        // 3. 줌 컨트롤러에 확대 상태 전달
         if (zoomController != null)
         {
             zoomController.ZoomInToPuzzle();
         }
 
-        // 3. 깨지는 연출 오브젝트 활성화 및 시작
+        // 4. 깨지는 연출 오브젝트 활성화 및 시작
         if (breakEffect != null)
         {
             breakEffect.gameObject.SetActive(true);

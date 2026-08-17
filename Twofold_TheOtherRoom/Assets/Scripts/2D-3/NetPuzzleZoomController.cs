@@ -24,6 +24,7 @@ public class NetPuzzleZoomController : MonoBehaviour
     private Vector2 initialPos = Vector2.zero;
     private CanvasGroup puzzleCanvasGroup;
     public bool isZoomed = false;
+    public bool isPuzzleCleared = false; // 퍼즐 클리어 상태 플래그
 
     void Awake()
     {
@@ -72,8 +73,11 @@ public class NetPuzzleZoomController : MonoBehaviour
         Vector2 startPos = roomBackground.anchoredPosition;
         Vector2 endPos = zoomingIn ? initialPos + new Vector2(0, targetOffsetY) : initialPos;
 
-        // 클리어 여부 확인 (Puzzle_BreakEffect가 켜져 있거나 활성화된 적이 있는지)
-        bool isPuzzleCleared = (puzzleBreakEffect != null && puzzleBreakEffect.activeSelf);
+        // 깨지는 연출 오브젝트가 활성화되어 있거나 이미 클리어된 경우
+        if (puzzleBreakEffect != null && puzzleBreakEffect.activeSelf)
+        {
+            isPuzzleCleared = true;
+        }
 
         if (zoomingIn)
         {
@@ -94,15 +98,21 @@ public class NetPuzzleZoomController : MonoBehaviour
         }
         else
         {
-            // ★ 줌아웃 시작 시: 퍼즐 클리어 연출 화면은 꺼주고, 실제 방 바닥에 깨진 상태(HoleOnFloor)를 적용합니다.
             if (isPuzzleCleared)
             {
-                PuzzleBreakEffect breakScript = puzzleBreakEffect.GetComponent<PuzzleBreakEffect>();
+                PuzzleBreakEffect breakScript = puzzleBreakEffect != null ? puzzleBreakEffect.GetComponent<PuzzleBreakEffect>() : null;
                 if (breakScript != null)
                 {
                     breakScript.ApplyRoomBreakState();
                 }
-                puzzleBreakEffect.SetActive(false);
+                if (puzzleBreakEffect != null) puzzleBreakEffect.SetActive(false);
+
+                // RugToggle에도 클리어 상태 전달
+                if (rugObject != null)
+                {
+                    RugToggle rugScript = rugObject.GetComponent<RugToggle>();
+                    if (rugScript != null) rugScript.SetCleared();
+                }
             }
         }
 
@@ -137,17 +147,15 @@ public class NetPuzzleZoomController : MonoBehaviour
         }
         else
         {
-            // 줌아웃 완료 후 퍼즐 컨테이너 비활성화
             if (puzzleContainer != null) puzzleContainer.SetActive(false);
 
             if (isPuzzleCleared)
             {
-                // 클리어 후 방 화면: 액자 버튼 복구 및 깨진 상태 유지 (러그/원래 바닥은 숨김)
                 if (frameButton != null) frameButton.SetActive(true);
+                if (floorGraphics != null) floorGraphics.SetActive(false); // 클리어 시 무조건 비활성화 유지
             }
             else
             {
-                // 클리어 전 그냥 뒤로가기: 원래 방 상태로 복구
                 if (floorGraphics != null) floorGraphics.SetActive(true);
                 if (frameButton != null) frameButton.SetActive(true);
 
