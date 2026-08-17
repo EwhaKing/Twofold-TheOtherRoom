@@ -83,6 +83,7 @@ MonoBehaviour:
   - {x: 1, y: 3}
   - {x: 0, y: 3}
   - {x: 0, y: 4}
+  reveal: {fileID: 8356028248530625933}
 --- !u!1001 &263491562928109593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1753,7 +1754,7 @@ PrefabInstance:
       objectReference: {fileID: 4360580511882424836}
     - target: {fileID: 7302954673555591421, guid: 864ea28c0e6e1594d936bb319062ddd2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.8
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 7302954673555591421, guid: 864ea28c0e6e1594d936bb319062ddd2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1801,6 +1802,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7302954673555591421, guid: 864ea28c0e6e1594d936bb319062ddd2, type: 3}
   m_PrefabInstance: {fileID: 7967055121858072241}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8356028248530625933 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2118443378873117500, guid: 864ea28c0e6e1594d936bb319062ddd2, type: 3}
+  m_PrefabInstance: {fileID: 7967055121858072241}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a94ac1ad101ba4d9a7d5fca550d213, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PillarMirrorReveal
 --- !u!1001 &8489579913987604237
 PrefabInstance:
   m_ObjectHideFlags: 0

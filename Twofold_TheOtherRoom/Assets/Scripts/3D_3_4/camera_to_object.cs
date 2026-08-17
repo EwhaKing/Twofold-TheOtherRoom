@@ -1,12 +1,10 @@
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
 /// PlayerInteractor를 통해 물체를 카메라 앞에서 자세히 살펴보게 합니다.
 /// 이 컴포넌트를 살펴볼 프리팹의 루트에 추가하세요.
 /// </summary>
-public class camera_to_object : MonoBehaviour, IInteractable
+public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, IResetInspection
 {
   
 
@@ -15,21 +13,15 @@ public class camera_to_object : MonoBehaviour, IInteractable
     [SerializeField, Min(0.1f)] private float distanceFromCamera = 3f;
     public Vector3 screenOffset;
 
-    [Header("Inspection UI")]
-    [Tooltip("검사 중에만 표시할 뒤로가기 버튼 오브젝트입니다.")]
-    [SerializeField] private GameObject backButton;
-     [SerializeField] private GameObject initializeButton;
-
-
     [Header("Rotation")]
-    [SerializeField, Min(1f)] private float rotationSpeed = 50f;
+    [SerializeField, Min(1f)] private float rotationSpeed;
     [SerializeField] private float verticalRotationLimit = 180f;
 
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Collider[] objectColliders;
     private Rigidbody objectRigidbody;
 
@@ -38,8 +30,6 @@ public class camera_to_object : MonoBehaviour, IInteractable
     private bool[] originalColliderStates;
     private bool originalIsKinematic;
     private bool originalUseGravity;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
     private bool isInspecting;
     private int enteredFrame;
     private float inspectionYaw;
@@ -58,10 +48,6 @@ public class camera_to_object : MonoBehaviour, IInteractable
         objectColliders = GetComponentsInChildren<Collider>(true);
         objectRigidbody = GetComponent<Rigidbody>();
 
-        if (backButton != null)
-            backButton.SetActive(false);
-        if (initializeButton != null)
-            initializeButton.SetActive(false);
     }
 
     private void Update()
@@ -128,7 +114,8 @@ inspectionYaw += mouseX * amount;
         }
 
         SaveObjectState();
-        DisablePlayerControl();
+        //playercontrollock
+        playerControlLock.Lock(this, behavioursToDisable);
 
         Transform cameraTransform = inspectionCamera.transform;
         // 카메라는 변경하지 않고 물체만 현재 카메라 정면으로 이동합니다.
@@ -143,12 +130,8 @@ inspectionYaw += mouseX * amount;
         objectRotationInCameraSpace =
             Quaternion.Inverse(cameraTransform.rotation) * transform.rotation;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        if (backButton != null)
-            backButton.SetActive(true);
-        if (initializeButton != null)
-            initializeButton.SetActive(true);
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         isInspecting = true;
         enteredFrame = Time.frameCount;
@@ -161,14 +144,10 @@ inspectionYaw += mouseX * amount;
 
         transform.SetPositionAndRotation(originalPosition, originalRotation);
         RestoreObjectState();
-        RestorePlayerControl();
-
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
-        if (backButton != null)
-            backButton.SetActive(false);
-        if (initializeButton != null)
-            initializeButton.SetActive(false);
+        //playerControlunLock
+        playerControlLock.Unlock();
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
 
 
         isInspecting = false;
@@ -204,13 +183,15 @@ inspectionYaw += mouseX * amount;
         EndInspection();
     }
 
+    public void ResetInspection()
+    {
+        ResetInspectionView();
+    }
+
     private void SaveObjectState()
     {
         originalPosition = transform.position;
         originalRotation = transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
-
         originalColliderStates = new bool[objectColliders.Length];
         for (int i = 0; i < objectColliders.Length; i++)
         {
@@ -239,42 +220,6 @@ inspectionYaw += mouseX * amount;
             objectRigidbody.isKinematic = originalIsKinematic;
             objectRigidbody.useGravity = originalUseGravity;
         }
-    }
-
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
-        disabledBehaviours.Clear();
     }
 
 }

@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class MoveBlocks : MonoBehaviour , IInteractable
 {
+    public event Action<int> ZoneChanged;
    
     [Header("Zone Settings")]
     public int currentZone = 1;
@@ -67,6 +69,7 @@ public class MoveBlocks : MonoBehaviour , IInteractable
         Vector3 targetPosition = transform.position;
         targetPosition.z = targetZ;
 
+        ZoneChanged?.Invoke(currentZone);
         StartCoroutine(MoveToPosition(targetPosition));
 
         Debug.Log(gameObject.name + " 현재 구역: " + currentZone);
