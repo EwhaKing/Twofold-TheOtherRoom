@@ -39,7 +39,7 @@ public class GameSession : NetworkBehaviour
     public const float TotalSeconds = 15f * 60f;
 
     /// 인트로 길이. 실제 연출 소요와 무관한 고정 예산
-    public const float IntroSeconds = 7f;
+    public const float IntroSeconds = 44f;
 
     /// 로딩 완료 후 흐른 시간. 인트로 포함
     public float SinceStartSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌

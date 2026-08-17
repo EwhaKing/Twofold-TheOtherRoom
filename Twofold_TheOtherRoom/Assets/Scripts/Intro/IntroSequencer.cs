@@ -13,6 +13,9 @@ public class IntroSequencer : MonoBehaviour
     [Header("References")]
     [SerializeField] private BlinkIntroPlayer blink;
 
+    [Tooltip("더빙 · 자막. 비워두면 블링크만 재생")]
+    [SerializeField] private IntroNarration narration;
+
     [Tooltip("인트로 동안 끌 게임 UI. 씬에는 켜둔 채로 저장할 것")]
     [SerializeField] private GameObject[] gameplayUI;
 
@@ -20,9 +23,16 @@ public class IntroSequencer : MonoBehaviour
              "씬에는 꺼둔 채로 저장할 것 — 시퀀서가 죽어도 씬이 안 잠기도록")]
     [SerializeField] private GameObject[] introOnly;
 
+    [Tooltip("인트로 동안 끌 입력 컴포넌트. 이동 · 상호작용.\n" +
+             "씬에는 켜둔 채로 저장할 것")]
+    [SerializeField] private Behaviour[] inputToLock;
+
     [Header("Timing")]
     [Tooltip("눈 깜빡임 구간 길이(초). GameSession.IntroSeconds 예산 안에 들어가야 함")]
     [SerializeField] private float blinkSeconds = 7f;
+
+    [Tooltip("나레이션 시작 시각(초). 인트로 시작 기준. 블링크와 겹치려면 blinkSeconds 보다 작게")]
+    [SerializeField] private float narrationStartSeconds = 7f;
 
     [Header("Debug")]
     [Tooltip("네트워크 없이 단독 실행할 때도 연출 재생. 미리보기용이므로 씬에는 꺼둔 채로 저장할 것")]
@@ -59,11 +69,17 @@ public class IntroSequencer : MonoBehaviour
             return;
         }
 
-        if (blinkSeconds > GameSession.IntroSeconds)
-            Debug.LogError($"[Intro] 블링크 {blinkSeconds}초가 인트로 예산 {GameSession.IntroSeconds}초를 넘음 " +
+        if (PlaybackSeconds > GameSession.IntroSeconds)
+            Debug.LogError($"[Intro] 연출 {PlaybackSeconds}초가 인트로 예산 {GameSession.IntroSeconds}초를 넘음 " +
                            "— 연출이 끝나기 전에 타이머가 시작됨", this);
 
         Apply(Phase);
+    }
+
+    /// 방을 나가거나 씬이 내려갈 때 입력 잠금 해제
+    private void OnDisable()
+    {
+        if (_applied != IntroPhase.Done) SetIntroActive(false);
     }
 
     private void Update()
@@ -77,7 +93,7 @@ public class IntroSequencer : MonoBehaviour
     {
         get
         {
-            if (_local) return Elapsed < blinkSeconds ? IntroPhase.Running : IntroPhase.Done;
+            if (_local) return Elapsed < PlaybackSeconds ? IntroPhase.Running : IntroPhase.Done;
 
             var session = GameSession.Instance;
             return session == null ? IntroPhase.Done : session.Intro;   // 방을 나가면 Instance 가 사라짐
@@ -96,6 +112,22 @@ public class IntroSequencer : MonoBehaviour
         }
     }
 
+    /// 일시정지 여부. 오디오는 시계로 굴릴 수 없어 별도 전달
+    private bool Paused
+    {
+        get
+        {
+            if (_local) return false;
+
+            var session = GameSession.Instance;
+            return session != null && session.IsPaused;
+        }
+    }
+
+    /// 연출 실제 길이. 예산 검사와 로컬 미리보기 종료 판정용
+    private float PlaybackSeconds =>
+        Mathf.Max(blinkSeconds, narrationStartSeconds + (narration != null ? narration.Length : 0f));
+
     private void Apply(IntroPhase phase)
     {
         bool entered = _applied != phase;
@@ -111,12 +143,18 @@ public class IntroSequencer : MonoBehaviour
 
             case IntroPhase.Running:
                 if (entered) SetIntroActive(true);
-                blink.ApplyNormalizedTime(Elapsed / blinkSeconds);
+
+                // 블링크가 끝나면 즉시 반납. 나레이션 내내 풀스크린 패스를 물고 있지 않도록
+                if (Elapsed < blinkSeconds) blink.ApplyNormalizedTime(Elapsed / blinkSeconds);
+                else blink.Finish();
+
+                if (narration != null) narration.ApplyTime(Elapsed - narrationStartSeconds, Paused);
                 break;
 
             case IntroPhase.Done:
                 if (!entered) return;
                 blink.Finish();
+                if (narration != null) narration.Finish();
                 SetIntroActive(false);
                 break;
         }
@@ -125,12 +163,19 @@ public class IntroSequencer : MonoBehaviour
     /// 인트로 화면 상태. 씬이 잘못 저장돼 있어도 여기서 바로잡힘
     private void SetIntroActive(bool active)
     {
-        if (active) blink.Begin();
+        if (active)
+        {
+            blink.Begin();
+            if (narration != null) narration.Begin();
+        }
 
         foreach (var go in gameplayUI)
             if (go != null) go.SetActive(!active);
 
         foreach (var go in introOnly)
             if (go != null) go.SetActive(active);
+
+        foreach (var input in inputToLock)
+            if (input != null) input.enabled = !active;
     }
 }
