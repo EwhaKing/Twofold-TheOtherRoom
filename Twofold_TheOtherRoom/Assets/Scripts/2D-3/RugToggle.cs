@@ -16,6 +16,7 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
 
     private Image rugImage;
     public bool isFolded = false; // 현재 러그 상태
+    public bool isCleared = false; // 퍼즐 클리어 여부 플래그
 
     private void Awake()
     {
@@ -23,6 +24,9 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
         if (rugImage != null)
         {
             rugImage.raycastTarget = true;
+
+            // 이미지의 투명 영역(알파값 0.1 미만) 클릭 판정 제외
+            rugImage.alphaHitTestMinimumThreshold = 0.1f;
         }
     }
 
@@ -54,16 +58,33 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
     {
         if (rugImage == null) rugImage = GetComponent<Image>();
 
-        // 1. 러그 상태에 맞춰 이미지 교체
+        // 1. 러그 상태에 맞춰 이미지 교체 (크기 변경 로직 제외)
         if (rugImage != null)
         {
             rugImage.sprite = isFolded ? foldedRugSprite : unfoldedRugSprite;
         }
 
-        // 2. 러그가 접혔을 때만 바닥 전개도(Simple_Placeholder)를 활성화
+        // 2. 이미 퍼즐이 풀렸다면(isCleared == true) 무조건 비활성화 상태 유지
+        if (isCleared)
+        {
+            if (simplePlaceholder != null) simplePlaceholder.SetActive(false);
+            return;
+        }
+
+        // 3. 퍼즐이 안 풀렸을 때만 러그 접힘 여부에 따라 Placeholder 활성화
         if (simplePlaceholder != null)
         {
             simplePlaceholder.SetActive(isFolded);
+        }
+    }
+
+    // 퍼즐 클리어 시 호출해 주는 함수
+    public void SetCleared()
+    {
+        isCleared = true;
+        if (simplePlaceholder != null)
+        {
+            simplePlaceholder.SetActive(false);
         }
     }
 }
