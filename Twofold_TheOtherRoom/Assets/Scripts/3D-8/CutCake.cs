@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+
 
 public class CutCake : MonoBehaviour
 {   
@@ -11,8 +13,13 @@ public class CutCake : MonoBehaviour
 
     public KnifeData[] knifeList;
 
-    public Renderer cake;       
+    public GameObject cake;
+    public Renderer[] cakeRenderers;
 
+    private void Awake()
+    {
+        cakeRenderers = cake.GetComponentsInChildren<Renderer>();
+    }
     public void CakePiece(KnifeClick knife)
     {
            KnifeData target = null;
@@ -41,10 +48,59 @@ public class CutCake : MonoBehaviour
             SetCakeAlpha(0.5f);
         }
     }
+    /**이 코드가 안먹힘.. 사유 material이 opaque임
     void SetCakeAlpha(float alpha)
     {
-        Color color = cake.material.color;
-        color.a = alpha;
-        cake.material.color = color;
+        foreach (Renderer renderer in cakeRenderers)
+        {
+            Color color = renderer.material.color;
+            color.a = alpha;
+            renderer.material.color = color;
+        }
+    }
+    **/
+    private void SetCakeAlpha(float alpha)
+    {
+        foreach (Renderer renderer in cakeRenderers)
+        {
+            Material mat = renderer.material;
+
+            Color color = mat.color;
+            color.a = alpha;
+            mat.color = color;
+
+            if (alpha < 1f)
+            {
+                // URP Lit 계열 Material을 Transparent로 변경
+                if (mat.HasProperty("_Surface"))
+                    mat.SetFloat("_Surface", 1f);
+
+                if (mat.HasProperty("_Blend"))
+                    mat.SetFloat("_Blend", 0f);
+
+                if (mat.HasProperty("_SrcBlend"))
+                    mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+
+                if (mat.HasProperty("_DstBlend"))
+                    mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+
+                if (mat.HasProperty("_ZWrite"))
+                    mat.SetFloat("_ZWrite", 0f);
+
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = (int)RenderQueue.Transparent;
+            }
+            else
+            {
+                if (mat.HasProperty("_Surface"))
+                    mat.SetFloat("_Surface", 0f);
+
+                if (mat.HasProperty("_ZWrite"))
+                    mat.SetFloat("_ZWrite", 1f);
+
+                mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = -1;
+            }
+        }
     }
 }
