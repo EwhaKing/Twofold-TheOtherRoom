@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7302954673555591421}
+  - component: {fileID: 2118443378873117500}
   m_Layer: 0
   m_Name: ResetButton
   m_TagString: Untagged
@@ -33,6 +34,49 @@ Transform:
   - {fileID: 3056068563179734586}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2118443378873117500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1060275360360264158}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a94ac1ad101ba4d9a7d5fca550d213, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PillarMirrorReveal
+  pillarInside: {fileID: 3056068563179734586}
+  buttonCollider: {fileID: 5086666306717824509}
+  buttonObject: {fileID: 5921251396753783117}
+  mirrorObject: {fileID: 7329815940107555741}
+  descendDepth: 1.1
+  moveDuration: 1
+  holdDuration: 0.2
+  moveEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &5436237121546958430
 GameObject:
   m_ObjectHideFlags: 0
