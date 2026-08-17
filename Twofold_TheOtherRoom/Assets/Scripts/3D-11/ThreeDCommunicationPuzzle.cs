@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -63,15 +62,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     [SerializeField] private TMP_Text timerText;
   
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Phase phase = Phase.Closed;
     private int currentStageIndex = -1;
     private float revealTimeLeft;
     private bool solved;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
 
     private void Awake()
     {
@@ -138,16 +135,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
-
-        DisablePlayerControl();
+        //playercontrollock
+        playerControlLock.Lock(this, behavioursToDisable, true);
         playerCamera.transform.SetPositionAndRotation(
             cameraFocusPoint.position,
             cameraFocusPoint.rotation);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
         if (stageText != null) stageText.gameObject.SetActive(true);
         if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         if (backButton != null) backButton.SetActive(true);
@@ -223,10 +216,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         playerCamera.transform.SetPositionAndRotation(
             originalCameraPosition,
             originalCameraRotation);
-        RestorePlayerControl();
-
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
+         //playerControlunLock
+        playerControlLock.Unlock();
 
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
@@ -424,46 +415,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
-    }
-
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-
-        PlayerInteractor.Instance.HideInteractionPrompt();
-
-        TryDisable(PlayerInteractor.Instance);
-
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-        disabledBehaviours.Clear();
     }
 
 #if UNITY_EDITOR
