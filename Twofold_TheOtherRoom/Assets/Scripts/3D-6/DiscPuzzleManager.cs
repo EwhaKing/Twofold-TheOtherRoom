@@ -1,10 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
+
 
 public class DiscPuzzleManager : MonoBehaviour
 {
     public Disc[] discs; // 3개
     public Camera puzzleCamera;
+
+    public Transform moveCube;
+    public float moveDistance = 3f;
+    public float moveSpeed = 2f;
+
 
     [Tooltip("이 퍼즐의 고유 id (유일해야 함)")]
     public string puzzleId = "3D-6";
@@ -58,6 +65,32 @@ public class DiscPuzzleManager : MonoBehaviour
             _solved = true; // 회전 잠금
             if (PuzzleManager.Instance != null)
                 PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
+                StartCoroutine(Move());
         }
+    }
+
+    private IEnumerator Move()
+    {
+        if (moveCube == null)
+        {
+            Debug.LogWarning("움직일 Cube가 등록되지 않았습니다.");
+            yield break;
+        }
+
+        Vector3 startPos = moveCube.position;
+        Vector3 targetPos = startPos - moveCube.forward * moveDistance;
+
+        while (Vector3.Distance(moveCube.position, targetPos) > 0.01f)
+        {
+            moveCube.position = Vector3.MoveTowards(
+                moveCube.position,
+                targetPos,
+                moveSpeed * Time.deltaTime
+            );
+
+            yield return null;
+        }
+
+        moveCube.position = targetPos;
     }
 }
