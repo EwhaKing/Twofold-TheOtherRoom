@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -80,9 +79,6 @@ public class BlinkIntroPlayer : MonoBehaviour
     [Range(0.25f, 3f)]
     [SerializeField] private float focusRecovery = 1f;
 
-    /// <summary>연출이 끝났을 때 호출됨.</summary>
-    public event Action OnFinished;
-
     /// 눈꺼풀이 화면 밖까지 벌어져 전체 화면이 되는 _Blink 값.
     private const float FullyOpenBlink = 2f;
 
@@ -153,13 +149,13 @@ public class BlinkIntroPlayer : MonoBehaviour
         SetBlink(blinkCurve.Evaluate(Mathf.Clamp01(t01)));
     }
 
-    /// <summary>화면 전체가 드러난 상태로 고정한 뒤 풀스크린 패스를 끔.</summary>
+    /// <summary>화면 전체가 드러난 상태로 고정한 뒤 풀스크린 패스를 끔. 두 번 이상 불러도 안전.</summary>
     public void Finish()
     {
-        SetBlink(FullyOpenBlink);   // 1 로 두면 패스를 끄는 순간 눈 모양이 툭 사라짐
+        if (!_hooked) return;
 
+        SetBlink(FullyOpenBlink);   // 1 로 두면 패스를 끄는 순간 눈 모양이 툭 사라짐
         Unhook();
-        OnFinished?.Invoke();
     }
 
     // ---------- 내부 ----------
