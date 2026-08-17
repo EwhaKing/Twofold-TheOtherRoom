@@ -254,10 +254,58 @@ MonoBehaviour:
   defaultBGM: 0
   bgmList:
   - type: 0
-    clip: {fileID: 8300000, guid: 4ffbd6d2e435b264480109153ea47840, type: 3}
+    clip: {fileID: 8300000, guid: 68550f307dc945b49a3d51cf5ebe7975, type: 3}
   sfxList:
   - type: 0
-    clip: {fileID: 8300000, guid: d5f850b8ebb68dd438f829c784fd9085, type: 3}
+    clip: {fileID: 8300000, guid: 387288c9c4c9d0c4da39ed1da0c2fc2c, type: 3}
+  - type: 1
+    clip: {fileID: 8300000, guid: dde0bb8e60d873548ba4e45c7f6c8f3f, type: 3}
+  - type: 2
+    clip: {fileID: 8300000, guid: 59549d77ac6af8d4daaea74ae1b18f7e, type: 3}
+  - type: 3
+    clip: {fileID: 8300000, guid: ed9d675cef105d743bdeaa53ab30288f, type: 3}
+  - type: 4
+    clip: {fileID: 8300000, guid: b665c4808168f3648bb7992151dcc440, type: 3}
+  - type: 5
+    clip: {fileID: 8300000, guid: f3221e5297b05e3469fe9db4907ec90a, type: 3}
+  - type: 6
+    clip: {fileID: 8300000, guid: 6246ed38179a47a4c8eecef5288e3153, type: 3}
+  - type: 7
+    clip: {fileID: 8300000, guid: 04ce3eb4b0a98704fa1635dbe51b01d9, type: 3}
+  - type: 8
+    clip: {fileID: 8300000, guid: bab2830ff7dba2f44a9165d3185e193c, type: 3}
+  - type: 9
+    clip: {fileID: 8300000, guid: cba9927a4073e6e44987ec5273337116, type: 3}
+  - type: 10
+    clip: {fileID: 8300000, guid: 4baa1b2cfc99e734fb06fe7a05c6847a, type: 3}
+  - type: 11
+    clip: {fileID: 8300000, guid: 8c47e1820c6f3514fb85251eb444e352, type: 3}
+  - type: 12
+    clip: {fileID: 8300000, guid: f305632d470628649b6d0de0dfaf7f73, type: 3}
+  - type: 13
+    clip: {fileID: 8300000, guid: 0d4295e959da7b546931292218df60ce, type: 3}
+  - type: 14
+    clip: {fileID: 8300000, guid: 13b43a696483c6c46ae42fba351ee894, type: 3}
+  - type: 15
+    clip: {fileID: 8300000, guid: ef10a7adaee3bd54aa1b27b29af1e6eb, type: 3}
+  - type: 16
+    clip: {fileID: 8300000, guid: a9912ea1a00873243825d08dfa32b890, type: 3}
+  - type: 17
+    clip: {fileID: 8300000, guid: 89c082fc27ee03a4184f3a2b4dbaa778, type: 3}
+  - type: 18
+    clip: {fileID: 8300000, guid: 6a794c4aac0b297428ef005e96533263, type: 3}
+  - type: 19
+    clip: {fileID: 8300000, guid: 7ca49120831279347b5f72a288342120, type: 3}
+  - type: 20
+    clip: {fileID: 8300000, guid: 1262b116167826a4ea7bfa66b29d4d47, type: 3}
+  - type: 21
+    clip: {fileID: 8300000, guid: 30134361122b3e64ab89ea2e6f148a92, type: 3}
+  - type: 22
+    clip: {fileID: 8300000, guid: b9104f8a8663b5049bbe6595a1e5379f, type: 3}
+  - type: 23
+    clip: {fileID: 8300000, guid: baafe9d3ab94be042966e53492e34848, type: 3}
+  - type: 24
+    clip: {fileID: 8300000, guid: 0148a9b09a07b074891d2d60aac585df, type: 3}
 --- !u!1 &1429682275015996703
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,7 +983,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7083287709115015802}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SoundManager, Assembly-CSharp
         m_MethodName: SetMasterVolume
         m_Mode: 0
@@ -1255,7 +1303,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7083287709115015802}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SoundManager, Assembly-CSharp
         m_MethodName: SetSFXVolume
         m_Mode: 0
@@ -1358,7 +1406,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7083287709115015802}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SoundManager, Assembly-CSharp
         m_MethodName: SetBGMVolume
         m_Mode: 0

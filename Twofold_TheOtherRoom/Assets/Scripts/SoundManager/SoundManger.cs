@@ -5,12 +5,7 @@ using UnityEngine;
 /// </summary>
 public enum BGMType
 {
-    TestBGM,
-    Title,
-    Lobby,
-    Stage1,
-    Stage2,
-    Ending
+    StartBGM
 }
 public enum SFXType
 {
@@ -39,7 +34,8 @@ public enum SFXType
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF
+    AlphaF,
+    FootStep
 }
 
 /// <summary>
