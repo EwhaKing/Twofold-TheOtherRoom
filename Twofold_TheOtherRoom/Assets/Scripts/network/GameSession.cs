@@ -65,6 +65,13 @@ public class GameSession : NetworkBehaviour
         }
     }
 
+    // 인트로 스킵. 둘 다 눌러야 넘어감
+    [Networked] public bool P1SkipIntro { get; set; }
+    [Networked] public bool P2SkipIntro { get; set; }
+
+    /// 이 클라이언트가 이미 스킵을 눌렀는지
+    public bool HasRequestedSkip(bool isHost) => isHost ? P1SkipIntro : P2SkipIntro;
+
     // 타이머 - 일시정지
     [Networked] public bool IsPaused { get; set; }
     [Networked] public int PausedTick { get; set; }
@@ -141,11 +148,34 @@ public class GameSession : NetworkBehaviour
         if(P1Loaded && P2Loaded && StartedTick == 0) StartedTick = Runner.Tick;
     }
 
+    // 인트로 스킵 요청 RPC. 양쪽 다 들어와야 실제로 넘어감
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestSkipIntro(bool isHost)
+    {
+        if (Intro != IntroPhase.Running) return;   // 상대 로드 대기 중이거나 이미 끝났으면 무시
+
+        if (isHost) P1SkipIntro = true;
+        else P2SkipIntro = true;
+
+        if (P1SkipIntro && P2SkipIntro) SkipIntro();
+    }
+
+    /// 시계를 인트로 끝 시점으로 앞당김. 타이머는 여기서부터 흐르기 시작
+    private void SkipIntro()
+    {
+        int now = IsPaused ? PausedTick : Runner.Tick;
+        int shifted = now - TotalPausedTicks - Mathf.CeilToInt(IntroSeconds / Runner.DeltaTime);
+
+        StartedTick = shifted != 0 ? shifted : -1;   // 0 은 "상대 로드 대기" 표식이라 피함
+    }
+
     // 타이머 초기화
     private void ResetTimer()
     {
         P1Loaded = false;
         P2Loaded = false;
+        P1SkipIntro = false;
+        P2SkipIntro = false;
         StartedTick = 0;
         IsPaused = false;
         PausedTick = 0;
