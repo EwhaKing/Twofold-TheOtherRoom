@@ -9,6 +9,14 @@ public enum RoomPhase
     Playing = 2,      // 게임플레이 씬 로드됨
 }
 
+/// <summary>인트로 진행 단계. 시계로만 판정.</summary>
+public enum IntroPhase
+{
+    Waiting = 0,   // 상대 로드 대기. 눈 감긴 채 정지
+    Running = 1,   // 연출 재생
+    Done    = 2,   // 연출 끝. 게임 진행
+}
+
 /// <summary>
 /// 방 전체가 공유하는 네트워크 상태. 방장이 Spawn하고 방장만 씀.
 /// 두 사람이 같은 값을 봐야 하는 것만 [Networked]로 둘 것.
@@ -29,7 +37,12 @@ public class GameSession : NetworkBehaviour
     [Networked] public bool P2Loaded { get; set; }
     [Networked] public int StartedTick { get; set; }
     public const float TotalSeconds = 15f * 60f;
-    public float ElapsedSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
+
+    /// 인트로 길이. 실제 연출 소요와 무관한 고정 예산
+    public const float IntroSeconds = 44f;
+
+    /// 로딩 완료 후 흐른 시간. 인트로 포함
+    public float SinceStartSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
     {
         get
         {
@@ -38,6 +51,26 @@ public class GameSession : NetworkBehaviour
             return (now - StartedTick - TotalPausedTicks) * Runner.DeltaTime;
         }
     }
+
+    /// 인트로 이후 흐른 시간. 제한시간 차감 기준
+    public float ElapsedSeconds => Mathf.Max(0f, SinceStartSeconds - IntroSeconds);
+
+    /// 인트로 단계. StartedTick 이 0이면 상대 대기 중
+    public IntroPhase Intro
+    {
+        get
+        {
+            if (StartedTick == 0) return IntroPhase.Waiting;
+            return SinceStartSeconds < IntroSeconds ? IntroPhase.Running : IntroPhase.Done;
+        }
+    }
+
+    // 인트로 스킵. 둘 다 눌러야 넘어감
+    [Networked] public bool P1SkipIntro { get; set; }
+    [Networked] public bool P2SkipIntro { get; set; }
+
+    /// 이 클라이언트가 이미 스킵을 눌렀는지
+    public bool HasRequestedSkip(bool isHost) => isHost ? P1SkipIntro : P2SkipIntro;
 
     // 타이머 - 일시정지
     [Networked] public bool IsPaused { get; set; }
@@ -115,11 +148,34 @@ public class GameSession : NetworkBehaviour
         if(P1Loaded && P2Loaded && StartedTick == 0) StartedTick = Runner.Tick;
     }
 
+    // 인트로 스킵 요청 RPC. 양쪽 다 들어와야 실제로 넘어감
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestSkipIntro(bool isHost)
+    {
+        if (Intro != IntroPhase.Running) return;   // 상대 로드 대기 중이거나 이미 끝났으면 무시
+
+        if (isHost) P1SkipIntro = true;
+        else P2SkipIntro = true;
+
+        if (P1SkipIntro && P2SkipIntro) SkipIntro();
+    }
+
+    /// 시계를 인트로 끝 시점으로 앞당김. 타이머는 여기서부터 흐르기 시작
+    private void SkipIntro()
+    {
+        int now = IsPaused ? PausedTick : Runner.Tick;
+        int shifted = now - TotalPausedTicks - Mathf.CeilToInt(IntroSeconds / Runner.DeltaTime);
+
+        StartedTick = shifted != 0 ? shifted : -1;   // 0 은 "상대 로드 대기" 표식이라 피함
+    }
+
     // 타이머 초기화
     private void ResetTimer()
     {
         P1Loaded = false;
         P2Loaded = false;
+        P1SkipIntro = false;
+        P2SkipIntro = false;
         StartedTick = 0;
         IsPaused = false;
         PausedTick = 0;

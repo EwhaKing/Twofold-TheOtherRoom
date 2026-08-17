@@ -6,6 +6,10 @@ public class FloorPanelPuzzleController : MonoBehaviour
 {
     [Header("Solution")]
     [SerializeField] List<Vector2Int> solutionList;
+
+    [Header("Reward")]
+    [SerializeField] private PillarMirrorReveal reveal;  // 거울 조각 등장 연출
+
     private string puzzleId = "3D-9";
     private PuzzleDimension dimension = PuzzleDimension.ThreeD;
     private HashSet<Vector2Int> currentOn = new HashSet<Vector2Int>();
@@ -53,6 +57,10 @@ public class FloorPanelPuzzleController : MonoBehaviour
             panelMap[pos].ChangeStateToAnswer();
             yield return new WaitForSeconds(0.07f); // 순차적 켜짐
         }
+
+        yield return new WaitForSeconds(0.3f);
+
+        if (reveal != null) yield return reveal.PlayReveal();
     }
 
     // 퍼즐 리셋 - 리셋 버튼이 호출

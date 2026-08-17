@@ -150,11 +150,20 @@ public class GameFlow : MonoBehaviour
         StartCoroutine(LoadAndReport(isHost));
     }
 
+    /// 로드 보고 전에 흘려보낼 프레임 수. 인트로 첫 렌더의 셰이더 · 렌더 그래프 컴파일용
+    const int WarmupFrames = 3;
+
     // 씬 로딩 후 보고하기 위한 코루틴
     IEnumerator LoadAndReport(bool isHost)
     {
         var op = SceneManager.LoadSceneAsync(_loadedGamePlayScene, LoadSceneMode.Additive);
         yield return op;
+
+        // 첫 프레임 스톨을 보고 전에 흡수. StartedTick 이 양쪽 보고 뒤에 잡히므로
+        // 여기서 멈추는 만큼은 인트로 연출에서 안 깎임
+        for (int i = 0; i < WarmupFrames; i++)
+            yield return null;
+
         Debug.Log($"[Flow] 로드 완료 보고 | host:{isHost}");
         GameSession.Instance?.RpcReportLoaded(isHost);
     }
