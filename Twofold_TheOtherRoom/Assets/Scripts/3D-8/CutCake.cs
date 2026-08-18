@@ -13,6 +13,15 @@ public class CutCake : MonoBehaviour
 
     public KnifeData[] knifeList;
 
+    [SerializeField] private GameObject cake;
+
+    private Renderer[] cakeRenderers;
+
+    private void Awake()
+    {
+        cakeRenderers = cake.GetComponentsInChildren<Renderer>();
+    }
+/**
     public GameObject cake;
     public Renderer[] cakeRenderers;
 
@@ -20,6 +29,7 @@ public class CutCake : MonoBehaviour
     {
         cakeRenderers = cake.GetComponentsInChildren<Renderer>();
     }
+**/
     public void CakePiece(KnifeClick knife)
     {
            KnifeData target = null;
@@ -48,9 +58,8 @@ public class CutCake : MonoBehaviour
             SetCakeAlpha(0.5f);
         }
     }
-    /**이 코드가 안먹힘.. 사유 material이 opaque임
     void SetCakeAlpha(float alpha)
-    {
+    {        
         foreach (Renderer renderer in cakeRenderers)
         {
             Color color = renderer.material.color;
@@ -58,7 +67,7 @@ public class CutCake : MonoBehaviour
             renderer.material.color = color;
         }
     }
-    **/
+    /**
     private void SetCakeAlpha(float alpha)
     {
         foreach (Renderer renderer in cakeRenderers)
@@ -103,4 +112,5 @@ public class CutCake : MonoBehaviour
             }
         }
     }
+    **/
 }
