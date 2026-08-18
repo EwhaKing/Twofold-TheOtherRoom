@@ -10,6 +10,7 @@ public class NavigateRoom2DCanvas : MonoBehaviour
     [Header("Rooms")]
     [SerializeField] private RectTransform roomsRoot;
     [SerializeField, Min(1)] private int totalRooms = 4;
+    [SerializeField, Min(0)] private int startRoom = 1; 
 
     [Header("UI Arrows")]
     [SerializeField] private GameObject leftArrow;
@@ -33,6 +34,7 @@ public class NavigateRoom2DCanvas : MonoBehaviour
         }
 
         initialY = roomsRoot.anchoredPosition.y;
+        currentRoomIndex = Mathf.Clamp(startRoom, 0, totalRooms - 1);
     }
 
     private void Start()
