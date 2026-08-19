@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class HoverIndicator : MonoBehaviour
 {
-    [Header("Choice Icon")]
+    [Header("Select Icon")]
     [Tooltip("Raycast Target은 꺼둘 것")]
     [SerializeField] RectTransform icon;
 
@@ -23,13 +23,16 @@ public class HoverIndicator : MonoBehaviour
             icon.gameObject.SetActive(false);
     }
 
-    public void Show(RectTransform target)
+    /// scale은 HoverTarget이 지정. 작은 버튼용
+    public void Show(RectTransform target, float scale)
     {
         if (icon == null || target == null) return;
 
         current = target;
+        icon.localScale = Vector3.one * scale;
         icon.position = target.position;
-        icon.anchoredPosition += offset;
+        // 아이콘이 작아진 만큼 버튼에 붙게
+        icon.anchoredPosition += offset * scale;
         icon.gameObject.SetActive(true);
     }
 
