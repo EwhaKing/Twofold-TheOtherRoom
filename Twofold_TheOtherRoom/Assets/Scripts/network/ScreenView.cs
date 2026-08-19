@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// 화면 하나를 GameFlow가 캔버스 관리
@@ -7,8 +6,6 @@ using UnityEngine.Serialization;
 public abstract class ScreenView : MonoBehaviour
 {
     [Header("Canvas")]
-    [FormerlySerializedAs("canvasMenu")]
-    [FormerlySerializedAs("canvasLobby")]
     [SerializeField] protected GameObject canvas;
 
     /// 이 View가 담당하는 화면. GameFlow가 이걸 보고 켤 하나를 고름
