@@ -74,7 +74,7 @@ public static class GameSettings
     {
         Resolution = Resolutions[IndexOfResolution(NativeResolution)],
         screenMode = FullScreenMode.FullScreenWindow,
-        master     = 1f,
+        master     = 0.5f,
         bgm        = 1f,
         sfx        = 1f,
         language   = Language.Korean,
