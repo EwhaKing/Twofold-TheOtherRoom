@@ -32,7 +32,6 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public void OnBeginDrag(PointerEventData eventData)
     {
         parentAfterDrag = transform.parent;
-        transform.SetParent(transform.root);
         transform.SetAsLastSibling();
         canvasGroup.blocksRaycasts = false;
     }

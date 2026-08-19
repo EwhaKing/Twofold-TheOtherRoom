@@ -36,16 +36,16 @@ public enum PuzzleDimension { TwoD, ThreeD }
 ///       void OnSolved(string id) { if (id == "3D-6") door.Open(); }
 /// </summary>
 /// 
-[Serializable]
-public class PuzzleDisplayPosition
-{
-    public string puzzleID;
+// [Serializable]
+// public class PuzzleDisplayPosition
+// {
+//     public string puzzleID;
 
     
-    public GameObject activateObjectDisplay;
+//     public GameObject activateObjectDisplay;
 
-    public GameObject deactivateObjectDisplay;
-}
+//     public GameObject deactivateObjectDisplay;
+// }
 
 public class PuzzleManager : MonoBehaviour
 {
@@ -67,8 +67,6 @@ public class PuzzleManager : MonoBehaviour
     #endregion
 
     #region Settings
-    [Header("각 물체에서 거울 위치 설정")]
-    [SerializeField] private List<PuzzleDisplayPosition> displayPositions;
 
     [Tooltip("차원별 전체 퍼즐 개수 (진행도 표시용)")]
     public int total2DPuzzles = 5;
@@ -100,9 +98,6 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-
-        ActivateDisplayPosition(puzzleId);
-
         if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
         _solved[puzzleId] = dimension;
 
@@ -113,38 +108,6 @@ public class PuzzleManager : MonoBehaviour
     }
 
 
-    private void ActivateDisplayPosition(string puzzleId)
-{
-    string normalizedId = puzzleId.Trim();
-
-    foreach (PuzzleDisplayPosition entry in displayPositions)
-    {
-        if (entry == null || entry.activateObjectDisplay == null)
-            continue;
-
-        if (!string.Equals(
-                entry.puzzleID?.Trim(),
-                normalizedId,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            continue;
-        }
-        // 비어 있거나 Missing이면 비활성화를 건너뜁니다.
-        if (entry.deactivateObjectDisplay != null)
-        {
-            entry.deactivateObjectDisplay.SetActive(false);
-        }
-
-        // gameobject를 활성화
-        entry.activateObjectDisplay.SetActive(true);
-        return;
-    }
-
-    Debug.LogWarning(
-        $"[PuzzleManager] {puzzleId}에 해당하는 displayPosition이 없습니다.",
-        this
-    );
-}
 
     #endregion
 

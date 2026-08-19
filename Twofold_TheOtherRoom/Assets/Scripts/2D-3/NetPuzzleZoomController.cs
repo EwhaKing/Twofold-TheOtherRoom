@@ -101,10 +101,10 @@ public class NetPuzzleZoomController : MonoBehaviour
             if (isPuzzleCleared)
             {
                 PuzzleBreakEffect breakScript = puzzleBreakEffect != null ? puzzleBreakEffect.GetComponent<PuzzleBreakEffect>() : null;
-                if (breakScript != null)
-                {
-                    breakScript.ApplyRoomBreakState();
-                }
+                // if (breakScript != null)
+                // {
+                //     breakScript.ApplyRoomBreakState();
+                // }
                 if (puzzleBreakEffect != null) puzzleBreakEffect.SetActive(false);
 
                 // RugToggle에도 클리어 상태 전달

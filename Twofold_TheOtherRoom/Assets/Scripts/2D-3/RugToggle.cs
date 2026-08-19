@@ -8,11 +8,11 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
     public Sprite unfoldedRugSprite; // 펼쳐진 러그 (배치용_2)
     public Sprite foldedRugSprite;   // 접힌 러그 (배치용_3)
 
-    [Header("바닥 전개도 (러그 밑 요소)")]
-    public GameObject simplePlaceholder; // Simple_Placeholder 연결
+    // [Header("바닥 전개도 (러그 밑 요소)")]
+    // public GameObject simplePlaceholder; // Simple_Placeholder 연결
 
     [Header("줌 컨트롤러 연결")]
-    public NetPuzzleZoomController zoomController;
+   // public NetPuzzleZoomController zoomController;
 
     private Image rugImage;
     public bool isFolded = false; // 현재 러그 상태
@@ -64,27 +64,32 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
             rugImage.sprite = isFolded ? foldedRugSprite : unfoldedRugSprite;
         }
 
-        // 2. 이미 퍼즐이 풀렸다면(isCleared == true) 무조건 비활성화 상태 유지
-        if (isCleared)
+          if (isCleared)
         {
-            if (simplePlaceholder != null) simplePlaceholder.SetActive(false);
-            return;
+            rugImage.sprite = unfoldedRugSprite;
         }
 
-        // 3. 퍼즐이 안 풀렸을 때만 러그 접힘 여부에 따라 Placeholder 활성화
-        if (simplePlaceholder != null)
-        {
-            simplePlaceholder.SetActive(isFolded);
-        }
+        // // 2. 이미 퍼즐이 풀렸다면(isCleared == true) 무조건 비활성화 상태 유지
+        // if (isCleared)
+        // {
+        //     if (simplePlaceholder != null) simplePlaceholder.SetActive(false);
+        //     return;
+        // }
+
+        // // 3. 퍼즐이 안 풀렸을 때만 러그 접힘 여부에 따라 Placeholder 활성화
+        // if (simplePlaceholder != null)
+        // {
+        //     simplePlaceholder.SetActive(isFolded);
+        // }
     }
 
     // 퍼즐 클리어 시 호출해 주는 함수
     public void SetCleared()
     {
         isCleared = true;
-        if (simplePlaceholder != null)
-        {
-            simplePlaceholder.SetActive(false);
-        }
+        // if (simplePlaceholder != null)
+        // {
+        //     simplePlaceholder.SetActive(false);
+        // }
     }
 }

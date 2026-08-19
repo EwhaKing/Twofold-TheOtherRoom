@@ -6,18 +6,18 @@ public class PuzzleBreakEffect : MonoBehaviour
     [Header("깨지는 단계별 이미지들 (Frame_0 ~ Frame_3)")]
     public GameObject[] breakFrames;
 
-    [Header("구멍 속 거울 오브젝트")]
-    public GameObject mirrorObject;
+    // [Header("구멍 속 거울 오브젝트")]
+     public GameObject mirrorObject;
 
-    [Header("방 바닥 요소 제어")]
-    [Tooltip("방 바닥 전개도 자식으로 있는 구멍 이미지 (HoleOnFloor)")]
-    public GameObject roomHoleImage;
+    // [Header("방 바닥 요소 제어")]
+    // [Tooltip("방 바닥 전개도 자식으로 있는 구멍 이미지 (HoleOnFloor)")]
+    // public GameObject roomHoleImage;
 
-    [Tooltip("깨진 후 방 화면에서 감출 러그 오브젝트")]
-    public GameObject rugObject;
+    // [Tooltip("깨진 후 방 화면에서 감출 러그 오브젝트")]
+    // public GameObject rugObject;
 
-    [Tooltip("깨진 후 방 화면에서 감출 기존 전개도/바닥 이미지")]
-    public GameObject simplePlaceholder;
+    // [Tooltip("깨진 후 방 화면에서 감출 기존 전개도/바닥 이미지")]
+    // public GameObject simplePlaceholder;
 
     private bool isBroken = false;
     private bool isMirrorCollected = false;
@@ -59,25 +59,25 @@ public class PuzzleBreakEffect : MonoBehaviour
             mirrorObject.SetActive(true);
         }
 
-        // ★ 방 화면(배치용 화면) 상태 변경 ★
-        ApplyRoomBreakState();
+        // // ★ 방 화면(배치용 화면) 상태 변경 ★
+        // ApplyRoomBreakState();
     }
 
-    // 방 화면을 깨진 바닥 상태로 전환하는 함수
-    public void ApplyRoomBreakState()
-    {
-        // 1. 실제 방 바닥 구멍 이미지 활성화 (줌아웃 후 방 바닥에 보일 구멍)
-        if (roomHoleImage != null)
-        {
-            roomHoleImage.SetActive(true);
-        }
+    // // 방 화면을 깨진 바닥 상태로 전환하는 함수
+    // public void ApplyRoomBreakState()
+    // {
+    //     // 1. 실제 방 바닥 구멍 이미지 활성화 (줌아웃 후 방 바닥에 보일 구멍)
+    //     if (roomHoleImage != null)
+    //     {
+    //         roomHoleImage.SetActive(true);
+    //     }
 
-        // 2. 더 이상 필요 없는 러그 비활성화
-        if (rugObject != null)
-        {
-            rugObject.SetActive(false);
-        }
-    }
+    //     // 2. 더 이상 필요 없는 러그 비활성화
+    //     if (rugObject != null)
+    //     {
+    //         rugObject.SetActive(false);
+    //     }
+    // }
 
     // 줌아웃(뒤로가기) 시 연출 껍데기 끄기
     public void CloseBreakEffect()
@@ -86,18 +86,18 @@ public class PuzzleBreakEffect : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    // 거울 클릭 시 획득 처리
-    public void OnClickCollectMirror()
-    {
-        if (isMirrorCollected) return;
+    // // 거울 클릭 시 획득 처리
+    // public void OnClickCollectMirror()
+    // {
+    //     if (isMirrorCollected) return;
 
-        isMirrorCollected = true;
+    //     isMirrorCollected = true;
         
-        if (mirrorObject != null)
-        {
-            mirrorObject.SetActive(false);
-        }
+    //     if (mirrorObject != null)
+    //     {
+    //         mirrorObject.SetActive(false);
+    //     }
 
-        Debug.Log("거울을 획득했습니다!");
-    }
+    //     Debug.Log("거울을 획득했습니다!");
+    // }
 }
