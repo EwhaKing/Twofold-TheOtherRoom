@@ -20,6 +20,7 @@ public class SettingsPanel : MonoBehaviour
     [SerializeField] Slider sliderSfx;
 
     [Header("Language")]
+    [Tooltip("언어 섹션이 없는 설정창은 비워둘 것")]
     [SerializeField] Button btnLanguagePrev;
     [SerializeField] Button btnLanguageNext;
     [SerializeField] TMP_Text languageLabel;
@@ -46,8 +47,8 @@ public class SettingsPanel : MonoBehaviour
         sliderBgm.onValueChanged.AddListener(value => { _draft.bgm = value; PreviewSound(); });
         sliderSfx.onValueChanged.AddListener(value => { _draft.sfx = value; PreviewSound(); });
 
-        btnLanguagePrev.onClick.AddListener(() => ShiftLanguage(-1));
-        btnLanguageNext.onClick.AddListener(() => ShiftLanguage(1));
+        if (btnLanguagePrev != null) btnLanguagePrev.onClick.AddListener(() => ShiftLanguage(-1));
+        if (btnLanguageNext != null) btnLanguageNext.onClick.AddListener(() => ShiftLanguage(1));
 
         btnDefault.onClick.AddListener(OnDefault);
         btnConfirm.onClick.AddListener(OnConfirm);
@@ -101,7 +102,13 @@ public class SettingsPanel : MonoBehaviour
         sliderBgm.SetValueWithoutNotify(_draft.bgm);
         sliderSfx.SetValueWithoutNotify(_draft.sfx);
 
-        languageLabel.text = GameSettings.LabelOf(_draft.language);
+        SyncLanguageLabel();
+    }
+
+    void SyncLanguageLabel()
+    {
+        if (languageLabel != null)
+            languageLabel.text = GameSettings.LabelOf(_draft.language);
     }
 
     #endregion
@@ -129,7 +136,7 @@ public class SettingsPanel : MonoBehaviour
         if (index < 0) index += count;
 
         _draft.language = (Language)index;
-        languageLabel.text = GameSettings.LabelOf(_draft.language);
+        SyncLanguageLabel();
     }
 
     #endregion

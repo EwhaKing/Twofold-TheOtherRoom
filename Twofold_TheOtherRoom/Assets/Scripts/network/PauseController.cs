@@ -13,6 +13,10 @@ public class PauseController : MonoBehaviour
     [SerializeField] Button resumeButton;
     [SerializeField] Button exitButton;
 
+    [Header("Setting Panel")]
+    [SerializeField] Button settingButton;
+    [SerializeField] SettingsPanel settingPanel;
+
     [Header("Exit Confirm Panel")]
     [SerializeField] GameObject exitConfirmPanel;
     [SerializeField] Button exitConfirmYes;
@@ -29,12 +33,14 @@ public class PauseController : MonoBehaviour
         // 버튼 메서드 등록
         pauseButton.onClick.AddListener(OnPause);
         resumeButton.onClick.AddListener(OnResume);
+        settingButton.onClick.AddListener(OpenSetting);
         exitButton.onClick.AddListener(OpenExitConfirm);
         exitConfirmYes.onClick.AddListener(OnExit);
         exitConfirmNo.onClick.AddListener(CloseExitConfirm);
 
         // 이벤트 구독
         RoomService.Instance.PeerLeftDuringGamePlay += OnPeerLeft;
+        settingPanel.Closed += CloseSetting;
     }
 
     void Update()
@@ -54,6 +60,12 @@ public class PauseController : MonoBehaviour
             headerText.text = pausedByHost ? $"{PlayerNames.Host}님이 일시정지했습니다." : $"{PlayerNames.Guest}님이 일시정지했습니다.";
             resumeButton.interactable = gs.PausedBy == RoomService.Instance.Runner.LocalPlayer;
         }
+        // 설정창/확인창은 Panel_Pause 형제라 같이 안 꺼짐. 상대가 재개해도 남지 않게
+        else
+        {
+            CloseSetting();
+            CloseExitConfirm();
+        }
     }
 
     void OnDestroy()
@@ -61,6 +73,9 @@ public class PauseController : MonoBehaviour
         // 이벤트 구독 해제
         if(RoomService.Instance != null)
             RoomService.Instance.PeerLeftDuringGamePlay -= OnPeerLeft;
+
+        if(settingPanel != null)
+            settingPanel.Closed -= CloseSetting;
     }
 
     #region Button Method
@@ -74,6 +89,18 @@ public class PauseController : MonoBehaviour
     {
         // RPC 호출
         GameSession.Instance?.RpcRequestResume();
+    }
+
+    void OpenSetting()
+    {
+        settingPanel.gameObject.SetActive(true);
+        settingPanel.Open();
+    }
+
+    void CloseSetting()
+    {
+        settingPanel.Cancel();
+        settingPanel.gameObject.SetActive(false);
     }
 
     void OpenExitConfirm()
