@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public enum ScreenId
 {
     Title,
+    Setting,
     Menu,
     FindRoom,
     Lobby,
