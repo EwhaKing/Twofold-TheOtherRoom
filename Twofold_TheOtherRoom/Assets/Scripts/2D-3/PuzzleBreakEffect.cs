@@ -6,6 +6,8 @@ public class PuzzleBreakEffect : MonoBehaviour
     [Header("깨지는 단계별 이미지들 (Frame_0 ~ Frame_3)")]
     public GameObject[] breakFrames;
 
+
+
     // [Header("구멍 속 거울 오브젝트")]
      public GameObject mirrorObject;
 
@@ -31,7 +33,7 @@ public class PuzzleBreakEffect : MonoBehaviour
         for (int i = 0; i < breakFrames.Length; i++)
         {
             if (breakFrames[i] != null)
-                breakFrames[i].SetActive(i == 0);
+                breakFrames[i].SetActive(i == 1);
         }
 
         if (mirrorObject != null)
@@ -42,7 +44,8 @@ public class PuzzleBreakEffect : MonoBehaviour
 
     private IEnumerator PlayBreakAnimation()
     {
-        yield return new WaitForSeconds(0.4f); // 퍼즐 완성 후 연출 대기 시간
+        //yield return new WaitForSeconds(0.4f); // 퍼즐 완성 후 연출 대기 시간
+
 
         // 단계별 깨지는 연출
         for (int i = 0; i < breakFrames.Length - 1; i++)

@@ -95,7 +95,11 @@ public class NetPuzzleGameManager : MonoBehaviour
         {
             foreach (NetPuzzleSlot slot in puzzleSlots)
             {
-                if (slot != null) slot.gameObject.SetActive(false);
+                if (slot == null) continue;
+                // 드래그 비활성화
+                NetPuzzleDragItem dragItem = slot.GetComponentInChildren<NetPuzzleDragItem>();
+                if (dragItem != null)
+                    dragItem.enabled = false;
             }
         }
 
@@ -106,10 +110,17 @@ public class NetPuzzleGameManager : MonoBehaviour
         // }
 
         // 4. 깨지는 연출 오브젝트 활성화 및 시작
-        if (breakEffect != null)
-        {
-            breakEffect.gameObject.SetActive(true);
-            breakEffect.PrepareEffect();
-        }
+           StartCoroutine(PlayBreakEffectAfterDelay());
+}
+
+private IEnumerator PlayBreakEffectAfterDelay()
+{
+    yield return new WaitForSeconds(0.5f);
+
+    if (breakEffect != null)
+    {
+        breakEffect.gameObject.SetActive(true);
+        breakEffect.PrepareEffect();
     }
+}
 }
