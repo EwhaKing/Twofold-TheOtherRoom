@@ -90,7 +90,8 @@ public class GameManager2D10 : MonoBehaviour
         {
             return true;
         } 
-        else if(beforeball.GetColor()!=currentball.GetColor() || nextTube.ball[3]!=null)
+        // else if(beforeball.GetColor()!=currentball.GetColor() || nextTube.ball[3]!=null)
+        else if(nextTube.ball[3]!=null)
         {   
             return false;
         }
