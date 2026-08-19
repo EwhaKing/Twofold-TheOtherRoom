@@ -430,10 +430,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b66ea2fbcea0147bcbca6d254c0c17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzleManager
-  displayPositions:
-  - puzzleID: 2D-3
-    activateObjectDisplay: {fileID: 404266735}
-    deactivateObjectDisplay: {fileID: 1267416968}
   total2DPuzzles: 5
   total3DPuzzles: 0
 --- !u!4 &369443685
@@ -1367,8 +1363,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RugToggle
   unfoldedRugSprite: {fileID: 1577114253, guid: e0f19e3cbd6add84db42ce3f71482fed, type: 3}
   foldedRugSprite: {fileID: 2145690521, guid: 870a16f481cf3a143bc6eca91905773f, type: 3}
-  simplePlaceholder: {fileID: 0}
-  zoomController: {fileID: 273721637}
   isFolded: 0
   isCleared: 0
 --- !u!1 &1028397958
@@ -2211,7 +2205,6 @@ MonoBehaviour:
   - {fileID: 2047524613}
   puzzleContainer: {fileID: 0}
   breakEffect: {fileID: 2033026242}
-  zoomController: {fileID: 0}
 --- !u!1 &1781299201
 GameObject:
   m_ObjectHideFlags: 0
@@ -2779,67 +2772,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetPuzzleSlot
   correctItemID: 5
   isCorrect: 0
---- !u!1001 &3645065798776249304
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1362295178908071072, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037089721935981674, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_Name
-      value: fullset_fixed
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037089721935981674, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e8a865fe42c7f4b4bb7ed3782e23dd16, type: 3}
 --- !u!1001 &4252565883792320717
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3026,6 +2958,5 @@ SceneRoots:
   - {fileID: 1878613426}
   - {fileID: 273721638}
   - {fileID: 4252565883792320717}
-  - {fileID: 3645065798776249304}
   - {fileID: 369443685}
   - {fileID: 881673019}

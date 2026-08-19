@@ -17,8 +17,8 @@ public class NetPuzzleGameManager : MonoBehaviour
     [Header("깨지는 연출 스크립트 연결")]
     public PuzzleBreakEffect breakEffect; // 깨지는 연출 그룹 스크립트
 
-    [Header("줌 컨트롤러 연결")]
-    public NetPuzzleZoomController zoomController; // 줌 컨트롤러 추가
+    // [Header("줌 컨트롤러 연결")]
+    // public NetPuzzleZoomController zoomController; // 줌 컨트롤러 추가
 
     public void CheckPuzzleComplete()
     {
@@ -95,21 +95,32 @@ public class NetPuzzleGameManager : MonoBehaviour
         {
             foreach (NetPuzzleSlot slot in puzzleSlots)
             {
-                if (slot != null) slot.gameObject.SetActive(false);
+                if (slot == null) continue;
+                // 드래그 비활성화
+                NetPuzzleDragItem dragItem = slot.GetComponentInChildren<NetPuzzleDragItem>();
+                if (dragItem != null)
+                    dragItem.enabled = false;
             }
         }
 
-        // 3. 줌 컨트롤러에 확대 상태 전달
-        if (zoomController != null)
-        {
-            zoomController.ZoomInToPuzzle();
-        }
+        // // 3. 줌 컨트롤러에 확대 상태 전달
+        // if (zoomController != null)
+        // {
+        //     zoomController.ZoomInToPuzzle();
+        // }
 
         // 4. 깨지는 연출 오브젝트 활성화 및 시작
-        if (breakEffect != null)
-        {
-            breakEffect.gameObject.SetActive(true);
-            breakEffect.PrepareEffect();
-        }
+           StartCoroutine(PlayBreakEffectAfterDelay());
+}
+
+private IEnumerator PlayBreakEffectAfterDelay()
+{
+    yield return new WaitForSeconds(0.5f);
+
+    if (breakEffect != null)
+    {
+        breakEffect.gameObject.SetActive(true);
+        breakEffect.PrepareEffect();
     }
+}
 }
