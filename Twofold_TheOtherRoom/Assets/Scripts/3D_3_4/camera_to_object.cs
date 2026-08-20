@@ -56,8 +56,7 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
             return;
 
         // Interact()가 호출된 같은 프레임의 E 입력으로 즉시 닫히는 것을 방지합니다.
-        if (Time.frameCount > enteredFrame &&
-            (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)))
+        if (Time.frameCount > enteredFrame && Input.GetKeyDown(KeyCode.E))
         {
             EndInspection();
             return;
