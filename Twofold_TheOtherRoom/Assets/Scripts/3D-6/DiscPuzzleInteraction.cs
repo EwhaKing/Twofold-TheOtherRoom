@@ -46,8 +46,7 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
             return;
 
         // Interact()가 호출된 같은 프레임의 E 입력으로 즉시 닫히는 것을 방지.
-        if (Time.frameCount > enteredFrame &&
-            (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)))
+        if (Time.frameCount > enteredFrame && Input.GetKeyDown(KeyCode.E))
         {
             Exit();
         }
@@ -116,12 +115,7 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         isEntered = false;
     }
 
-    /// UI 버튼 등에서 호출할 수 있는 종료 메서드
-    public void CloseInteraction()
-    {
-        Exit();
-    }
-
+    /// CommonCanvas 뒤로가기 버튼이 부름
     public void CloseInspection()
     {
         Exit();

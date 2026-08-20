@@ -8,6 +8,10 @@ using UnityEngine.UI;
 [RequireComponent(typeof(RectTransform))]
 public class HoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [Header("Choice Icon")]
+    [Tooltip("이 버튼에 뜰 때의 아이콘 배율. 작은 버튼이면 낮출 것")]
+    [SerializeField] float iconScale = 1f;
+
     HoverIndicator indicator;
     RectTransform rect;
     Button button;
@@ -31,7 +35,7 @@ public class HoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (indicator == null) return;
         if (button != null && !button.interactable) return;   // 접속 중 잠긴 버튼은 무시
 
-        indicator.Show(rect);
+        indicator.Show(rect, iconScale);
     }
 
     public void OnPointerExit(PointerEventData e)

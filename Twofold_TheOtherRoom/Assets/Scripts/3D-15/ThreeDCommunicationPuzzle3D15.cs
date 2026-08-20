@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 
-public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
+public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, ICloseInspection
 {
     private enum Phase
     {
@@ -30,18 +29,15 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
     [Header("UI - Common")]
     [SerializeField] private TMP_Text instructionText;
     [SerializeField] private TMP_Text feedbackText;
-    [SerializeField] private GameObject backButton;
 
     [Header("UI - Alphabet Input")]
     [SerializeField] private TMP_InputField alphabetInput;
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Phase phase = Phase.Closed;
     private bool solved;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
 
     private void Awake()
     {
@@ -51,20 +47,12 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
-        if (backButton != null) backButton.SetActive(false);
-
     }
 
     private void Update()
     {
         if (phase == Phase.Closed || phase == Phase.Cleared)
             return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            ClosePuzzle();
-            return;
-        }
 
         if ( Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
@@ -92,18 +80,18 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
 
-        DisablePlayerControl();
+        // 커서 상태 저장,해제까지 Lock이 담당
+        playerControlLock.Lock(this, behavioursToDisable);
         playerCamera.transform.SetPositionAndRotation(
             cameraFocusPoint.position,
             cameraFocusPoint.rotation);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
         if (feedbackText != null) feedbackText.gameObject.SetActive(true);
-        if (backButton != null) backButton.SetActive(true);
+
+        // CommonCanvas 뒤로가기 버튼
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         phase = Phase.AlphabetInput;
 
@@ -144,24 +132,23 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
         }
     }
 
-    ///Back Button의 OnClick에 연결합니다. E를 누르기 전 상태로 돌아갑니다.
-    public void ClosePuzzle()
+    /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
+    public void CloseInspection()
     {
         if (phase == Phase.Closed)
             return;
 
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
+
         playerCamera.transform.SetPositionAndRotation(
             originalCameraPosition,
             originalCameraRotation);
-        RestorePlayerControl();
-
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
+        playerControlLock.Unlock();
 
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
-        if (backButton != null) backButton.SetActive(true);
 
         phase = solved ? Phase.Cleared : Phase.Closed;
     }
@@ -202,40 +189,6 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
-    }
-
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-        disabledBehaviours.Clear();
     }
 
 }

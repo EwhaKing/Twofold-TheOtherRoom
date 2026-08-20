@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// 3D 플레이어용 통신 퍼즐.
 /// 알파벳을 순서대로 입력하면 다음 단계의 도형이 3초 동안 표시됩니다.
 
-public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
+public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseInspection
 {
     [Serializable]
     public class StageData
@@ -48,7 +48,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     [SerializeField] private TMP_Text instructionText;
     [SerializeField] private TMP_Text feedbackText;
     [SerializeField] private GameObject resetButton;
-    [SerializeField] private GameObject backButton;
 
     [Header("UI - Alphabet Input")]
     [SerializeField] private TMP_InputField alphabetInput;
@@ -82,7 +81,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
-        if (backButton != null) backButton.SetActive(false);
 
 
         HideAllShapeSlots();
@@ -92,12 +90,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     {
         if (phase == Phase.Closed || phase == Phase.Cleared)
             return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            ClosePuzzle();
-            return;
-        }
 
         if ((phase == Phase.AlphabetInput || phase == Phase.ShapeReveal) &&
             (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
@@ -143,7 +135,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         if (stageText != null) stageText.gameObject.SetActive(true);
         if (feedbackText != null) feedbackText.gameObject.SetActive(true);
-        if (backButton != null) backButton.SetActive(true);
+
+        // CommonCanvas 뒤로가기 버튼
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
@@ -207,11 +202,14 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             RestartFromBeginning();
     }
 
-    ///Back Button의 OnClick에 연결합니다. E를 누르기 전 상태로 돌아갑니다.
-    public void ClosePuzzle()
+    /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
+    public void CloseInspection()
     {
         if (phase == Phase.Closed)
             return;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
 
         playerCamera.transform.SetPositionAndRotation(
             originalCameraPosition,
@@ -226,7 +224,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
-        if (backButton != null) backButton.SetActive(false);
         HideAllShapeSlots();
 
         phase = solved ? Phase.Cleared : Phase.Closed;

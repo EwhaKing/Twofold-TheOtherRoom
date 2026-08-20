@@ -57,30 +57,6 @@ public enum SFXType
 public class SoundManager : MonoBehaviour
 {
     /// <summary>
-    /// setting 키고 끄기
-    /// </summary>
-    private bool _press;
-    [Header("Setting")]
-    public KeyCode interactKey = KeyCode.Escape;
-    public GameObject settingLayer;
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(interactKey))
-        {   if(_press)
-            {
-                settingLayer.SetActive(false);
-                _press=false;
-            }
-            else
-            {
-                settingLayer.SetActive(true);
-                _press=true;
-            }
-        }
-    }
-    
-    /// <summary>
     /// 싱글톤 인스턴스
     /// </summary>
 
@@ -137,7 +113,6 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        _press=false;
         PlayBGM(defaultBGM);
     }
 

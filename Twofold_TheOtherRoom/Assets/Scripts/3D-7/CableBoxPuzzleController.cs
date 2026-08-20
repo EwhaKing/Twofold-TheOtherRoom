@@ -5,7 +5,7 @@ using UnityEngine;
 
 /*
    케이블 박스 퍼즐 (3D-7)
-   E키로 진입 -> 액자 클릭해서 열기 -> plug 5개를 정답 outlet에 꽂기 -> Esc로 나감
+   E키로 진입 -> 액자 클릭해서 열기 -> plug 5개를 정답 outlet에 꽂기 -> CommonCanvas 뒤로가기로 나감
 
    [블록 콜라이더]
    콜라이더 하나가 세 역할 담당
@@ -22,7 +22,7 @@ using UnityEngine;
    회전할 액자 메시
 */
 
-public class CableBoxPuzzleController : MonoBehaviour, IInteractable
+public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInspection
 {
     [Header("Puzzle ID")]
     [SerializeField] string puzzleId = "3D-7";
@@ -72,10 +72,8 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     [Tooltip("PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾음")]
     [SerializeField] Behaviour[] behavioursToDisable;
 
-    readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
-    CursorLockMode originalCursorLockMode;
-    bool originalCursorVisible;
     bool isEntered;
 
     Collider blockCollider;
@@ -106,14 +104,6 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
             puzzleCamera.enabled = false;
 
         BuildPlugList();
-    }
-
-    private void Update()
-    {
-        if (!isEntered) return;
-
-        if (Input.GetKeyDown(KeyCode.Escape)) // 나가기 - Esc
-            Exit();
     }
 
     private void OnEnable()
@@ -149,28 +139,27 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
 
     private void Enter()
     {
-        DisablePlayerControl();
-
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
+        // 커서 상태 저장·해제까지 Lock이 담당
+        playerControlLock.Lock(this, behavioursToDisable);
 
         if (playerCamera != null)
             playerCamera.enabled = false;
         if (puzzleCamera != null)
             puzzleCamera.enabled = true;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
         isEntered = true;
         SetInteractable();
+
+        // 공용 뒤로가기 UI
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
     }
 
     private void Exit()
     {
         if (!isEntered) return;
 
-        // Frame 여는 도중 Esc를 누른 경우, 코루틴 중단/열린 상태로 스냅
+        // Frame 여는 도중 나간 경우, 코루틴 중단/열린 상태로 스냅
         if (frameRoutine != null)
         {
             StopFrameRoutine();
@@ -187,17 +176,17 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
         if (playerCamera != null)
             playerCamera.enabled = true;
 
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
-
-        RestorePlayerControl();
+        playerControlLock.Unlock();
 
         isEntered = false;
         SetInteractable();
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
     }
 
-    /// UI 버튼 등에서 호출할 수 있는 종료 메서드
-    public void CloseInteraction()
+    /// CommonCanvas 뒤로가기 버튼이 부름
+    public void CloseInspection()
     {
         Exit();
     }
@@ -261,42 +250,6 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable
     }
     #endregion
 
-    #region Player Control
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled) return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
-        disabledBehaviours.Clear();
-    }
-    #endregion
 
     private void SetInteractable()
     {
