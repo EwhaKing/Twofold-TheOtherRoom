@@ -48,6 +48,8 @@ public class PauseController : MonoBehaviour
         var gs = GameSession.Instance;
         bool pause = gs != null && gs.IsPaused;
 
+        HandleEscape(pause);
+
         if (pause == _lastPause) return;
         _lastPause = pause;
 
@@ -77,6 +79,27 @@ public class PauseController : MonoBehaviour
         if(settingPanel != null)
             settingPanel.Closed -= CloseSetting;
     }
+
+    #region Escape
+    /// 일시정지 토글. 재개는 일시정지를 건 쪽만
+    void HandleEscape(bool pause)
+    {
+        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+        // 퇴장 안내 중엔 Esc 무시.
+        if (noticePanel.activeSelf) return;
+
+        if (!pause)
+        {
+            OnPause();
+            return;
+        }
+
+        // 재개 버튼과 같은 조건
+        if (resumeButton.interactable)
+            OnResume();
+    }
+    #endregion
 
     #region Button Method
     void OnPause()
