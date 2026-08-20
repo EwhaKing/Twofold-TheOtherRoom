@@ -4,7 +4,7 @@ public class Answer3D10 : MonoBehaviour
 {
     public Cylinder3D10[] input;
 
-    public float[] answer = { 80f, 200f, 320f };
+    public float[] answer = { 290f, 50f, 170f };
     public bool _solved = false;
 
     public void CheckAnswer()
