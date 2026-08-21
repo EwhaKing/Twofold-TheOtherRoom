@@ -2,16 +2,19 @@ using UnityEngine;
 
 public class Answer3D10 : MonoBehaviour
 {
-    public Cylinder3D10[] input;
+    public cylinder3D10_local[] input;
 
-    public float[] answer = { 80f, 200f, 320f };
+    public float[] answer;
     public bool _solved = false;
 
     public void CheckAnswer()
     {
+        
+
         for (int i = 0; i < input.Length; i++)
         {
-            if (input[i].GetY() != answer[i])
+            // 미세하게 회전 각도가 달라서, 오차가 심하지 않으면 정답이게 수정
+            if (Mathf.Abs(Mathf.DeltaAngle(input[i].GetZ(), answer[i])) > 0.1f)
                 return;
         }
 
