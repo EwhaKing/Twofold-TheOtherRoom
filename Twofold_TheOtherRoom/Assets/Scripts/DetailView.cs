@@ -91,6 +91,8 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             return;
         }
 
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+
         if (currentDetail != null)
         {
             Destroy(currentDetail);
