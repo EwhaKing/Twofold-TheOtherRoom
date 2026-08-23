@@ -71,6 +71,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private bool solved;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
+    private Coroutine beepRoutine;
 
     private void Awake()
     {
@@ -121,8 +122,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             BasicCameraControl();
     }
 
- 
-
     private void BasicCameraControl()
     {
         
@@ -150,8 +149,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     private void OpenPuzzle()
     {
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         BasicCameraControl();
-
 
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
@@ -187,6 +186,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
         if (!string.Equals(entered, expected, StringComparison.Ordinal))
         {
+            SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
             SetFeedback("정답이 아닙니다.");
             if (alphabetInput != null)
             {
@@ -195,7 +195,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             }
             return;
         }
-
+        SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
         SetFeedback("정답입니다.");
 
         // 마지막(3단계 뒤) 알파벳까지 맞히면 7번째 화면 완료 후 Clear.
@@ -279,6 +279,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         phase = Phase.ShapeReveal;
         revealTimeLeft = 3f;
 
+        if (beepRoutine != null)
+            StopCoroutine(beepRoutine);
+
+        beepRoutine = StartCoroutine(PlayCountdownBeep());
+
         if (alphabetInput != null)
         {
             alphabetInput.characterLimit = 8;
@@ -319,7 +324,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     {
         solved = true;
 
-        
+        SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
         if (stageText != null) stageText.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
@@ -429,6 +434,22 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
+    }
+
+    private IEnumerator PlayCountdownBeep()
+    {
+        // 3초
+        SoundManager.Instance.PlaySFX(SFXType.Beep2);
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        // 2초
+        SoundManager.Instance.PlaySFX(SFXType.Beep1);
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        // 1초
+        SoundManager.Instance.PlaySFX(SFXType.Beep1);
     }
 
 #if UNITY_EDITOR
