@@ -19,6 +19,7 @@ public class Disc : MonoBehaviour
 
     public void Rotate(int dir)
     {
+        SoundManager.Instance.PlaySFX(SFXType.Scrape);
         currentSlot = (currentSlot + dir + 6) % 6;
         ApplyRotation();
     }

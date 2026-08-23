@@ -63,6 +63,7 @@ public class DiscPuzzleManager : MonoBehaviour
         if (solved && !_solved)
         {
             _solved = true; // 회전 잠금
+            SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
             if (PuzzleManager.Instance != null)
                 PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
                 StartCoroutine(Move());
