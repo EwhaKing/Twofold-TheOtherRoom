@@ -4,17 +4,17 @@ using UnityEngine.UI;
 
 public class OpenCabinet : MonoBehaviour
 {
-     [Header("Drawer Sprites")]
+    [Header("Drawer Sprites")]
     public Sprite openDrawerSprite;   // 열린 서랍 스프라이트
     public Sprite closedDrawerSprite; // 닫힌 서랍 스프라이트
-
 
     [System.Serializable]
     public class DrawerData
     {
-        public Button drawerButton;   // 서랍 버튼 UI
-        public GameObject itemInside; // 서랍 내부의 작은 종이 (없으면 null)
+        public Button drawerButton;   // 서랍 버튼
+        public GameObject itemInside; // 서랍 안 아이템
         public bool isOpen = false;   // 현재 열림/닫힘 상태
+
         [System.NonSerialized] public float closedHeight;
         [System.NonSerialized] public bool hasCachedClosedHeight;
         [System.NonSerialized] public int originalSiblingIndex;
@@ -24,20 +24,58 @@ public class OpenCabinet : MonoBehaviour
     [Header("Drawer List")]
     public List<DrawerData> drawers = new List<DrawerData>();
 
-    // 1. 서랍 클릭 시 실행 (열림/닫힘 토글)
+    private void Start()
+    {
+        // 시작할 때 모든 서랍을 닫힌 상태로 초기화
+        for (int i = 0; i < drawers.Count; i++)
+        {
+            DrawerData drawer = drawers[i];
+
+            drawer.isOpen = false;
+
+            if (drawer.drawerButton != null)
+            {
+                // 닫힌 서랍 이미지로 설정
+                drawer.drawerButton.image.sprite = closedDrawerSprite;
+
+                RectTransform drawerRect =
+                    drawer.drawerButton.image.rectTransform;
+
+                // 닫힌 상태의 원래 높이 저장
+                drawer.closedHeight = drawerRect.sizeDelta.y;
+                drawer.hasCachedClosedHeight = true;
+            }
+
+            // 서랍 안 아이템은 처음에 숨김
+            if (drawer.itemInside != null)
+            {
+                drawer.itemInside.SetActive(false);
+            }
+        }
+    }
+
+    // 서랍 클릭 시 실행
     public void ToggleDrawer(int index)
     {
-        if (index < 0 || index >= drawers.Count) return;
+        if (index < 0 || index >= drawers.Count)
+            return;
 
         DrawerData drawer = drawers[index];
-        drawer.isOpen = !drawer.isOpen; // 상태 반전 (열림 <-> 닫힘)
 
-        // 서랍 이미지 스프라이트 교체
+        // 열림 / 닫힘 상태 반전
+        drawer.isOpen = !drawer.isOpen;
+
+        // 서랍 이미지 변경
         if (drawer.drawerButton != null)
         {
-            drawer.drawerButton.image.sprite = drawer.isOpen ? openDrawerSprite : closedDrawerSprite;
+            drawer.drawerButton.image.sprite =
+                drawer.isOpen
+                ? openDrawerSprite
+                : closedDrawerSprite;
 
-            RectTransform drawerRect = drawer.drawerButton.image.rectTransform;
+            RectTransform drawerRect =
+                drawer.drawerButton.image.rectTransform;
+
             if (!drawer.hasCachedClosedHeight)
             {
                 drawer.closedHeight = drawerRect.sizeDelta.y;
@@ -45,13 +83,25 @@ public class OpenCabinet : MonoBehaviour
             }
 
             Vector2 size = drawerRect.sizeDelta;
-            size.y = drawer.isOpen ? drawer.closedHeight + 60f : drawer.closedHeight;
+
+            size.y =
+                drawer.isOpen
+                ? drawer.closedHeight + 60f
+                : drawer.closedHeight;
+
             drawerRect.sizeDelta = size;
         }
 
+        // 서랍을 열었을 때 효과음 재생
+        if (drawer.isOpen)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DrawerOpen);
+        }
+
+        // 서랍 앞뒤 순서 정리
         ReorderDrawers();
 
-        // 서랍 안 종이가 있다면 서랍 상태에 맞춰 인스펙터 켜고 끄기
+        // 서랍 안 아이템 표시 / 숨김
         if (drawer.itemInside != null)
         {
             drawer.itemInside.SetActive(drawer.isOpen);
@@ -60,25 +110,26 @@ public class OpenCabinet : MonoBehaviour
 
     private void ReorderDrawers()
     {
-        // 닫힌 서랍은 모두 뒤에 둔다.
+        // 닫힌 서랍은 뒤쪽으로
         for (int i = 0; i < drawers.Count; i++)
         {
             DrawerData drawer = drawers[i];
+
             if (!drawer.isOpen && drawer.drawerButton != null)
             {
                 drawer.drawerButton.image.rectTransform.SetAsLastSibling();
             }
         }
 
-        // 열린 서랍은 index가 큰 것부터 올려서, index가 작은 서ㅁ랍이 가장 앞에 오게 한다.
+        // 열린 서랍은 앞쪽으로
         for (int i = drawers.Count - 1; i >= 0; i--)
         {
             DrawerData drawer = drawers[i];
+
             if (drawer.isOpen && drawer.drawerButton != null)
             {
                 drawer.drawerButton.image.rectTransform.SetAsLastSibling();
             }
         }
     }
-
 }
