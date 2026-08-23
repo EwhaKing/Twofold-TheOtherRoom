@@ -15,6 +15,7 @@ public class CakeFrame2D8 : MonoBehaviour, IPointerClickHandler
             return;
 
         opened = true;
+        SoundManager.Instance.PlaySFX(SFXType.CabinetOpen);
 
         cakeframe.SetActive(false);
         cakeframeOpen.SetActive(true);
