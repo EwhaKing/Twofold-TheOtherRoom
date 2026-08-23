@@ -75,6 +75,8 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             Destroy(currentDetail);
         }
 
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+
         detailView.SetActive(true);
         detailView.transform.SetAsLastSibling();
         currentDetail = Instantiate(prefab, detailRoot, false);
