@@ -34,6 +34,7 @@ public class LAY_Button : MonoBehaviour, IInteractable
         {    
             return;
         }
+        SoundManager.Instance.PlaySFX(SFXType.ButtonPush);
 
         StartCoroutine(PressButton());
     }
