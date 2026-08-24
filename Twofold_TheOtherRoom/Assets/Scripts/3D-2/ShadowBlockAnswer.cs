@@ -15,15 +15,22 @@ public class ShadowBlockAnswer : MonoBehaviour
     [Tooltip("목표 지점보다 빛이 조금 더 뻗어야 할 때 사용하는 여유 거리입니다.")]
     [SerializeField, Min(0f)] private float rangePadding = 0.1f;
     [SerializeField] private float gatheredInnerSpotAngle = 15f;
-    [SerializeField, Range(1f, 179f)] private float gatheredSpotAngle = 20f;
+    [SerializeField, Range(1f, 179f)] private float gatheredSpotAngle = 25f;
     [Tooltip("목표를 바라본 뒤 Spotlight의 로컬 X축에 추가할 각도입니다.")]
     [SerializeField] private float pitchOffset = 10f;
 
     [Header("Puzzle Report")]
     [SerializeField] private string puzzleId = "3D-2";
 
+    [SerializeField] private GameObject mirror_2;
+
     private readonly int[] answer = { 1, 3, 4, 2 };
     private bool isCleared;
+
+    void Awake()
+    {
+        if (mirror_2 != null) mirror_2.SetActive(false);
+    }
 
     public void CheckClear()
     {
@@ -111,5 +118,7 @@ public class ShadowBlockAnswer : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
 
         PuzzleManager.Instance.ReportSolved(puzzleId, PuzzleDimension.ThreeD);
+
+        mirror_2.SetActive(true);
     }
 }
