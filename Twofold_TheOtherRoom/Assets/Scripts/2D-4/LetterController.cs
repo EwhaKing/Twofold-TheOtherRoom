@@ -22,6 +22,7 @@ public class LetterController : MonoBehaviour
             currentLetter = 'A';
         else
             currentLetter++;
+            SoundManager.Instance.PlaySFX(SFXType.UIClick);
 
         UpdateLetter();
     }
@@ -33,6 +34,7 @@ public class LetterController : MonoBehaviour
             currentLetter = 'D';
         else
             currentLetter--;
+            SoundManager.Instance.PlaySFX(SFXType.UIClick);
 
         UpdateLetter();
     }

@@ -79,6 +79,8 @@ public class PadlockController : MonoBehaviour
     {
         isUnlocked = true;
 
+        SoundManager.Instance.PlaySFX(SFXType.LockOpen);
+
         // 1. 자물쇠 고리 열림 연출 (자동으로 줌아웃 안 됨!)
         if (zoomShackleImage != null && zoomOpenShackleSprite != null)
         {

@@ -70,6 +70,8 @@ public class PuzzleChecker : MonoBehaviour
 
         Debug.Log("2D-4 퍼즐 성공");
 
+        SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+
         // if (plantMove != null)
         // {
         //     plantMove.NotifyPuzzleCleared();
