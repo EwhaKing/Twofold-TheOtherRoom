@@ -55,16 +55,20 @@ public class CutCake : MonoBehaviour
         else
         {
             target.section.SetActive(true);
-            SetCakeAlpha(0.5f);
+            SetCakeAlpha(0.1f);
         }
     }
     void SetCakeAlpha(float alpha)
     {        
         foreach (Renderer renderer in cakeRenderers)
         {
+             Material mat = renderer.material;
             Color color = renderer.material.color;
             color.a = alpha;
+              mat.color = color;
             renderer.material.color = color;
+
+            Debug.Log($"{renderer.name}: {mat.color.a}");
         }
     }
     /**

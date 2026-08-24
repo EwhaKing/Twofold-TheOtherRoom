@@ -59,6 +59,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     [SerializeField] private Slider timerSlider;
     [Tooltip("선택 사항입니다. 비워 두면 숫자는 표시하지 않고 Slider만 줄어듭니다.")]
     [SerializeField] private TMP_Text timerText;
+
+    [Header("UI - ClearPanel")]
+    [SerializeField] private GameObject MirrorPanel;
   
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
@@ -81,6 +84,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
+         if (MirrorPanel != null) MirrorPanel.SetActive(false);
 
 
         HideAllShapeSlots();
@@ -88,7 +92,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     private void Update()
     {
-        if (phase == Phase.Closed || phase == Phase.Cleared)
+        if (phase == Phase.Closed ||phase == Phase.Cleared)
             return;
 
         if ((phase == Phase.AlphabetInput || phase == Phase.ShapeReveal) &&
@@ -112,10 +116,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     {
         if (phase == Phase.Closed && !solved)
             OpenPuzzle();
+
+        if (phase == Phase.Cleared && solved)
+            BasicCameraControl();
     }
 
-    private void OpenPuzzle()
+ 
+
+    private void BasicCameraControl()
     {
+        
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -127,18 +137,21 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
-        //playercontrollock
+
         playerControlLock.Lock(this, behavioursToDisable, true);
+
         playerCamera.transform.SetPositionAndRotation(
             cameraFocusPoint.position,
             cameraFocusPoint.rotation);
 
-        if (stageText != null) stageText.gameObject.SetActive(true);
-        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
-
-        // CommonCanvas 뒤로가기 버튼
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
+    }
+
+    private void OpenPuzzle()
+    {
+        BasicCameraControl();
+
 
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
@@ -275,6 +288,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (timerSlider != null) timerSlider.gameObject.SetActive(true);
         if (timerText != null) timerText.gameObject.SetActive(true);
         if (resetButton != null) resetButton.SetActive(true);
+        if (stageText != null) stageText.gameObject.SetActive(true);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         SetStageLabel($"{stageIndex + 1}단계");
         SetFeedback(string.Empty);
         if (instructionText != null)
@@ -305,8 +320,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private void CompletePuzzle()
     {
         solved = true;
-        instructionText.text = "CLEAR!";
-        instructionText.fontSize = 35f;
+
         
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
         if (stageText != null) stageText.gameObject.SetActive(false);
@@ -314,6 +328,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
+        if (instructionText != null) instructionText.gameObject.SetActive(false);
+
+
+        if (MirrorPanel != null) MirrorPanel.gameObject.SetActive(true);
+
 
 
         if (PuzzleManager.Instance != null)
@@ -407,11 +426,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private void SetStageLabel(string value)
     {
         if (stageText != null) stageText.text = value;
+       
     }
 
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
+         
     }
 
 #if UNITY_EDITOR
