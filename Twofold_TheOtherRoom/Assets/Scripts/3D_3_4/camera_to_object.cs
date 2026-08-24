@@ -186,7 +186,6 @@ inspectionYaw += mouseX * amount;
 
     public void ResetInspection()
     {
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         ResetInspectionView();
     }
 
