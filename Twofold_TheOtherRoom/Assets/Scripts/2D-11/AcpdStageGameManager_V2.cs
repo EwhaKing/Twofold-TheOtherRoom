@@ -83,7 +83,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         });
     }
 
-    // 💥 [리셋 버튼용] 무조건 처음으로 초기화
+    // [리셋 버튼용] 무조건 처음으로 초기화
     public void ResetToFirstStep()
     {
         StopAllCoroutines();
@@ -123,10 +123,34 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     private IEnumerator TimerAndHideRoutine(float duration)
     {
         float elapsed = 0f;
-
+        // 1초, 2초 Beep1 재생 여부
+        bool beep1PlayedAt1Sec = false; 
+        bool beep1PlayedAt2Sec = false;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
+            
+            //1초
+            if (!beep1PlayedAt1Sec && elapsed >= 1f)
+            {
+                beep1PlayedAt1Sec = true;
+
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.Beep1);
+                }
+            }
+
+            //2초
+            if (!beep1PlayedAt2Sec && elapsed >= 2f)
+            {
+                beep1PlayedAt2Sec = true;
+
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.Beep1);
+                }
+            }
 
             if (timerBarImage != null)
             {
@@ -135,6 +159,8 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
             yield return null;
         }
+
+        SoundManager.Instance.PlaySFX(SFXType.Beep2);
 
         displayAlphabetText.text = "";
         if (timerBarImage != null)
@@ -175,6 +201,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
             if (buttonIndex == targetSequence[subStepIndex])
             {
+                SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
                 subStepIndex++;
 
                 if (subStepIndex >= targetSequence.Length)
@@ -200,6 +227,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             }
             else
             {
+                SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
                 StartCoroutine(WrongAnswerFeedbackRoutine()); 
             }
         }
