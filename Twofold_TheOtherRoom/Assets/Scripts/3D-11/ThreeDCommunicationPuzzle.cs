@@ -288,6 +288,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (timerSlider != null) timerSlider.gameObject.SetActive(true);
         if (timerText != null) timerText.gameObject.SetActive(true);
         if (resetButton != null) resetButton.SetActive(true);
+        if (stageText != null) stageText.gameObject.SetActive(true);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         SetStageLabel($"{stageIndex + 1}단계");
         SetFeedback(string.Empty);
         if (instructionText != null)
@@ -424,11 +426,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private void SetStageLabel(string value)
     {
         if (stageText != null) stageText.text = value;
+       
     }
 
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
+         
     }
 
 #if UNITY_EDITOR
