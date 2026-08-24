@@ -30,6 +30,8 @@ public class ColorBlockController : MonoBehaviour
             blockCount++;
             UpdateBlocks();
 
+            SoundManager.Instance.PlaySFX(SFXType.UIClick);
+
             if (checker != null)
                 checker.CheckAnswer();
         }
@@ -41,6 +43,8 @@ public class ColorBlockController : MonoBehaviour
         {
             blockCount--;
             UpdateBlocks();
+
+            SoundManager.Instance.PlaySFX(SFXType.UIClick);
 
             if (checker != null)
                 checker.CheckAnswer();

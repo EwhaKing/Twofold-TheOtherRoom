@@ -242,6 +242,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         if (!IsAllCorrect()) return;
         progress = Progress.Solved;
+        SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
         SetInteractable();
 
         if (doorTransform != null) StartCoroutine(OpenDoorRoutine());

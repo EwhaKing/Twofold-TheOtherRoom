@@ -173,7 +173,11 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
                 if(lightImage!=null)
                 {
                     lightImage.color = new Color32(51, 255, 51, 255);
-                    solve=true;
+                    if (!solve)
+                    {
+                        SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+                    }
+                    solve =true;
                 }
             }
         }

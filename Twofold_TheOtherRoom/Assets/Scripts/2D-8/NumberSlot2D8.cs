@@ -16,6 +16,7 @@ public class NumberSlot2D8 : MonoBehaviour
     public void Increase()
     {
         currentNumber++;
+        SoundManager.Instance.PlaySFX(SFXType.UIClick);
 
         if (currentNumber > 9)
         {
@@ -29,6 +30,7 @@ public class NumberSlot2D8 : MonoBehaviour
     public void Decrease()
     {
         currentNumber--;
+        SoundManager.Instance.PlaySFX(SFXType.UIClick);
 
         if (currentNumber < 0)
         {

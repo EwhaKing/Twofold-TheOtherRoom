@@ -70,6 +70,8 @@ public class MoveBlocks : MonoBehaviour , IInteractable
         targetPosition.z = targetZ;
 
         ZoneChanged?.Invoke(currentZone);
+
+        SoundManager.Instance.PlaySFX(SFXType.Scrape);
         StartCoroutine(MoveToPosition(targetPosition));
 
         Debug.Log(gameObject.name + " 현재 구역: " + currentZone);

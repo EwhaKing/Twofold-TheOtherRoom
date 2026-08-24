@@ -75,6 +75,8 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             Destroy(currentDetail);
         }
 
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+
         detailView.SetActive(true);
         detailView.transform.SetAsLastSibling();
         currentDetail = Instantiate(prefab, detailRoot, false);
@@ -88,6 +90,8 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             Debug.LogWarning("CloseDetail은 Canvas의 관리자 컴포넌트에서 호출해야 합니다.", this);
             return;
         }
+
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
 
         if (currentDetail != null)
         {

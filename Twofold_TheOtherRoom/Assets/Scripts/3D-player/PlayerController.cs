@@ -17,6 +17,10 @@ public class PlayerController : MonoBehaviour
     public float lookSenseV = 0.1f;
     public float lookLimitV = 89f;
 
+    [Header("Footstep")]
+    [SerializeField] private float footstepInterval = 0.5f;
+
+    private float footstepTimer = 0f;
     private PlayerLocomotionInput _playerLocomotionInput;
     private PlayerState _playerState;
 
@@ -38,6 +42,7 @@ public class PlayerController : MonoBehaviour
     {
         UpdateMovementState();
         HandleLateralMovement();
+        HandleFootstep();
     }
 
     private void UpdateMovementState()
@@ -59,6 +64,33 @@ public class PlayerController : MonoBehaviour
         // 입력에서 속도를 직접 계산 (관성 없는 즉시 이동)
         Vector3 movementVelocity = movementDirection * runSpeed;
         _characterController.Move(movementVelocity * Time.deltaTime);
+    }
+
+    private void HandleFootstep()
+    {
+        bool isMoving =
+            _playerLocomotionInput.MovementInput != Vector2.zero
+            && IsMovingLaterally();
+
+        if (isMoving)
+        {
+            footstepTimer -= Time.deltaTime;
+
+            if (footstepTimer <= 0f)
+            {
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.FootStep);
+                }
+
+                footstepTimer = footstepInterval;
+            }
+        }
+        else
+        {
+            // 멈추면 다음 이동 시 바로 발소리가 나도록 초기화
+            footstepTimer = 0f;
+        }
     }
     #endregion
 
