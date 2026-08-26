@@ -543,6 +543,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b66ea2fbcea0147bcbca6d254c0c17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzleManager
+  mirrors:
+  - {fileID: 1259403398}
+  - {fileID: 1959671277}
+  - {fileID: 1233799691}
+  - {fileID: 1468668892}
+  - {fileID: 1935220377}
   total2DPuzzles: 0
   total3DPuzzles: 5
 --- !u!43 &194707687
@@ -3437,6 +3443,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: -1290472357657549418, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 426311655950560751, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
       propertyPath: m_LocalPosition.z
       value: -1.158
@@ -3449,6 +3459,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1273693059910988079, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2219696510029811033, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
       propertyPath: m_LocalPosition.z
       value: 1.183
@@ -3457,13 +3471,25 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 5660378527463523084, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6179648129291861171, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 6179648129291861171, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7000375270679024428, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7000375270679024428, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7026671099588218204, guid: d4f0635bb9976104a8398959ad1cdd28, type: 3}
       propertyPath: m_IsActive
@@ -3553,7 +3579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 771a71ef4bb314d438c6f5772af8fa3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mirror3D
-  mirrorId: 3D-2
+  mirrorId: 3D-15
   holdDistance: 1.5
   holdRightOffset: 0.7
   holdDownOffset: 0.5

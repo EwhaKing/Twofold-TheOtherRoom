@@ -5,6 +5,8 @@ public class Mirror3D : MonoBehaviour, IInteractable
     [Header("Mirror Settings")]
     [SerializeField] private string mirrorId;
 
+    public string MirrorId => mirrorId;
+
     [Header("Holding Settings")]
     [SerializeField] private float holdDistance = 1.5f;
     [SerializeField] private float holdRightOffset = 0.7f;
@@ -25,8 +27,18 @@ public class Mirror3D : MonoBehaviour, IInteractable
         isObtain = false;
     }
 
+    private void OnEnable()
+    {
+        GetMirror();
+    }
+    
     public void Interact()
     {
+        if (!isObtain)
+        {
+            return;
+        }
+
         if (isPlaced)
         {
             return;
