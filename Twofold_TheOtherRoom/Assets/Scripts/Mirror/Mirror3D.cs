@@ -11,7 +11,7 @@ public class Mirror3D : MonoBehaviour, IInteractable
     [SerializeField] private float holdDownOffset = 0.5f;
 
     [Header("Correct Position")]
-    [SerializeField] private float snapDistance = 0.8f;
+    [SerializeField] private float snapDistance = 0.5f;
 
     public bool IsHolding { get; private set; }
 
@@ -131,6 +131,7 @@ public class Mirror3D : MonoBehaviour, IInteractable
     private void PlaceMirror()
     {
         transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.Euler(-90, 0, 0);
 
         isPlaced = true;
         IsHolding = false;
