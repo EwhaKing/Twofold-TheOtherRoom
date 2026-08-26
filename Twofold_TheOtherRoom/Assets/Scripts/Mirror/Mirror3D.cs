@@ -4,7 +4,6 @@ public class Mirror3D : MonoBehaviour, IInteractable
 {
     [Header("Mirror Settings")]
     [SerializeField] private string mirrorId;
-
     public string MirrorId => mirrorId;
 
     [Header("Holding Settings")]
@@ -18,7 +17,9 @@ public class Mirror3D : MonoBehaviour, IInteractable
     public bool IsHolding { get; private set; }
 
     private bool isPlaced;
-    private bool isObtain;
+    public bool IsPlaced => isPlaced;
+
+    public bool isObtain;
 
     private void Awake()
     {
@@ -31,23 +32,21 @@ public class Mirror3D : MonoBehaviour, IInteractable
     {
         GetMirror();
     }
-    
+
     public void Interact()
-    {
+    { 
         if (!isObtain)
         {
-            return;
+             return;
         }
-
-        if (isPlaced)
-        {
-            return;
-        }
-
+        if (isPlaced) 
+        { 
+            return; 
+        } 
         if (!IsHolding)
-        {
-            PickMirror();
-        }
+        { 
+            PickMirror(); 
+        } 
     }
 
     private void Update()
@@ -101,18 +100,19 @@ public class Mirror3D : MonoBehaviour, IInteractable
         transform.position = targetPosition;
 
         transform.rotation = cam.transform.rotation;
-
         if (Input.GetKeyDown(KeyCode.E))
         {
             IsHolding=false;
-            PutMirror();
-        }
+           
+            Log.Debug('ㅇ');
+
+            PutMirror(); 
+        } 
     }
 
     private void PutMirror()
     {
         if (IsCorrectPosition())
-        {
             PlaceMirror();
             return;
         }

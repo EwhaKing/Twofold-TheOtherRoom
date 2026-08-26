@@ -53,7 +53,7 @@ public class PuzzleManager : MonoBehaviour
 
     public static PuzzleManager Instance { get; private set; }
     
-    [SerializeField] private Mirror3D[] mirrors;
+    [SerializeField] private Mirror3D[] mirrors3D;
 
     void Awake()
     {
@@ -103,7 +103,7 @@ public class PuzzleManager : MonoBehaviour
         if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
         _solved[puzzleId] = dimension;
 
-        foreach (Mirror3D mirror in mirrors)
+        foreach (Mirror3D mirror in mirrors3D)
         {
             if (mirror != null && mirror.MirrorId == puzzleId)
             {
