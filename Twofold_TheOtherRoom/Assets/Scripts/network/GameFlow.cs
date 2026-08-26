@@ -25,9 +25,9 @@ public class GameFlow : MonoBehaviour
 
     [Header("시작 씬 (모드)")]
     [Tooltip("모드1-방장 / 모드2-일반 이 로드. Build Settings에 등록되어 있어야 함.")]
-    [SerializeField] string sceneA = "ceb-network-2d-1";
+    [SerializeField] string sceneA = "ceb_2D";
     [Tooltip("모드1-일반 / 모드2-방장 이 로드. Build Settings에 등록되어 있어야 함.")]
-    [SerializeField] string sceneB = "ceb-network-3d-1";
+    [SerializeField] string sceneB = "ceb_3D";
 
     [Header("로비 카메라")]
     [Tooltip("게임플레이 씬 로드 후 끌 카메라. 비우면 시작 시점의 Camera.main")]
@@ -111,7 +111,11 @@ public class GameFlow : MonoBehaviour
             SceneManager.UnloadSceneAsync(_loadedGamePlayScene);
             _loadedGamePlayScene = null;
         }
-        if (wasPlaying) RestoreLobbyCamera();
+        if (wasPlaying)
+        {
+            RestoreLobbyCamera();
+            SoundManager.Instance?.PlayBGM(BGMType.StartBGM);
+        }
 
         Show(wasPlaying ? ScreenId.Title : ScreenId.Menu);
     }

@@ -5,7 +5,8 @@ using UnityEngine;
 /// </summary>
 public enum BGMType
 {
-    StartBGM
+    StartBGM,
+    Room
 }
 public enum SFXType
 {
