@@ -206,7 +206,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
         if (alignView == null) return;
 
         if (changed.State == PlugController.PlugState.Docked && changed.CurrentOutlet != null)
-            alignView.Show(changed.CurrentOutlet);
+            alignView.Show(changed);
         else
             alignView.Hide();
     }

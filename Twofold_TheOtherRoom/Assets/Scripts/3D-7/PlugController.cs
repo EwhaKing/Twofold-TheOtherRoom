@@ -42,8 +42,8 @@ public class PlugController : MonoBehaviour
 
     void OnMouseOver()
     {
-        // 마우스가 올라간 plug만, 도킹 상태일 때만 우클릭으로 회전
-        if (State == PlugState.Docked && Input.GetMouseButtonDown(1)) Rotate();
+        // 마우스가 올라간 plug만 우클릭으로 회전
+        if (Input.GetMouseButtonDown(1)) Rotate();
     }
 
     #region Outlet Collider In/Out
@@ -78,7 +78,6 @@ public class PlugController : MonoBehaviour
     private void HandleClick()
     {
         // 드래그X, 클릭O = insert 시도
-        if (State != PlugState.Docked) return;
         TryInsert();
     }
 
@@ -93,17 +92,19 @@ public class PlugController : MonoBehaviour
     #endregion
 
     #region Plug Rotate/Insert
-    private void Rotate()
+    // plug 직접 우클릭 / 확대뷰 우클릭 공용
+    public void Rotate()
     {
-        if (currentOutlet == null) return;
+        if (State != PlugState.Docked || currentOutlet == null) return;
 
         rotationIndex = (rotationIndex + 1) % 4;
         ApplyDockRotation();
     }
 
-    private void TryInsert()
+    // plug 직접 클릭 / 확대뷰 클릭 공용
+    public void TryInsert()
     {
-        if (currentOutlet == null) return;
+        if (State != PlugState.Docked || currentOutlet == null) return;
 
         // 방향이 안 맞으면 걸려서 도로 나옴. Docked 유지
         if (rotationIndex != 0)
