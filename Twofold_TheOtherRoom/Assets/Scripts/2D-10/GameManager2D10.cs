@@ -107,6 +107,8 @@ public class GameManager2D10 : MonoBehaviour
         {
             return;
         }
+        
+        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
 
         foreach (Tube2D10 currentTube in tube)
         {
