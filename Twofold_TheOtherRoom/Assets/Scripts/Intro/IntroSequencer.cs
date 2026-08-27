@@ -17,7 +17,7 @@ public class IntroSequencer : MonoBehaviour
     [SerializeField] private IntroNarration narration;
 
     [Tooltip("게임플레이 BGM. 씬 진입과 동시에 재생")]
-    [SerializeField] private BGMType gameplayBGM = BGMType.Room;
+    [SerializeField] private BGMType gameplayBGM = BGMType.WhiteNoise;
 
     [Tooltip("인트로 동안 끌 게임 UI. 씬에는 켜둔 채로 저장할 것")]
     [SerializeField] private GameObject[] gameplayUI;
@@ -163,6 +163,10 @@ public class IntroSequencer : MonoBehaviour
                 blink.Finish();
                 if (narration != null) narration.Finish();
                 SetIntroActive(false);
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.TickTok);
+                }
                 break;
         }
     }
