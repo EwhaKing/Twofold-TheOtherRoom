@@ -16,6 +16,9 @@ public class IntroSequencer : MonoBehaviour
     [Tooltip("더빙 · 자막. 비워두면 블링크만 재생")]
     [SerializeField] private IntroNarration narration;
 
+    [Tooltip("게임플레이 BGM. 씬 진입과 동시에 재생")]
+    [SerializeField] private BGMType gameplayBGM = BGMType.Room;
+
     [Tooltip("인트로 동안 끌 게임 UI. 씬에는 켜둔 채로 저장할 것")]
     [SerializeField] private GameObject[] gameplayUI;
 
@@ -23,8 +26,8 @@ public class IntroSequencer : MonoBehaviour
              "씬에는 꺼둔 채로 저장할 것 — 시퀀서가 죽어도 씬이 안 잠기도록")]
     [SerializeField] private GameObject[] introOnly;
 
-    [Tooltip("인트로 동안 끌 입력 컴포넌트. 이동 · 상호작용.\n" +
-             "씬에는 켜둔 채로 저장할 것")]
+    [Tooltip("인트로 동안 끌 입력 컴포넌트. 씬에는 켜둔 채로 저장할 것 — 꺼진 채면 복구 안 됨.\n" +
+        "비워두면 PlayerController · PlayerLocomotionInput · PlayerInteractor 를 자동으로 찾음")]
     [SerializeField] private Behaviour[] inputToLock;
 
     [Header("Timing")]
@@ -50,6 +53,8 @@ public class IntroSequencer : MonoBehaviour
     /// 직전에 적용한 단계. 구간 진입 시 한 번만 해야 할 일 구분용
     private IntroPhase? _applied;
 
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+
     private void Start()   // Awake 아님 — BlinkIntroPlayer.Awake 가 머티리얼 복사본을 먼저 만들어야 함
     {
         if (blink == null)
@@ -59,6 +64,8 @@ public class IntroSequencer : MonoBehaviour
             return;
         }
 
+        SoundManager.Instance?.StopBGM();              // TODO: Room BGM 정해지면 이 줄 삭제
+        SoundManager.Instance?.PlayBGM(gameplayBGM);
         _local = GameSession.Instance == null;
 
         // 단독 실행은 스킵. 퍼즐 작업자가 씬을 그냥 열어 테스트할 수 있어야 함
@@ -175,7 +182,8 @@ public class IntroSequencer : MonoBehaviour
         foreach (var go in introOnly)
             if (go != null) go.SetActive(active);
 
-        foreach (var input in inputToLock)
-            if (input != null) input.enabled = !active;
+        if (active)
+            playerControlLock.Lock(this, inputToLock);
+        else playerControlLock.Unlock();
     }
 }
