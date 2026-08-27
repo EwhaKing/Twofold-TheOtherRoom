@@ -50,7 +50,10 @@ public class NavigateRoom2DCanvas : MonoBehaviour
             return;
         }
 
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.RoomMove);
+        }
         currentRoomIndex--;
         StartCoroutine(MoveToRoom());
     }
@@ -62,7 +65,10 @@ public class NavigateRoom2DCanvas : MonoBehaviour
             return;
         }
 
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.RoomMove);
+        }
         currentRoomIndex++;
         StartCoroutine(MoveToRoom());
     }

@@ -18,6 +18,7 @@ public enum SFXType
     CabinetOpen,
     CabinetClose,
     DefaultClick,
+    RoomMove,
     Rug,
 
     SteppingNormal,
@@ -43,6 +44,9 @@ public enum SFXType
     AlphaE,
     AlphaL,
     AlphaF
+
+
+
 }
 
 /// <summary>
