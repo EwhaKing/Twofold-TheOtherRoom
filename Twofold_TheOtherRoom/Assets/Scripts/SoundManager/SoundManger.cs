@@ -16,7 +16,9 @@ public enum SFXType
     DrawerClose,
     FloorHole,
     CabinetOpen,
+    CabinetClose,
     DefaultClick,
+    Rug,
 
     SteppingNormal,
     SteppingCorrect,
@@ -24,6 +26,7 @@ public enum SFXType
     Knife,
     DoorOpen,
     ButtonPush,
+    FootStep,
 
     TickTok,
     Ding,
@@ -32,12 +35,14 @@ public enum SFXType
     CompleteCorrectBtn,
     Beep1,
     Beep2,
+    HeartBeat,
+
     UIClick,
+
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF,
-    FootStep
+    AlphaF
 }
 
 /// <summary>

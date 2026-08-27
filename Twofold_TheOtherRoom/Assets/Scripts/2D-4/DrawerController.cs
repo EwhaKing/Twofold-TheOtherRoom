@@ -33,10 +33,15 @@ public class DrawerController : MonoBehaviour
         {
             return;
         }
+        bool isOpen = !leftDrawerOpen.activeSelf;
+        leftDrawerOpen.SetActive(isOpen);
 
-        leftDrawerOpen.SetActive(
-            !leftDrawerOpen.activeSelf
-        );
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(
+                isOpen ? SFXType.CabinetOpen : SFXType.CabinetClose
+            );
+        }
     }
 
     public void ToggleRightDrawer()
@@ -49,6 +54,13 @@ public class DrawerController : MonoBehaviour
         bool isOpen = !rightDrawerOpen.activeSelf;
 
         rightDrawerOpen.SetActive(isOpen);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(
+                isOpen ? SFXType.CabinetOpen : SFXType.CabinetClose
+            );
+        }
 
         if (book != null)
         {
