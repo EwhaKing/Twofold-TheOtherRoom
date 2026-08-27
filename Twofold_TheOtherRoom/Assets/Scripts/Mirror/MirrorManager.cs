@@ -10,6 +10,8 @@ public class MirrorManager : MonoBehaviour
 {
     public static MirrorManager Instance { get; private set; }
 
+    [SerializeField] private GameObject allMirror;
+
     [Header("Required Mirror Piece IDs")]
     [SerializeField] private List<string> required2DPieceIds = new();
     [SerializeField] private List<string> required3DPieceIds = new();
@@ -41,7 +43,11 @@ public class MirrorManager : MonoBehaviour
         string id = NormalizeId(puzzleId);
         if (!ValidateId(id)) return;
 
-        if (obtainedMirrorPieces.Add(id)) OnMirrorPieceObtained?.Invoke(id);
+        if (obtainedMirrorPieces.Add(id))
+        {
+            OnMirrorPieceObtained?.Invoke(id);
+
+        }
     }
 
     public void MirrorPiecePlaced(string puzzleId)
@@ -55,7 +61,20 @@ public class MirrorManager : MonoBehaviour
             return;
         }
 
-        if (!placedMirrorPieces.Add(id)) return;
+        if (placedMirrorPieces.Add(id))
+        {
+            OnMirrorPiecePlaced?.Invoke(id);
+
+            if (AreAllMirrorPiecesPlaced(PuzzleDimension.ThreeD))
+            {
+                if (allMirror != null)
+                {
+                    allMirror.SetActive(true);
+                }
+
+                Debug.Log("[MirrorManager] 모든 3D 거울 조각 배치 완료!");
+            }
+        }
 
         OnMirrorPiecePlaced?.Invoke(id);
 
