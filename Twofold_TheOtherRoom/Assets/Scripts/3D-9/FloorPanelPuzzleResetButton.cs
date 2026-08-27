@@ -21,6 +21,10 @@ public class FloorPanelPuzzleResetButton : MonoBehaviour, IInteractable
     public void Interact()
     {
         if (controller != null) controller.ResetPuzzle();
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.RoomMove);
+        }
         if (pressCo != null) StopCoroutine(pressCo); // 위치 튐 방지
         pressCo = StartCoroutine(PressAnim());
     }
