@@ -6,7 +6,8 @@ using UnityEngine;
 public enum BGMType
 {
     StartBGM,
-    Room
+    WhiteNoise,
+    BasementBG
 }
 public enum SFXType
 {
@@ -44,9 +45,6 @@ public enum SFXType
     AlphaE,
     AlphaL,
     AlphaF
-
-
-
 }
 
 /// <summary>

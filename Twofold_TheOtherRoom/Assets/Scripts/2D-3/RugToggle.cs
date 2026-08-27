@@ -44,6 +44,11 @@ public class RugToggle : MonoBehaviour, IPointerClickHandler
         if (isFolded)
         {
             Debug.Log("[RugToggle] 러그를 접었습니다.");
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.Rug);
+            }
         }
         else
         {
