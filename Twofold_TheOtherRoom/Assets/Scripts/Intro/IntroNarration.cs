@@ -22,7 +22,7 @@ public class IntroNarration : MonoBehaviour
     }
 
     [Header("References")]
-    [SerializeField] private AudioSource source;
+    private AudioSource source;
 
     [Tooltip("더빙 클립. Preload Audio Data 켤 것")]
     [SerializeField] private AudioClip clip;
@@ -61,6 +61,10 @@ public class IntroNarration : MonoBehaviour
     /// <summary>참조를 확인하고 시작 상태로 전환. 아직 소리는 안 냄.</summary>
     public void Begin()
     {
+        if (SoundManager.Instance != null)
+        {
+            source = SoundManager.Instance.NarrationSource;
+        }
         // Awake 아님 — 자막이 인트로 전용이라 씬에 꺼진 채 저장돼 있을 수 있음
         _ready = source != null && clip != null && subtitle != null;
         if (!_ready)
