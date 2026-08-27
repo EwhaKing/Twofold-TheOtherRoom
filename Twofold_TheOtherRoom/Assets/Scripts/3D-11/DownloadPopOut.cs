@@ -33,8 +33,13 @@ public class DownloadPopOut : MonoBehaviour
         if (TryGetComponent(out Button downloadButton))
             downloadButton.interactable = false;
 
-        Mirror4.SetActive(true);
         MirrorIcon.SetActive(false);
+
+        if (PuzzleManager.Instance != null)
+            PuzzleManager.Instance.ReportSolved("3D-11", PuzzleDimension.ThreeD);
+        else
+            Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
+
         BeginScriptedMotion();
 
         if (popOutCoroutine != null)

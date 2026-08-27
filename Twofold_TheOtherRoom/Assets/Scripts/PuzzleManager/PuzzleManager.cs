@@ -52,6 +52,8 @@ public class PuzzleManager : MonoBehaviour
     #region Singleton
 
     public static PuzzleManager Instance { get; private set; }
+    
+    [SerializeField] private Mirror3D[] mirrors3D;
 
     void Awake()
     {
@@ -98,12 +100,24 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-        if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
+        if (_solved.ContainsKey(puzzleId)) return;
         _solved[puzzleId] = dimension;
 
-
-
+        if (puzzleId.StartsWith("3D-"))
+        {
+            foreach (Mirror3D mirror in mirrors3D)
+            {
+                if (mirror != null && mirror.MirrorId == puzzleId)
+                {
+                    mirror.gameObject.SetActive(true);
+                    mirror.GetMirror();
+                    break;
+                }
+            }
+        }
+        
         OnPuzzleSolved?.Invoke(puzzleId);
+
         OnProgressChanged?.Invoke(dimension, SolvedCountOf(dimension), TotalOf(dimension));
     }
 
