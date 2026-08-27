@@ -253,9 +253,32 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         }
 
         float elapsed = 0f;
+
+        bool beep1PlayedAt1Sec = false;
+        bool beep1PlayedAt2Sec = false;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
+
+            if (!beep1PlayedAt1Sec && elapsed >= 1f)
+            {
+                beep1PlayedAt1Sec = true;
+
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.Beep1);
+                }
+            }
+
+            if (!beep1PlayedAt2Sec && elapsed >= 2f)
+            {
+                beep1PlayedAt2Sec = true;
+
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.Beep1);
+                }
+            }
 
             if (timerBarImage != null)
             {
@@ -263,6 +286,11 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             }
 
             yield return null;
+        }
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep2);
         }
 
         if (timerBarImage != null)
