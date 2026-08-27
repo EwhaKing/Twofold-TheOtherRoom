@@ -36,7 +36,7 @@ public class Mirror3D : MonoBehaviour, IInteractable
         if (!IsHolding)
         { 
             PickMirror(); 
-        } 
+        }
     }
 
     private void Update()
@@ -135,9 +135,14 @@ public class Mirror3D : MonoBehaviour, IInteractable
         isPlaced = true;
         IsHolding = false;
 
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+            col.enabled = false;
+
         MirrorManager.Instance?.MirrorPiecePlaced(mirrorId);
 
         Debug.Log($"[Mirror3D] 거울 배치 완료: {mirrorId}");
+
     }
 
     private void PlaceOnGround()
