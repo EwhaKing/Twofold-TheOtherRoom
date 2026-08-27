@@ -339,12 +339,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (MirrorPanel != null) MirrorPanel.gameObject.SetActive(true);
 
 
-
+/**
         if (PuzzleManager.Instance != null)
             PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
         else
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
-
+**/
         phase = Phase.Cleared;
     }
 
