@@ -103,16 +103,19 @@ public class PuzzleManager : MonoBehaviour
         if (_solved.ContainsKey(puzzleId)) return;
         _solved[puzzleId] = dimension;
 
-        foreach (Mirror3D mirror in mirrors3D)
+        if (puzzleId.StartsWith("3D-"))
         {
-            if (mirror != null && mirror.MirrorId == puzzleId)
+            foreach (Mirror3D mirror in mirrors3D)
             {
-                mirror.gameObject.SetActive(true);
-                mirror.GetMirror();
-                break;
+                if (mirror != null && mirror.MirrorId == puzzleId)
+                {
+                    mirror.gameObject.SetActive(true);
+                    mirror.GetMirror();
+                    break;
+                }
             }
         }
-
+        
         OnPuzzleSolved?.Invoke(puzzleId);
 
         OnProgressChanged?.Invoke(dimension, SolvedCountOf(dimension), TotalOf(dimension));
