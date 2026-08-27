@@ -19,7 +19,7 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
     [Header("각 물체에서 설정")]
     [SerializeField] private DetailView manager;
     [SerializeField] private GameObject detailPrefab;
-
+    [SerializeField] private bool playDefaultClick = true;
 
 
     private GameObject currentDetail;
@@ -43,6 +43,12 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
         {
             Debug.LogWarning("Canvas에 있는 DetailView 관리자가 연결되지 않았습니다.", this);
             return;
+        }
+
+        // 각 물체별 DefaultClick 재생 여부 확인
+        if (playDefaultClick && SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
 
         manager.Show(detailPrefab);
@@ -75,8 +81,6 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             Destroy(currentDetail);
         }
 
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
-
         detailView.SetActive(true);
         detailView.transform.SetAsLastSibling();
         currentDetail = Instantiate(prefab, detailRoot, false);
@@ -91,7 +95,10 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             return;
         }
 
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
 
         if (currentDetail != null)
         {

@@ -13,6 +13,7 @@ public enum SFXType
     Paper,
     LockOpen,
     DrawerOpen,
+    DrawerClose,
     FloorHole,
     CabinetOpen,
     DefaultClick,

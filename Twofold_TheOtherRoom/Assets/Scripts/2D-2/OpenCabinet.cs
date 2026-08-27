@@ -93,9 +93,16 @@ public class OpenCabinet : MonoBehaviour
         }
 
         // 서랍을 열었을 때 효과음 재생
-        if (drawer.isOpen)
+        if (SoundManager.Instance != null)
         {
-            SoundManager.Instance.PlaySFX(SFXType.DrawerOpen);
+            if (drawer.isOpen)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.DrawerOpen);
+            }
+            else
+            {
+                SoundManager.Instance.PlaySFX(SFXType.DrawerClose);
+            }
         }
 
         // 서랍 앞뒤 순서 정리
