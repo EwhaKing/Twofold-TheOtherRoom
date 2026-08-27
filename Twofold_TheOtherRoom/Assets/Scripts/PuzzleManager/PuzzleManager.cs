@@ -100,7 +100,7 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-        if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
+        if (_solved.ContainsKey(puzzleId)) return;
         _solved[puzzleId] = dimension;
 
         foreach (Mirror3D mirror in mirrors3D)
@@ -108,6 +108,7 @@ public class PuzzleManager : MonoBehaviour
             if (mirror != null && mirror.MirrorId == puzzleId)
             {
                 mirror.gameObject.SetActive(true);
+                mirror.GetMirror();
                 break;
             }
         }

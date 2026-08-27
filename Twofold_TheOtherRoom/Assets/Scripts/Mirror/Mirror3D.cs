@@ -19,26 +19,16 @@ public class Mirror3D : MonoBehaviour, IInteractable
     private bool isPlaced;
     public bool IsPlaced => isPlaced;
 
-    public bool isObtain;
-
     private void Awake()
     {
         IsHolding = false;
         isPlaced = false;
-        isObtain = false;
-    }
-
-    private void OnEnable()
-    {
-        GetMirror();
     }
 
     public void Interact()
     { 
-        if (!isObtain)
-        {
-             return;
-        }
+        Debug.Log($"[Mirror3D] Interact 호출됨: {mirrorId}");
+
         if (isPlaced) 
         { 
             return; 
@@ -55,8 +45,14 @@ public class Mirror3D : MonoBehaviour, IInteractable
         {
             return;
         }
-
         MoveMirror();
+
+        if (Input.GetKeyUp(KeyCode.E))
+        {
+            IsHolding=false;
+           
+            PutMirror(); 
+        } 
     }
 
     public void GetMirror()
@@ -68,8 +64,6 @@ public class Mirror3D : MonoBehaviour, IInteractable
         }
 
         MirrorManager.Instance.GetMirrorPiece(mirrorId);
-
-        isObtain = true;
 
         Debug.Log($"[Mirror3D] 거울 획득: {mirrorId}");
     }
@@ -100,19 +94,12 @@ public class Mirror3D : MonoBehaviour, IInteractable
         transform.position = targetPosition;
 
         transform.rotation = cam.transform.rotation;
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            IsHolding=false;
-           
-            Log.Debug('ㅇ');
-
-            PutMirror(); 
-        } 
     }
 
     private void PutMirror()
     {
         if (IsCorrectPosition())
+        {
             PlaceMirror();
             return;
         }
