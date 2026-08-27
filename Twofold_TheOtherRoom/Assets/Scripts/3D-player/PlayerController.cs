@@ -5,9 +5,6 @@ using UnityEngine.Serialization;
 public class PlayerController : MonoBehaviour
 {
     #region Class Variables
-    // 지면 SphereCast 시작 구가 지면과 겹치지 않도록 띄우는 높이
-    private const float ProbeStartGap = 0.05f;
-
     [Header("Components")]
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private Camera _playerCamera;
@@ -27,7 +24,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundLayers = ~0;
-    [Tooltip("발밑에서 지면을 찾아 내려가는 깊이")]
+    [Tooltip("발이 지면에서 이만큼 떠 있어도 접지로 인정")]
     [SerializeField] private float groundProbeDepth = 0.2f;
 
     [Header("Camera Settings")]
@@ -97,13 +94,21 @@ public class PlayerController : MonoBehaviour
     // CharacterController.isGrounded는 내리막/계단에서 프레임마다 진동해 쓰지 않음
     private void UpdateGroundedState()
     {
-        float probeRadius = Mathf.Max(0.01f, _characterController.radius - _characterController.skinWidth);
-        Vector3 feet = transform.position + _characterController.center
-                       - Vector3.up * (_characterController.height * 0.5f);
+        // radius/height/center/skinWidth는 스케일이 적용되지 않은 로컬 값
+        Vector3 lossyScale = transform.lossyScale;
+        float radiusScale = Mathf.Max(Mathf.Abs(lossyScale.x), Mathf.Abs(lossyScale.z));
+        float worldRadius = _characterController.radius * radiusScale;
+        float worldSkin = _characterController.skinWidth * radiusScale;
+        float worldHeight = _characterController.height * Mathf.Abs(lossyScale.y);
 
-        // 시작 시점에 지면과 겹치면 법선이 안 나오므로 구를 발밑보다 위에서 출발시킴
-        Vector3 origin = feet + Vector3.up * (probeRadius + ProbeStartGap);
-        float distance = ProbeStartGap + groundProbeDepth;
+        Vector3 feet = transform.TransformPoint(_characterController.center)
+                       - Vector3.up * (worldHeight * 0.5f);
+
+        // 시작 시점에 지면과 겹치면 법선이 안 나오므로 스킨 폭만큼 띄워서 출발
+        // 캡슐은 스킨 폭만큼 뜬 채로 멈추므로 지면까지 그만큼 더 내려가야 함
+        float probeRadius = Mathf.Max(0.01f, worldRadius - worldSkin);
+        Vector3 origin = feet + Vector3.up * (probeRadius + worldSkin);
+        float distance = worldSkin * 2f + groundProbeDepth;
 
         int hitCount = Physics.SphereCastNonAlloc(origin, probeRadius, Vector3.down, _groundHits,
                                                   distance, groundLayers, QueryTriggerInteraction.Ignore);
