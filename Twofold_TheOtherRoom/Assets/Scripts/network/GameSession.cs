@@ -78,6 +78,12 @@ public class GameSession : NetworkBehaviour
     [Networked] public int TotalPausedTicks { get; set; }
     [Networked] public PlayerRef PausedBy { get; set; }
 
+    // 스테이지 관리 - 거울
+    [Networked] public bool P1Cleared { get; set; }
+    [Networked] public bool P2Cleared { get; set; }
+    public bool bothCleared => P1Cleared && P2Cleared;
+
+
     ChangeDetector _changes;
 
     public override void Spawned()
@@ -176,6 +182,8 @@ public class GameSession : NetworkBehaviour
         P2Loaded = false;
         P1SkipIntro = false;
         P2SkipIntro = false;
+        P1Cleared = false;
+        P2Cleared = false;
         StartedTick = 0;
         IsPaused = false;
         PausedTick = 0;
@@ -200,5 +208,13 @@ public class GameSession : NetworkBehaviour
         if(info.Source != PausedBy || IsPaused != true) return; // 멈춘 플레이어만 재개 가능
         IsPaused = false;
         TotalPausedTicks += Runner.Tick - PausedTick;
+    }
+
+    // 플레이어마다 클리어 시 호출하는 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportCleared(bool isHost)
+    {
+        if(isHost) P1Cleared = true;
+        else P2Cleared = true;
     }
 }
