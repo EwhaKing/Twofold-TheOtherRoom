@@ -129,6 +129,17 @@ public class Mirror3D : MonoBehaviour, IInteractable
 
     private void PlaceMirror()
     {
+        //거울조각에 rigidbody가 있으면, 중력 삭제.  
+            Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.useGravity = false;
+            rb.isKinematic = true;
+        }
+
+
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.Euler(-90, 0, 0);
 
