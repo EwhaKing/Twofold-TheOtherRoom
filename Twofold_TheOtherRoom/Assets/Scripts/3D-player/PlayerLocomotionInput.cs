@@ -8,6 +8,7 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
     public Vector2 MovementInput { get; private set; }
     public Vector2 LookInput { get; private set; }
     public bool EnableCameraLook { get; private set; }
+    public bool SprintHeld { get; private set; }
 
     private void OnEnable()
     {
@@ -37,5 +38,10 @@ public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomo
     public void OnEnableCameraLook(InputAction.CallbackContext context)
     {
         EnableCameraLook = context.ReadValueAsButton();
+    }
+
+    public void OnSprint(InputAction.CallbackContext context)
+    {
+        SprintHeld = context.ReadValueAsButton();
     }
 }
