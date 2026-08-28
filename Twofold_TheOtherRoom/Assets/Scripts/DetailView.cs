@@ -19,7 +19,6 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
     [Header("각 물체에서 설정")]
     [SerializeField] private DetailView manager;
     [SerializeField] private GameObject detailPrefab;
-    [SerializeField] private bool playDefaultClick = true;
 
 
     private GameObject currentDetail;
@@ -46,7 +45,7 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
         }
 
         // 각 물체별 DefaultClick 재생 여부 확인
-        if (playDefaultClick && SoundManager.Instance != null)
+        if (SoundManager.Instance != null)
         {
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
