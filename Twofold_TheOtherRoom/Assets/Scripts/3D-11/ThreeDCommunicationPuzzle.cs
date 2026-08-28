@@ -81,7 +81,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
         if (stageText != null) stageText.gameObject.SetActive(false);
-        if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
