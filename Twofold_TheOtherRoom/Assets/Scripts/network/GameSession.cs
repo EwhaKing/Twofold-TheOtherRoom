@@ -81,7 +81,7 @@ public class GameSession : NetworkBehaviour
     // 스테이지 관리 - 거울
     [Networked] public bool P1Cleared { get; set; }
     [Networked] public bool P2Cleared { get; set; }
-    public bool bothCleared => P1Cleared && P2Cleared;
+    public bool BothCleared => P1Cleared && P2Cleared;
 
 
     ChangeDetector _changes;
