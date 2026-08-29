@@ -47,7 +47,12 @@ public class GameSession : NetworkBehaviour
         get
         {
             if (StartedTick == 0) return 0f;
-            int now = IsPaused ? PausedTick : Runner.Tick;
+
+            // 클리어 뒤에는 그 시점에서 멈춤.
+            int now = ClearedTick != 0 ? ClearedTick
+                : IsPaused ? PausedTick
+                : Runner.Tick;
+
             return (now - StartedTick - TotalPausedTicks) * Runner.DeltaTime;
         }
     }
@@ -82,6 +87,9 @@ public class GameSession : NetworkBehaviour
     [Networked] public bool P1Cleared { get; set; }
     [Networked] public bool P2Cleared { get; set; }
     public bool BothCleared => P1Cleared && P2Cleared;
+
+    /// 양쪽 클리어 시각. 0이면 아직. 이 값이 잡히면 타이머가 여기서 멈춤
+    [Networked] public int ClearedTick { get; set; }
 
 
     ChangeDetector _changes;
@@ -184,6 +192,7 @@ public class GameSession : NetworkBehaviour
         P2SkipIntro = false;
         P1Cleared = false;
         P2Cleared = false;
+        ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
         PausedTick = 0;
@@ -216,5 +225,7 @@ public class GameSession : NetworkBehaviour
     {
         if(isHost) P1Cleared = true;
         else P2Cleared = true;
+
+        if (BothCleared && ClearedTick == 0) ClearedTick = Runner.Tick;
     }
 }
