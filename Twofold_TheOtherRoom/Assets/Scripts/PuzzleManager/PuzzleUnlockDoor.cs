@@ -103,8 +103,11 @@ public class PuzzleUnlockDoor : MonoBehaviour
 
         isOpen = true;
 
-        // if (openDoorClip != null)
-        //     audioSource.PlayOneShot(openDoorClip);
+        // 문 열림 효과음
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DoorOpen);
+        }
 
         if (openRoutine != null)
             StopCoroutine(openRoutine);
