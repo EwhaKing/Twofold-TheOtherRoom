@@ -581,7 +581,10 @@ GameObject:
   - component: {fileID: 5436769658881989299}
   - component: {fileID: 3492489821422126543}
   - component: {fileID: 7058169685273707488}
-  m_Layer: 0
+  - component: {fileID: 7755128772146980823}
+  - component: {fileID: 2420864644116023932}
+  - component: {fileID: 6690343784638914986}
+  m_Layer: 3
   m_Name: MirrorAll.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -597,7 +600,7 @@ Transform:
   m_GameObject: {fileID: 3408554603243758357}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.01, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -660,6 +663,58 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7755128772146980823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3408554603243758357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb1768d0ef103614a8453db9718a50a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorGlow
+  glowMaterial: {fileID: 0}
+  property: _EmissionColor
+  isColorProperty: 1
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  targetIntensity: 1.25
+  duration: 0.6
+--- !u!114 &2420864644116023932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3408554603243758357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c25b2bb2deee64090d8b7439a9db97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorInspect
+  presenter: {fileID: 0}
+--- !u!65 &6690343784638914986
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3408554603243758357}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.00010000139, y: 0.008499999, z: 0.009999998}
+  m_Center: {x: -0.000076098884, y: -0.0000000055879354, z: 0}
 --- !u!1 &4348044957228429116
 GameObject:
   m_ObjectHideFlags: 0
