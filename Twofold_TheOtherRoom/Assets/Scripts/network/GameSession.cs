@@ -47,7 +47,12 @@ public class GameSession : NetworkBehaviour
         get
         {
             if (StartedTick == 0) return 0f;
-            int now = IsPaused ? PausedTick : Runner.Tick;
+
+            // 클리어 뒤에는 그 시점에서 멈춤.
+            int now = ClearedTick != 0 ? ClearedTick
+                : IsPaused ? PausedTick
+                : Runner.Tick;
+
             return (now - StartedTick - TotalPausedTicks) * Runner.DeltaTime;
         }
     }
@@ -77,6 +82,15 @@ public class GameSession : NetworkBehaviour
     [Networked] public int PausedTick { get; set; }
     [Networked] public int TotalPausedTicks { get; set; }
     [Networked] public PlayerRef PausedBy { get; set; }
+
+    // 스테이지 관리 - 거울
+    [Networked] public bool P1Cleared { get; set; }
+    [Networked] public bool P2Cleared { get; set; }
+    public bool BothCleared => P1Cleared && P2Cleared;
+
+    /// 양쪽 클리어 시각. 0이면 아직. 이 값이 잡히면 타이머가 여기서 멈춤
+    [Networked] public int ClearedTick { get; set; }
+
 
     ChangeDetector _changes;
 
@@ -176,6 +190,9 @@ public class GameSession : NetworkBehaviour
         P2Loaded = false;
         P1SkipIntro = false;
         P2SkipIntro = false;
+        P1Cleared = false;
+        P2Cleared = false;
+        ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
         PausedTick = 0;
@@ -200,5 +217,15 @@ public class GameSession : NetworkBehaviour
         if(info.Source != PausedBy || IsPaused != true) return; // 멈춘 플레이어만 재개 가능
         IsPaused = false;
         TotalPausedTicks += Runner.Tick - PausedTick;
+    }
+
+    // 플레이어마다 클리어 시 호출하는 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportCleared(bool isHost)
+    {
+        if(isHost) P1Cleared = true;
+        else P2Cleared = true;
+
+        if (BothCleared && ClearedTick == 0) ClearedTick = Runner.Tick;
     }
 }
