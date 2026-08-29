@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -65,7 +66,6 @@ public class IntroSequencer : MonoBehaviour
         }
 
         SoundManager.Instance?.StopBGM();              // TODO: Room BGM 정해지면 이 줄 삭제
-        SoundManager.Instance?.PlayBGM(gameplayBGM);
         _local = GameSession.Instance == null;
 
         // 단독 실행은 스킵. 퍼즐 작업자가 씬을 그냥 열어 테스트할 수 있어야 함
@@ -161,13 +161,32 @@ public class IntroSequencer : MonoBehaviour
             case IntroPhase.Done:
                 if (!entered) return;
                 blink.Finish();
-                if (narration != null) narration.Finish();
+
+                if (narration != null)
+                    narration.Finish();
+
                 SetIntroActive(false);
-                if (SoundManager.Instance != null)
-                {
-                    SoundManager.Instance.PlaySFX(SFXType.TickTok);
-                }
+
+                // TickTok 재생 후 WhiteNoise 시작
+                StartCoroutine(StartGameAudio());
                 break;
+        }
+    }
+
+    private IEnumerator StartGameAudio()
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.TickTok);
+        }
+
+        // TickTok이 약 5초 동안 재생
+        yield return new WaitForSecondsRealtime(5f);
+
+        // TickTok이 끝난 뒤 WhiteNoise 시작
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM(BGMType.WhiteNoise);
         }
     }
 
