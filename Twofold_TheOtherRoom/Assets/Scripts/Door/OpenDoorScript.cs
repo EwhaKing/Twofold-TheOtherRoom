@@ -36,8 +36,11 @@ public class OpenDoorScript : MonoBehaviour, IInteractable
 
         isOpen = true;
 
-        // if (openDoorClip != null)
-        //     audioSource.PlayOneShot(openDoorClip);
+        // 지하실 문이 열릴 때 지하실 BGM으로 변경
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM(BGMType.BasementBG);
+        }
 
         if (openRoutine != null)
             StopCoroutine(openRoutine);
