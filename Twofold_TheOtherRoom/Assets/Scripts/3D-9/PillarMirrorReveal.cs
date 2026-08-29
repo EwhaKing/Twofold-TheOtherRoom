@@ -17,7 +17,11 @@ public class PillarMirrorReveal : MonoBehaviour
     [SerializeField] private float moveDuration = 0.8f;    // 상하 이동 시간
     [SerializeField] private float holdDuration = 0.2f;    // 교체 후 대기
     [SerializeField] private AnimationCurve moveEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     #endregion
+
+    private string puzzleId = "3D-9";
+    private PuzzleDimension dimension = PuzzleDimension.ThreeD;
 
     private Vector3 startPos;   // 기둥 원위치
     private bool played;        // 중복 실행 방지
@@ -47,7 +51,9 @@ public class PillarMirrorReveal : MonoBehaviour
 
         // 시야에서 가려진 동안 교체
         if (buttonObject != null) buttonObject.SetActive(false);
-        if (mirrorObject != null) mirrorObject.SetActive(true);
+        //if (mirrorObject != null) mirrorObject.SetActive(true);
+        if (PuzzleManager.Instance != null) // 매니저 보고
+            PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
 
         yield return new WaitForSeconds(holdDuration);
 
