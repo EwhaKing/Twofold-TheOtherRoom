@@ -195,7 +195,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             }
             return;
         }
-        SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
         SetFeedback("정답입니다.");
 
         // 마지막(3단계 뒤) 알파벳까지 맞히면 7번째 화면 완료 후 Clear.
@@ -442,18 +441,37 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     private IEnumerator PlayCountdownBeep()
     {
-        // 3초
-        SoundManager.Instance.PlaySFX(SFXType.Beep2);
+        // 3.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+        }
 
         yield return new WaitForSecondsRealtime(1f);
 
-        // 2초
-        SoundManager.Instance.PlaySFX(SFXType.Beep1);
+        // 2.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep1);
+        }
 
         yield return new WaitForSecondsRealtime(1f);
 
-        // 1초
-        SoundManager.Instance.PlaySFX(SFXType.Beep1);
+        // 1.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep1);
+        }
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        // 0.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep2);
+        }
+
+        beepRoutine = null;
     }
 
 #if UNITY_EDITOR
