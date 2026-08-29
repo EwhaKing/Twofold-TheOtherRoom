@@ -54,6 +54,8 @@ public class IntroSequencer : MonoBehaviour
     /// 직전에 적용한 단계. 구간 진입 시 한 번만 해야 할 일 구분용
     private IntroPhase? _applied;
 
+    private bool heartBeatPlayed = false;
+
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
     private void Start()   // Awake 아님 — BlinkIntroPlayer.Awake 가 머티리얼 복사본을 먼저 만들어야 함
@@ -149,7 +151,15 @@ public class IntroSequencer : MonoBehaviour
                 break;
 
             case IntroPhase.Running:
-                if (entered) SetIntroActive(true);
+                if (entered)
+                {
+                    SetIntroActive(true);
+                    if (!heartBeatPlayed && SoundManager.Instance != null)
+                    {
+                        heartBeatPlayed = true;
+                        SoundManager.Instance.PlaySFX(SFXType.HeartBeat);
+                    }
+                }
 
                 // 블링크가 끝나면 즉시 반납. 나레이션 내내 풀스크린 패스를 물고 있지 않도록
                 if (Elapsed < blinkSeconds) blink.ApplyNormalizedTime(Elapsed / blinkSeconds);
