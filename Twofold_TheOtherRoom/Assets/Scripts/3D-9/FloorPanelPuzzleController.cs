@@ -10,8 +10,8 @@ public class FloorPanelPuzzleController : MonoBehaviour
     [Header("Reward")]
     [SerializeField] private PillarMirrorReveal reveal;  // 거울 조각 등장 연출
 
-    private string puzzleId = "3D-9";
-    private PuzzleDimension dimension = PuzzleDimension.ThreeD;
+    // private string puzzleId = "3D-9";
+    // private PuzzleDimension dimension = PuzzleDimension.ThreeD;
     private HashSet<Vector2Int> currentOn = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> solution;
     private FloorPanel[] panels;
@@ -45,8 +45,8 @@ public class FloorPanelPuzzleController : MonoBehaviour
             SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
             foreach (var panel in panels) panel.Freeze();
             StartCoroutine(SolvedRoutine()); // 성공 연출
-            if (PuzzleManager.Instance != null) // 매니저 보고
-                PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
+            // if (PuzzleManager.Instance != null) // 매니저 보고
+            //     PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
         }
     }
 

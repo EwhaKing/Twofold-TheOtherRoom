@@ -9,12 +9,16 @@ public class PlayerInteractor : MonoBehaviour
 
     [Header("Layer Settings")]
     public LayerMask interactableLayer;
+    public LayerMask mouseHoldLayer;
 
     [Header("Interaction UI")]
     public TMP_Text interactText;
+    [Header("MouseHold UI")]
+    public GameObject MouseHoldUI;
     public Camera playerCamera;
 
     private IInteractable currentInteractable;
+    private IMouseHoldable mouseholdInteractable;
 
     public static PlayerInteractor Instance { get; private set; }
 
@@ -60,6 +64,13 @@ public class PlayerInteractor : MonoBehaviour
     private void Update()
     {
         DetectInteractable();
+        DetectMouseHoldable();
+
+        if (mouseholdInteractable != null && Input.GetMouseButtonDown(0))
+        {
+            MouseHoldUI.SetActive(false);
+            mouseholdInteractable.MouseHoldInteract();
+        }
 
         if (currentInteractable != null &&
             Input.GetKeyDown(interactKey))
@@ -68,6 +79,43 @@ public class PlayerInteractor : MonoBehaviour
             currentInteractable.Interact();
         }
     }
+
+    private void DetectMouseHoldable()
+    {
+        mouseholdInteractable = null;
+        MouseHoldUI.SetActive(false);
+
+        Ray ray = new Ray(transform.position, transform.forward);
+
+        if (!Physics.Raycast(
+                ray,
+                out RaycastHit hit,
+                interactDistance,
+                mouseHoldLayer))
+        {
+            return;
+        }
+
+        mouseholdInteractable =
+            hit.collider.GetComponentInParent<IMouseHoldable>();
+
+
+        if (mouseholdInteractable != null)
+            {
+                // Raycast가 닿은 3D 위치를 화면 좌표로 변환
+                Vector3 screenPosition =
+                    playerCamera.WorldToScreenPoint(hit.point);
+
+                if (MouseHoldUI != null)
+                {
+                    MouseHoldUI.transform.position = screenPosition;
+                    MouseHoldUI.SetActive(true);
+                }
+            }
+        
+    }
+
+        
 
     private void DetectInteractable()
     {
