@@ -55,6 +55,7 @@ public class IntroSequencer : MonoBehaviour
     private IntroPhase? _applied;
 
     private bool heartBeatPlayed = false;
+    private bool finalTickTokPlayed = false;
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
@@ -95,6 +96,34 @@ public class IntroSequencer : MonoBehaviour
     {
         if (_local) _localElapsed += Mathf.Min(Time.unscaledDeltaTime, MaxLocalStep);
         Apply(Phase);
+        CheckFinalTickTok();
+    }
+
+    private void CheckFinalTickTok() /// 게임종료 5초 전 TickTok 재생
+    {
+        if (finalTickTokPlayed)
+            return;
+
+        GameSession session = GameSession.Instance;
+
+        if (session == null)
+            return;
+
+        if (session.Intro != IntroPhase.Done)
+            return;
+
+        float remainingSeconds =
+            GameSession.TotalSeconds - session.ElapsedSeconds;
+
+        if (remainingSeconds <= 5f && remainingSeconds > 0f)
+        {
+            finalTickTokPlayed = true;
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.TickTok);
+            }
+        }
     }
 
     /// 시계로 판정한 현재 단계
