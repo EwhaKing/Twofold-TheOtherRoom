@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspection
 {
@@ -15,11 +16,20 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
     [Tooltip("진입 중에만 표시할 side/front 전환 버튼 canvas")]
     [SerializeField] private GameObject switchCanvas;
 
+    [Header("Player Model")]
+    [Tooltip("진입 중 숨길 캐릭터 모델 오브젝트. 비우면 Player 태그 오브젝트")]
+    [SerializeField] private GameObject playerModel;
+
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+
+    // 진입 중 숨긴 캐릭터 모델 렌더러와 원래 enabled 값
+    private readonly List<Renderer> hiddenRenderers = new List<Renderer>();
+    private readonly List<bool> rendererEnabledStates = new List<bool>();
+
     private bool isEntered;
     private int enteredFrame;
 
@@ -75,6 +85,8 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         if (interactionCollider != null)
             interactionCollider.enabled = false;
 
+        HidePlayerModel();
+
         // 진입은 항상 side 뷰에서 시작
         if (viewSwitcher != null)
             viewSwitcher.SwitchToSide();
@@ -105,6 +117,8 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         if (playerCamera != null)
             playerCamera.enabled = true;
 
+        RestorePlayerModel();
+
         // 다시 상호작용 가능하도록 콜라이더 복구
         if (interactionCollider != null)
             interactionCollider.enabled = true;
@@ -121,4 +135,35 @@ public class DiscPuzzleInteraction : MonoBehaviour, IInteractable, ICloseInspect
         Exit();
     }
 
+    // 퍼즐 카메라에 캐릭터가 걸리지 않도록 모델 렌더러 끄기
+    private void HidePlayerModel()
+    {
+        RestorePlayerModel();
+
+        GameObject target = playerModel != null
+            ? playerModel
+            : GameObject.FindGameObjectWithTag("Player");
+
+        if (target == null)
+            return;
+
+        foreach (Renderer targetRenderer in target.GetComponentsInChildren<Renderer>(true))
+        {
+            hiddenRenderers.Add(targetRenderer);
+            rendererEnabledStates.Add(targetRenderer.enabled);
+            targetRenderer.enabled = false;
+        }
+    }
+
+    private void RestorePlayerModel()
+    {
+        for (int i = 0; i < hiddenRenderers.Count; i++)
+        {
+            if (hiddenRenderers[i] != null)
+                hiddenRenderers[i].enabled = rendererEnabledStates[i];
+        }
+
+        hiddenRenderers.Clear();
+        rendererEnabledStates.Clear();
+    }
 }
