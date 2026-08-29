@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4033503107144517367}
   - component: {fileID: 292320191617335747}
   - component: {fileID: 2741073651136523006}
+  - component: {fileID: 8158415063937490028}
+  - component: {fileID: 2308350482969138496}
   m_Layer: 0
   m_Name: Image
   m_TagString: Untagged
@@ -75,6 +77,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8158415063937490028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680612720985748668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c25b2bb2deee64090d8b7439a9db97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorInspect
+  presenter: {fileID: 0}
+--- !u!114 &2308350482969138496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680612720985748668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb1768d0ef103614a8453db9718a50a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorGlow
+  glowMaterial: {fileID: 2100000, guid: 2abf577a50c288a4d89679b62b1b947e, type: 2}
+  property: _Glow_Intensity
+  isColorProperty: 0
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  targetIntensity: 1.6
+  duration: 0.6
 --- !u!1 &6819818896671565461
 GameObject:
   m_ObjectHideFlags: 0
