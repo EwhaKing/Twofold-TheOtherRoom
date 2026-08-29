@@ -25,6 +25,7 @@ public enum SFXType
     SteppingNormal,
     SteppingCorrect,
     Scrape,
+    RotatingDisc,
     Knife,
     DoorOpen,
     ButtonPush,
