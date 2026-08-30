@@ -146,6 +146,11 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
         isPlaced = true;
         IsHolding = false;
 
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Ding);
+        }
+
         Collider col = GetComponent<Collider>();
         if (col != null)
             col.enabled = false;

@@ -6,23 +6,30 @@ using UnityEngine;
 public enum BGMType
 {
     StartBGM,
-    Room
+    WhiteNoise,
+    BasementBG
 }
 public enum SFXType
 {
     Paper,
     LockOpen,
     DrawerOpen,
+    DrawerClose,
     FloorHole,
     CabinetOpen,
+    CabinetClose,
     DefaultClick,
+    RoomMove,
+    Rug,
 
     SteppingNormal,
     SteppingCorrect,
     Scrape,
+    RotatingDisc,
     Knife,
     DoorOpen,
     ButtonPush,
+    FootStep,
 
     TickTok,
     Ding,
@@ -31,12 +38,14 @@ public enum SFXType
     CompleteCorrectBtn,
     Beep1,
     Beep2,
+    HeartBeat,
+
     UIClick,
+
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF,
-    FootStep
+    AlphaF
 }
 
 /// <summary>
@@ -63,6 +72,8 @@ public class SoundManager : MonoBehaviour
 
     public static SoundManager Instance { get; private set; }
 
+    public AudioSource NarrationSource => narrationSource;
+
     [System.Serializable]
     public class BGMData
     {
@@ -80,6 +91,7 @@ public class SoundManager : MonoBehaviour
     [Header("Audio Source")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource narrationSource;
 
     [Header("Default BGM")]
     [SerializeField] private BGMType defaultBGM;
@@ -206,6 +218,10 @@ public class SoundManager : MonoBehaviour
     {
         bgmSource.volume = masterVolume * bgmVolume;
         sfxSource.volume = masterVolume * sfxVolume;
+        if (narrationSource != null)
+        {
+            narrationSource.volume = masterVolume * sfxVolume;
+        }
     }
 
     public void SetMasterVolume(float volume)

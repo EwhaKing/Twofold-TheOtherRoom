@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -17,7 +18,7 @@ public class IntroSequencer : MonoBehaviour
     [SerializeField] private IntroNarration narration;
 
     [Tooltip("게임플레이 BGM. 씬 진입과 동시에 재생")]
-    [SerializeField] private BGMType gameplayBGM = BGMType.Room;
+    [SerializeField] private BGMType gameplayBGM = BGMType.WhiteNoise;
 
     [Tooltip("인트로 동안 끌 게임 UI. 씬에는 켜둔 채로 저장할 것")]
     [SerializeField] private GameObject[] gameplayUI;
@@ -53,6 +54,9 @@ public class IntroSequencer : MonoBehaviour
     /// 직전에 적용한 단계. 구간 진입 시 한 번만 해야 할 일 구분용
     private IntroPhase? _applied;
 
+    private bool heartBeatPlayed = false;
+    private bool finalTickTokPlayed = false;
+
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
     private void Start()   // Awake 아님 — BlinkIntroPlayer.Awake 가 머티리얼 복사본을 먼저 만들어야 함
@@ -65,7 +69,6 @@ public class IntroSequencer : MonoBehaviour
         }
 
         SoundManager.Instance?.StopBGM();              // TODO: Room BGM 정해지면 이 줄 삭제
-        SoundManager.Instance?.PlayBGM(gameplayBGM);
         _local = GameSession.Instance == null;
 
         // 단독 실행은 스킵. 퍼즐 작업자가 씬을 그냥 열어 테스트할 수 있어야 함
@@ -93,6 +96,34 @@ public class IntroSequencer : MonoBehaviour
     {
         if (_local) _localElapsed += Mathf.Min(Time.unscaledDeltaTime, MaxLocalStep);
         Apply(Phase);
+        CheckFinalTickTok();
+    }
+
+    private void CheckFinalTickTok() /// 게임종료 5초 전 TickTok 재생
+    {
+        if (finalTickTokPlayed)
+            return;
+
+        GameSession session = GameSession.Instance;
+
+        if (session == null)
+            return;
+
+        if (session.Intro != IntroPhase.Done)
+            return;
+
+        float remainingSeconds =
+            GameSession.TotalSeconds - session.ElapsedSeconds;
+
+        if (remainingSeconds <= 5f && remainingSeconds > 0f)
+        {
+            finalTickTokPlayed = true;
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.TickTok);
+            }
+        }
     }
 
     /// 시계로 판정한 현재 단계
@@ -149,7 +180,15 @@ public class IntroSequencer : MonoBehaviour
                 break;
 
             case IntroPhase.Running:
-                if (entered) SetIntroActive(true);
+                if (entered)
+                {
+                    SetIntroActive(true);
+                    if (!heartBeatPlayed && SoundManager.Instance != null)
+                    {
+                        heartBeatPlayed = true;
+                        SoundManager.Instance.PlaySFX(SFXType.HeartBeat);
+                    }
+                }
 
                 // 블링크가 끝나면 즉시 반납. 나레이션 내내 풀스크린 패스를 물고 있지 않도록
                 if (Elapsed < blinkSeconds) blink.ApplyNormalizedTime(Elapsed / blinkSeconds);
@@ -161,9 +200,32 @@ public class IntroSequencer : MonoBehaviour
             case IntroPhase.Done:
                 if (!entered) return;
                 blink.Finish();
-                if (narration != null) narration.Finish();
+
+                if (narration != null)
+                    narration.Finish();
+
                 SetIntroActive(false);
+
+                // TickTok 재생 후 WhiteNoise 시작
+                StartCoroutine(StartGameAudio());
                 break;
+        }
+    }
+
+    private IEnumerator StartGameAudio()
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.TickTok);
+        }
+
+        // TickTok이 약 5초 동안 재생
+        yield return new WaitForSecondsRealtime(5f);
+
+        // TickTok이 끝난 뒤 WhiteNoise 시작
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM(BGMType.WhiteNoise);
         }
     }
 

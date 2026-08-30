@@ -26,6 +26,12 @@ public class MirrorPiece : MonoBehaviour, IPointerClickHandler
         if (MirrorManager.Instance == null) return;
         Debug.Log("퍼즐매니저한테"+ puzzleId + "보낼꺼임!");
         MirrorManager.Instance.GetMirrorPiece(puzzleId);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Ding);
+        }
+
         HidePickup();
     }
 

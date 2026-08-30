@@ -165,19 +165,28 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     }
     public void Answer(TubeColor tubeColor)
     {
-        if (ball[3]!=null)
+        if (ball[3] != null)
         {
             Ball2D10.BallColor color = (Ball2D10.BallColor)tubeColor;
+
             if (ball.All(ball => ball.GetColor() == color))
-            {   
-                if(lightImage!=null)
+            {
+                if (lightImage != null)
                 {
                     lightImage.color = new Color32(51, 255, 51, 255);
+
                     if (!solve)
                     {
-                        SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+                        solve = true;
+                        bool puzzleCompleted =
+                            gameManager.tube[0].solve &&
+                            gameManager.tube[1].solve &&
+                            gameManager.tube[2].solve;
+                        if (!puzzleCompleted && SoundManager.Instance != null)
+                        {
+                            SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+                        }
                     }
-                    solve =true;
                 }
             }
         }
