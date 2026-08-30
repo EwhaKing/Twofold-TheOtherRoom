@@ -7,11 +7,15 @@ public class CompletedNoticeManager : MonoBehaviour
     public static CompletedNoticeManager Instance { get; private set; }
 
     public GameObject introCanvas;       // IntroCanvas (전체)
-    public GameObject background;        // IntroCanvas 하위의 Background
+    //public GameObject background;        // IntroCanvas 하위의 Background
+
+    public GameObject skipBtn;
     public TMP_Text subtitle;            // IntroCanvas 하위의 Subtitle (TMP)
 
     private CanvasGroup canvasGroup;
     private Coroutine noticeCoroutine;
+    private bool defaultInteractable;
+    private bool defaultBlocksRaycasts;
 
     private void Awake()
     {
@@ -26,9 +30,12 @@ public class CompletedNoticeManager : MonoBehaviour
             {
                 canvasGroup = introCanvas.AddComponent<CanvasGroup>();
             }
+
+            defaultInteractable = canvasGroup.interactable;
+            defaultBlocksRaycasts = canvasGroup.blocksRaycasts;
             
             // 처음 씬이 시작할 때는 캔버스 전체를 꺼둠
-            introCanvas.SetActive(false);
+            //introCanvas.SetActive(false);
         }
     }
 
@@ -37,7 +44,12 @@ public class CompletedNoticeManager : MonoBehaviour
     {
         if (introCanvas == null) return;
 
-        if (noticeCoroutine != null) StopCoroutine(noticeCoroutine);
+        if (noticeCoroutine != null)
+        {
+            StopCoroutine(noticeCoroutine);
+            RestoreInputState();
+        }
+
         noticeCoroutine = StartCoroutine(NoticeRoutine(message));
     }
 
@@ -45,7 +57,12 @@ public class CompletedNoticeManager : MonoBehaviour
     {
         //IntroCanvas와 Background만 SetActive(true)
         introCanvas.SetActive(true);
-        if (background != null) background.SetActive(true);
+        if (skipBtn != null) skipBtn.SetActive(false);
+
+        // 완료 안내가 표시되는 동안만 뒤쪽 퍼즐 오브젝트로 클릭을 통과시킨다.
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+        //if (background != null) background.SetActive(true);
 
         // 2. Subtitle 텍스트 교체
         if (subtitle != null)
@@ -56,8 +73,8 @@ public class CompletedNoticeManager : MonoBehaviour
         // 3. 알파 1 (바로 선명하게 등장)
         canvasGroup.alpha = 1f;
 
-        // 4. 1초 동안 스스륵 사라짐 (알파 0)
-        float duration = 1.0f;
+        // 4. 1.5초 동안 스스륵 사라짐 (알파 0)
+        float duration = 1.5f;
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -70,6 +87,15 @@ public class CompletedNoticeManager : MonoBehaviour
         // 5. 알파 0 완료 후 다시 끄기 (SetActive false)
         canvasGroup.alpha = 0f;
         introCanvas.SetActive(false);
+        RestoreInputState();
         noticeCoroutine = null;
+    }
+
+    private void RestoreInputState()
+    {
+        if (canvasGroup == null) return;
+
+        canvasGroup.interactable = defaultInteractable;
+        canvasGroup.blocksRaycasts = defaultBlocksRaycasts;
     }
 }
