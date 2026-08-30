@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Mirror3D : MonoBehaviour, IInteractable
+public class Mirror3D : MonoBehaviour, IMouseHoldable
 {
     [Header("Mirror Settings")]
     [SerializeField] private string mirrorId;
@@ -25,7 +25,7 @@ public class Mirror3D : MonoBehaviour, IInteractable
         isPlaced = false;
     }
 
-    public void Interact()
+    public void MouseHoldInteract()
     { 
         Debug.Log($"[Mirror3D] Interact 호출됨: {mirrorId}");
 
@@ -47,7 +47,7 @@ public class Mirror3D : MonoBehaviour, IInteractable
         }
         MoveMirror();
 
-        if (Input.GetKeyUp(KeyCode.E))
+        if (Input.GetMouseButtonUp(0))
         {
             IsHolding=false;
            
@@ -129,6 +129,17 @@ public class Mirror3D : MonoBehaviour, IInteractable
 
     private void PlaceMirror()
     {
+        //거울조각에 rigidbody가 있으면, 중력 삭제.  
+            Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.useGravity = false;
+            rb.isKinematic = true;
+        }
+
+
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.Euler(-90, 0, 0);
 

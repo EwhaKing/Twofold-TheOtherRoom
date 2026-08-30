@@ -35,7 +35,11 @@ public class MirrorManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void GetMirrorPiece(string puzzleId)
@@ -61,25 +65,21 @@ public class MirrorManager : MonoBehaviour
             return;
         }
 
-        if (placedMirrorPieces.Add(id))
-        {
-            OnMirrorPiecePlaced?.Invoke(id);
-
-            if (AreAllMirrorPiecesPlaced(PuzzleDimension.ThreeD))
-            {
-                if (allMirror != null)
-                {
-                    allMirror.SetActive(true);
-                }
-
-                Debug.Log("[MirrorManager] 모든 3D 거울 조각 배치 완료!");
-            }
-        }
+        if (!placedMirrorPieces.Add(id)) return;
 
         OnMirrorPiecePlaced?.Invoke(id);
 
         PuzzleDimension dimension = GetDimension(id);
-        if (AreAllMirrorPiecesPlaced(dimension)) OnDimensionMirrorCompleted?.Invoke(dimension);
+        if (!AreAllMirrorPiecesPlaced(dimension)) return;
+
+        if (allMirror != null) allMirror.SetActive(true);
+
+        Debug.Log($"[MirrorManager] 모든 {(dimension == PuzzleDimension.TwoD ? "2D" : "3D")} 거울 조각 배치 완료!");
+        OnDimensionMirrorCompleted?.Invoke(dimension);
+
+        // 내 차원 클리어 보고. 로컬 테스트에선 GameSession이 없어 경고없이 넘어감
+        if (RoomService.Instance != null)
+            GameSession.Instance?.RpcReportCleared(RoomService.Instance.IsHost);
     }
 
     public bool HasMirrorPiece(string puzzleId)

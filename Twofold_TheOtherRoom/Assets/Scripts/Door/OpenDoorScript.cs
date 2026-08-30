@@ -26,7 +26,23 @@ public class OpenDoorScript : MonoBehaviour, IInteractable
     
     public void Interact()
     {
-       OpenDoor();
+        if (isOpen)
+            CloseDoor();
+        else
+            OpenDoor();
+    }
+
+    public void CloseDoor()
+    {
+        if (!isOpen)
+            return;
+
+        isOpen = false;
+
+        if (openRoutine != null)
+            StopCoroutine(openRoutine);
+
+        openRoutine = StartCoroutine(RotateDoorRoutine(closedRotation));
     }
 
     public void OpenDoor()
@@ -45,10 +61,10 @@ public class OpenDoorScript : MonoBehaviour, IInteractable
         if (openRoutine != null)
             StopCoroutine(openRoutine);
 
-        openRoutine = StartCoroutine(OpenDoorRoutine());
+        openRoutine = StartCoroutine(RotateDoorRoutine(openRotation));
     }
 
-     private IEnumerator OpenDoorRoutine()
+    private IEnumerator RotateDoorRoutine(Quaternion targetRotation)
     {
         Quaternion startRotation = doorPivot.localRotation;
         float elapsed = 0f;
@@ -57,11 +73,11 @@ public class OpenDoorScript : MonoBehaviour, IInteractable
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / openDuration);
-            doorPivot.localRotation = Quaternion.Slerp(startRotation, openRotation, t);
+            doorPivot.localRotation = Quaternion.Slerp(startRotation, targetRotation, t);
             yield return null;
         }
 
-        doorPivot.localRotation = openRotation;
+        doorPivot.localRotation = targetRotation;
         openRoutine = null;
     }
 

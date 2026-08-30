@@ -63,7 +63,11 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject); // 씬 이동해도 상태 유지
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     #endregion
