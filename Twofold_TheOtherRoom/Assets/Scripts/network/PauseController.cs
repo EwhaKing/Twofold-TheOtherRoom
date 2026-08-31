@@ -32,6 +32,9 @@ public class PauseController : MonoBehaviour
     bool _lastPause;
     bool _lastBlockPause;
 
+    /// 양쪽 클리어 여부. 엔딩을 각자 보고 나가므로 남은 사람을 끌어내지 않음
+    bool _cleared;
+
     void Start()
     {
         // 버튼 메서드 등록
@@ -51,6 +54,9 @@ public class PauseController : MonoBehaviour
     {
         var gs = GameSession.Instance;
         bool pause = gs != null && gs.IsPaused;
+
+        // 방장이 나가서 GameSession 사라지는 경우를 위해 저장
+        if (gs != null && gs.BothCleared) _cleared = true;
 
         ApplyBlockPause();
         HandleEscape(pause);
@@ -162,6 +168,7 @@ public class PauseController : MonoBehaviour
     void OnPeerLeft(string nickname)
     {
         if (BlockPause) return;   // 시간 종료 중. 이미 종료 패널이 떠 있음
+        if (_cleared) return;     // 엔딩. 남은 사람은 거울을 보고 스스로 나감
 
         StartCoroutine(LeaveNoticeRoutine(nickname));
     }
