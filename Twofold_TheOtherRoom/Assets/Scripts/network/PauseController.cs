@@ -26,7 +26,14 @@ public class PauseController : MonoBehaviour
     [SerializeField] GameObject noticePanel;
     [SerializeField] TMP_Text noticeText;
 
+    /// 일시정지 차단. Esc · 일시정지 버튼 둘 다 잠김. TimeoutPresenter 가 켬
+    public bool BlockPause { get; set; }
+
     bool _lastPause;
+    bool _lastBlockPause;
+
+    /// 양쪽 클리어 여부. 엔딩을 각자 보고 나가므로 남은 사람을 끌어내지 않음
+    bool _cleared;
 
     void Start()
     {
@@ -48,6 +55,10 @@ public class PauseController : MonoBehaviour
         var gs = GameSession.Instance;
         bool pause = gs != null && gs.IsPaused;
 
+        // 방장이 나가서 GameSession 사라지는 경우를 위해 저장
+        if (gs != null && gs.BothCleared) _cleared = true;
+
+        ApplyBlockPause();
         HandleEscape(pause);
 
         if (pause == _lastPause) return;
@@ -86,8 +97,9 @@ public class PauseController : MonoBehaviour
     {
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
-        // 퇴장 안내 중엔 Esc 무시.
+        // 퇴장 안내 · 시간 종료 중엔 Esc 무시.
         if (noticePanel.activeSelf) return;
+        if (BlockPause) return;
 
         if (!pause)
         {
@@ -100,6 +112,15 @@ public class PauseController : MonoBehaviour
             OnResume();
     }
     #endregion
+
+    /// 일시정지 버튼 잠금
+    void ApplyBlockPause()
+    {
+        if (BlockPause == _lastBlockPause) return;
+        _lastBlockPause = BlockPause;
+
+        pauseButton.interactable = !BlockPause;
+    }
 
     #region Button Method
     void OnPause()
@@ -146,6 +167,9 @@ public class PauseController : MonoBehaviour
     #region When Other Player Exit
     void OnPeerLeft(string nickname)
     {
+        if (BlockPause) return;   // 시간 종료 중. 이미 종료 패널이 떠 있음
+        if (_cleared) return;     // 엔딩. 남은 사람은 거울을 보고 스스로 나감
+
         StartCoroutine(LeaveNoticeRoutine(nickname));
     }
 

@@ -12,7 +12,7 @@ using UnityEngine;
 /// 양쪽 완성 순간에 거울 앞에 있으리라 기대할 수 없다. 대신 그 순간 알림 자막을 띄워 거울로 부른다.
 /// 두 사람이 동시에 볼 필요는 없다 — 서로 다른 방에서 각자 화면을 보고 있으므로.
 ///
-/// 메인 메뉴로 보내지 않음 — 한쪽만 방을 나가면 상대가 "나갔습니다" 안내를 받아 엔딩이 사고처럼 보인다.
+/// 종료 패널은 시간 종료와 공용(TimeoutPresenter). 한 번 뜨면 조작이 잠기므로 다시 보기는 없다.
 /// </summary>
 public class MirrorCompletionPresenter : MonoBehaviour
 {
@@ -48,20 +48,6 @@ public class MirrorCompletionPresenter : MonoBehaviour
     [SerializeField]
     private string bothClearedMessage = "상대도 거울을 완성했다. 거울을 확인해보자.";
 
-    [Header("Ending")]
-    [Tooltip("양쪽 완성 후 거울을 보면 뜨는 문구. 다시 보면 재출력")]
-    [SerializeField] private string endingMessage = "데모를 플레이해주셔서 감사합니다.";
-
-    [SerializeField] private float endingFadeInSeconds = 1.5f;
-
-    [Tooltip("종료 문구를 유지하는 시간(초). 0 이면 사라지지 않고 계속 남음")]
-    [SerializeField] private float endingHoldSeconds = 5f;
-
-    [SerializeField] private float endingFadeOutSeconds = 1.5f;
-
-    [Tooltip("종료 문구와 함께 끌 UI. 타이머 등. 비워둬도 됨")]
-    [SerializeField] private GameObject[] hideOnEnding;
-
     [Header("Debug")]
     [Tooltip("네트워크 없이 단독 실행할 때 내 완성만으로 양쪽 완성 취급. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] private bool treatMineAsBothLocally = false;
@@ -72,21 +58,25 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 잠깐 떴다 사라지는 자막. 대기 안내와 양쪽 완성 알림이 같이 씀
     private Coroutine transientRoutine;
 
-    private Coroutine endingRoutine;
-
     /// <summary>내 차원의 거울 조각이 전부 배치됐는지</summary>
     public bool MineDone =>
         MirrorManager.Instance != null && MirrorManager.Instance.AreAllMirrorPiecesPlaced(dimension);
+
+    /// 한 번 완성이면 계속 완성. 방장이 나가면 GameSession 이 사라져 값이 false 로 돌아감
+    private bool cachedBothDone;
 
     /// <summary>양쪽 다 완성했는지. GameSession 이 없으면(단독 실행) 디버그 옵션대로</summary>
     public bool BothDone
     {
         get
         {
+            if (cachedBothDone) return true;
+
             GameSession session = GameSession.Instance;
             if (session == null) return treatMineAsBothLocally && MineDone;
 
-            return session.BothCleared;
+            cachedBothDone = session.BothCleared;
+            return cachedBothDone;
         }
     }
 
@@ -114,9 +104,12 @@ public class MirrorCompletionPresenter : MonoBehaviour
             return;
         }
 
-        // 이미 봤어도 다시 띄움. 놓쳤거나 다시 보고 싶을 수 있음
-        if (endingRoutine != null) StopCoroutine(endingRoutine);
-        endingRoutine = StartCoroutine(EndingRoutine());
+        HideTransient();
+
+        // 시간 종료와 같은 패널. 문구만 다름
+        TimeoutPresenter panel = FindAnyObjectByType<TimeoutPresenter>();
+        if (panel != null) panel.ShowEnding();
+        else Debug.LogWarning("[Mirror] 씬에 TimeoutPresenter 없음 — 종료 패널을 못 띄움", this);
     }
 
     private void Apply(bool bothDone)
@@ -162,8 +155,8 @@ public class MirrorCompletionPresenter : MonoBehaviour
         transientRoutine = null;
     }
 
-    /// <summary>종료 문구. 거울을 다시 보면 이 코루틴을 다시 시작해 재출력.</summary>
-    private IEnumerator EndingRoutine()
+    /// <summary>떠 있는 자막을 즉시 치움. 종료 패널 아래에 남지 않게</summary>
+    private void HideTransient()
     {
         if (transientRoutine != null)
         {
@@ -171,43 +164,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
             transientRoutine = null;
         }
 
-        foreach (GameObject go in hideOnEnding)
-            if (go != null) go.SetActive(false);
-
-        if (noticeText != null) noticeText.text = endingMessage;
-
-        noticeRoot.gameObject.SetActive(true);
-        noticeRoot.alpha = 0f;
-
-        float elapsed = 0f;
-        while (elapsed < endingFadeInSeconds)
-        {
-            elapsed += Time.deltaTime;
-            noticeRoot.alpha = Mathf.Lerp(0f, 1f, elapsed / endingFadeInSeconds);
-            yield return null;
-        }
-
-        noticeRoot.alpha = 1f;
-
-        // 0 이면 유지. 끝났다는 표시는 글로우와 이펙트로.
-        if (endingHoldSeconds <= 0f)
-        {
-            endingRoutine = null;
-            yield break;
-        }
-
-        yield return new WaitForSeconds(endingHoldSeconds);
-
-        elapsed = 0f;
-        while (elapsed < endingFadeOutSeconds)
-        {
-            elapsed += Time.deltaTime;
-            noticeRoot.alpha = Mathf.Lerp(1f, 0f, elapsed / endingFadeOutSeconds);
-            yield return null;
-        }
-
         noticeRoot.alpha = 0f;
         noticeRoot.gameObject.SetActive(false);
-        endingRoutine = null;
     }
 }
