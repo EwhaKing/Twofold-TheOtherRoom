@@ -20,6 +20,17 @@ public class NetPuzzleGameManager : MonoBehaviour
     // [Header("줌 컨트롤러 연결")]
     // public NetPuzzleZoomController zoomController; // 줌 컨트롤러 추가
 
+    private void Start()
+    {
+        // 씬/Canvas 구조를 수정하지 않고, 2D-3_panel 스스로 어두운 필터보다 맨 위로 나오도록 설정
+        Canvas parentCanvas = GetComponentInParent<Canvas>();
+        if (parentCanvas != null)
+        {
+            parentCanvas.overrideSorting = true;
+            parentCanvas.sortingOrder = 100;
+        }
+    }
+
     public void CheckPuzzleComplete()
     {
         StartCoroutine(DelayedCheck());
@@ -110,17 +121,17 @@ public class NetPuzzleGameManager : MonoBehaviour
         // }
 
         // 4. 깨지는 연출 오브젝트 활성화 및 시작
-           StartCoroutine(PlayBreakEffectAfterDelay());
-}
-
-private IEnumerator PlayBreakEffectAfterDelay()
-{
-    yield return new WaitForSeconds(0.5f);
-
-    if (breakEffect != null)
-    {
-        breakEffect.gameObject.SetActive(true);
-        breakEffect.PrepareEffect();
+        StartCoroutine(PlayBreakEffectAfterDelay());
     }
-}
+
+    private IEnumerator PlayBreakEffectAfterDelay()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        if (breakEffect != null)
+        {
+            breakEffect.gameObject.SetActive(true);
+            breakEffect.PrepareEffect();
+        }
+    }
 }
