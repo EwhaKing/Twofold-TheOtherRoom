@@ -83,7 +83,6 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         });
     }
 
-    // [리셋 버튼용] 무조건 처음으로 초기화
     public void ResetToFirstStep()
     {
         StopAllCoroutines();
@@ -110,27 +109,36 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
         if (currentStepIndex < patternSteps.Count)
         {
-            if (timerBarImage != null)
-            {
-                timerBarImage.fillAmount = 1f;
-            }
+            displayAlphabetText.text = $"<size=90><cspace=-0.05em>{patternSteps[currentStepIndex].alphabetText}</cspace></size>";
 
-            displayAlphabetText.text = patternSteps[currentStepIndex].alphabetText;
-            activeTimerCoroutine = StartCoroutine(TimerAndHideRoutine(3.0f));
+            if (currentStepIndex == 0)
+            {
+                if (timerBarImage != null)
+                {
+                    timerBarImage.fillAmount = 1f;
+                }
+            }
+            else
+            {
+                if (timerBarImage != null)
+                {
+                    timerBarImage.fillAmount = 1f;
+                }
+
+                activeTimerCoroutine = StartCoroutine(TimerAndHideRoutine(3.0f));
+            }
         }
     }
 
     private IEnumerator TimerAndHideRoutine(float duration)
     {
         float elapsed = 0f;
-        // 1초, 2초 Beep1 재생 여부
         bool beep1PlayedAt1Sec = false; 
         bool beep1PlayedAt2Sec = false;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             
-            //1초
             if (!beep1PlayedAt1Sec && elapsed >= 1f)
             {
                 beep1PlayedAt1Sec = true;
@@ -141,7 +149,6 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
                 }
             }
 
-            //2초
             if (!beep1PlayedAt2Sec && elapsed >= 2f)
             {
                 beep1PlayedAt2Sec = true;
@@ -160,7 +167,10 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             yield return null;
         }
 
-        SoundManager.Instance.PlaySFX(SFXType.Beep2);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep2);
+        }
 
         displayAlphabetText.text = "";
         if (timerBarImage != null)
@@ -181,14 +191,15 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             activeTimerCoroutine = null;
         }
 
-        displayAlphabetText.text = "X";
+        displayAlphabetText.text = "<size=90>X</size>";
         if (timerBarImage != null) timerBarImage.fillAmount = 0f;
 
         yield return new WaitForSeconds(0.8f);
 
         subStepIndex = 0;
         isShowingWrongFeedback = false;
-        StartStepSequence();
+
+        displayAlphabetText.text = "";
     }
 
     public void OnShapeButtonClicked(int buttonIndex)
@@ -201,7 +212,11 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
             if (buttonIndex == targetSequence[subStepIndex])
             {
-                SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+                }
+
                 subStepIndex++;
 
                 if (subStepIndex >= targetSequence.Length)
@@ -227,7 +242,11 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             }
             else
             {
-                SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+                }
+
                 StartCoroutine(WrongAnswerFeedbackRoutine()); 
             }
         }
@@ -242,10 +261,9 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         StartCoroutine(FinalClearRoutine(3.0f));
     }
 
-    // 🌟 최종 연출: size=52로 크기 업 + voffset으로 살짝 아래 배치
     private IEnumerator FinalClearRoutine(float duration)
     {
-        displayAlphabetText.text = patternSteps[patternSteps.Count - 1].alphabetText;
+        displayAlphabetText.text = $"<size=90><cspace=-0.05em>{patternSteps[patternSteps.Count - 1].alphabetText}</cspace></size>";
 
         if (timerBarImage != null)
         {
@@ -298,8 +316,8 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             timerBarImage.fillAmount = 0f;
         }
 
-        // 🌟 size=52 (크기 약간 확대) / voffset=-10em (아래로 위치 이동)
-        displayAlphabetText.text = "<size=44><voffset=-0.5em>3D 거울 획득 확인</voffset></size>";
+        // 🌟 코드상에서만 위치 하향(voffset=-0.25em) 및 크기 확대(size=68) 적용
+        displayAlphabetText.text = "<size=62><cspace=-0.03em><voffset=-0.25em>3D 거울 획득 확인</voffset></cspace></size>";
 
         if (PuzzleManager.Instance != null)
         {
