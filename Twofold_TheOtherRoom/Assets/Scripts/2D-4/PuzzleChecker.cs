@@ -18,6 +18,7 @@ public class PuzzleChecker : MonoBehaviour
     // [SerializeField] private PlantMove plantMove;
 
     private bool solved;
+    public bool IsSolved => solved;
 
     private void Awake()
     {
@@ -67,10 +68,12 @@ public class PuzzleChecker : MonoBehaviour
         }
 
         solved = true;
-
         Debug.Log("2D-4 퍼즐 성공");
 
-        SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+        }
 
         // if (plantMove != null)
         // {

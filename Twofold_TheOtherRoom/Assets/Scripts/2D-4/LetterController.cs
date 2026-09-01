@@ -17,24 +17,40 @@ public class LetterController : MonoBehaviour
 
     public void IncreaseLetter()
     {
-        // A → B → C → D → A
+        if (checker != null && checker.IsSolved)
+        {
+            return;
+        }
+
         if (currentLetter == 'D')
             currentLetter = 'A';
         else
             currentLetter++;
+
+        if (SoundManager.Instance != null)
+        {
             SoundManager.Instance.PlaySFX(SFXType.UIClick);
+        }
 
         UpdateLetter();
     }
 
     public void DecreaseLetter()
     {
-        // A → D → C → B → A
+        if (checker != null && checker.IsSolved)
+        {
+            return;
+        }
+
         if (currentLetter == 'A')
             currentLetter = 'D';
         else
             currentLetter--;
+
+        if (SoundManager.Instance != null)
+        {
             SoundManager.Instance.PlaySFX(SFXType.UIClick);
+        }
 
         UpdateLetter();
     }
