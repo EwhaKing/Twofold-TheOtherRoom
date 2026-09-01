@@ -59,6 +59,10 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (interactText != null)
             interactText.gameObject.SetActive(false);
+
+
+         if (MouseHoldUI != null)
+            MouseHoldUI.SetActive(false);
     }
 
     private void Update()
