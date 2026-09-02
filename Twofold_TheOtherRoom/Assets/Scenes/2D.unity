@@ -1911,7 +1911,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1727623766538456575, guid: 9b089f8496bfb6849a9612b32e6d0b27, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2621896932484184609, guid: 9b089f8496bfb6849a9612b32e6d0b27, type: 3}
       propertyPath: m_Pivot.x
@@ -3942,7 +3942,6 @@ GameObject:
   - component: {fileID: 1238208278}
   - component: {fileID: 1238208280}
   - component: {fileID: 1238208279}
-  - component: {fileID: 1238208281}
   - component: {fileID: 1238208282}
   m_Layer: 0
   m_Name: mirror_1
@@ -4008,22 +4007,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238208277}
   m_CullTransparentMesh: 1
---- !u!114 &1238208281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1238208277}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 117f02b5d4fca09488782d71c215e922, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DetailView
-  detailView: {fileID: 0}
-  detailRoot: {fileID: 0}
-  manager: {fileID: 8050823070240431680}
-  detailPrefab: {fileID: 342530044049729215, guid: f08a80d2b52cc90459dbc30a86b5a04d, type: 3}
 --- !u!114 &1238208282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5225,6 +5208,7 @@ GameObject:
   - component: {fileID: 2079361394}
   - component: {fileID: 2079361396}
   - component: {fileID: 2079361395}
+  - component: {fileID: 2079361397}
   m_Layer: 0
   m_Name: Box_open
   m_TagString: Untagged
@@ -5290,6 +5274,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2079361393}
   m_CullTransparentMesh: 1
+--- !u!114 &2079361397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079361393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 117f02b5d4fca09488782d71c215e922, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetailView
+  detailView: {fileID: 0}
+  detailRoot: {fileID: 0}
+  manager: {fileID: 8050823070240431680}
+  detailPrefab: {fileID: 342530044049729215, guid: f08a80d2b52cc90459dbc30a86b5a04d, type: 3}
 --- !u!1001 &2775218141644868963
 PrefabInstance:
   m_ObjectHideFlags: 0
