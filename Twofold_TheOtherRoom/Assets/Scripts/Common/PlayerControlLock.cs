@@ -30,7 +30,23 @@ public sealed class PlayerControlLock
         if (alwaysDisablePlayerInteractor)
             TryDisable(Object.FindAnyObjectByType<PlayerInteractor>(), owner);
 
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
+        bool hasExplicitBehaviour = false;
+        if (behavioursToDisable != null)
+        {
+            foreach (Behaviour behaviour in behavioursToDisable)
+            {
+                if (behaviour != null)
+                {
+                    hasExplicitBehaviour = true;
+                    break;
+                }
+            }
+        }
+
+        // Unity can serialize an Inspector array with a non-zero size while all
+        // of its entries are None. Treat that exactly like an empty array so
+        // the automatic 3D-player lookup still runs.
+        if (!hasExplicitBehaviour)
         {
             TryDisable(Object.FindAnyObjectByType<PlayerController>(), owner);
             TryDisable(Object.FindAnyObjectByType<PlayerLocomotionInput>(), owner);

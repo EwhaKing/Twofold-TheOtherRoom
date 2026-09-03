@@ -33,23 +33,21 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     }
 
     public void OnBeginDrag(PointerEventData eventData)
-    {
-        parentAfterDrag = transform.parent;
+{
+    // 드롭 실패 시 돌아갈 현재 부모
+    parentAfterDrag = transform.parent;
 
-        // 핵심: 누르는 순간 발판 뒤로 들어가는 것을 막기 위해 Canvas 최하단(화면 맨 앞)으로 부모 변경
-        if (mainCanvas != null)
-        {
-            transform.SetParent(mainCanvas.transform);
-        }
-        
-        transform.SetAsLastSibling(); // 맨 앞으로 가져오기
-        canvasGroup.blocksRaycasts = false;
-    }
+    // 드래그하는 동안 Puzzle_Net 바로 아래로 꺼내기
+    transform.SetParent(startParent, true);
+    transform.SetAsLastSibling();
+
+    canvasGroup.blocksRaycasts = false;
+}
 
     public void OnDrag(PointerEventData eventData)
-    {
-        rectTransform.position = eventData.position;
-    }
+{
+    rectTransform.anchoredPosition += eventData.delta;
+}
 
     public void OnEndDrag(PointerEventData eventData)
     {

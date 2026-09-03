@@ -10,7 +10,7 @@ public class PillarMirrorReveal : MonoBehaviour
     [SerializeField] private Transform pillarInside;    // 오르내릴 기둥
     [SerializeField] private Collider buttonCollider;   // 리셋 버튼 콜라이더
     [SerializeField] private GameObject buttonObject;   // 숨길 버튼
-    [SerializeField] private GameObject mirrorObject;   // 드러낼 거울 조각
+    [SerializeField] private Transform mirrorPiece;     // 드러낼 거울 조각 (Mirror3D)
 
     [Header("Motion")]
     [SerializeField] private float descendDepth = 1f;      // 하강 깊이
@@ -51,8 +51,22 @@ public class PillarMirrorReveal : MonoBehaviour
 
         // 시야에서 가려진 동안 교체
         if (buttonObject != null) buttonObject.SetActive(false);
-        //if (mirrorObject != null) mirrorObject.SetActive(true);
-        if (PuzzleManager.Instance != null) // 매니저 보고
+
+        Transform mirrorParent = null;      // 거울 조각 원래 부모 (거울틀)
+        Vector3 mirrorEndPos = Vector3.zero;
+        Quaternion mirrorEndRot = Quaternion.identity;
+
+        if (mirrorPiece != null)
+        {
+            // 배치된 자리를 기억해두고, 기둥이 올라올 만큼 내려서 기둥에 임시로 붙임
+            mirrorParent = mirrorPiece.parent;
+            mirrorPiece.GetPositionAndRotation(out mirrorEndPos, out mirrorEndRot);
+
+            mirrorPiece.position = mirrorEndPos - RiseDelta(downPos);
+            mirrorPiece.SetParent(pillarInside, true);
+        }
+
+        if (PuzzleManager.Instance != null) // 매니저 보고 - 거울 조각도 여기서 켜짐
             PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
 
         yield return new WaitForSeconds(holdDuration);
@@ -60,6 +74,22 @@ public class PillarMirrorReveal : MonoBehaviour
         yield return MoveTo(downPos, startPos);   // 올라오기
 
         pillarInside.localPosition = startPos;    // 오차 보정
+
+        if (mirrorPiece != null)
+        {
+            // 스냅 판정이 거울틀 기준 localPosition이라 원래 부모로 되돌림
+            mirrorPiece.SetParent(mirrorParent, true);
+            mirrorPiece.SetPositionAndRotation(mirrorEndPos, mirrorEndRot);
+        }
+    }
+
+    // 기둥이 아래에서 위로 올라오며 이동하는 월드 변위
+    Vector3 RiseDelta(Vector3 downPos)
+    {
+        Transform parent = pillarInside.parent;
+        if (parent == null) return startPos - downPos;
+
+        return parent.TransformPoint(startPos) - parent.TransformPoint(downPos);
     }
 
     IEnumerator MoveTo(Vector3 from, Vector3 to)
