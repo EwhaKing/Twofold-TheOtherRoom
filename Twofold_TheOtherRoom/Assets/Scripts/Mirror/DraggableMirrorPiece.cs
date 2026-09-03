@@ -72,7 +72,10 @@ public class DraggableMirrorPiece : MonoBehaviour, IBeginDragHandler, IDragHandl
             rectTransform.localScale = Vector3.one;
             canvasGroup.blocksRaycasts = false;
             enabled = false;
-            SoundManager.Instance.PlaySFX(SFXType.Ding);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.Ding);
+            }
             MirrorManager.Instance?.MirrorPiecePlaced(puzzleId);
             return;
         }

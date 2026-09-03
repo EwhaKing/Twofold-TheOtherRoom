@@ -42,7 +42,10 @@ public class FloorPanelPuzzleController : MonoBehaviour
         if (currentOn.SetEquals(solution))
         {
             isSolved = true;
-            SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+            }
             foreach (var panel in panels) panel.Freeze();
             StartCoroutine(SolvedRoutine()); // 성공 연출
             // if (PuzzleManager.Instance != null) // 매니저 보고

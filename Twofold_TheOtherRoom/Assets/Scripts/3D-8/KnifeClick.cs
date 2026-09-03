@@ -6,7 +6,10 @@ public class KnifeClick : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        SoundManager.Instance.PlaySFX(SFXType.Knife);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Knife);
+        }
         controller.CakePiece(this);
     }
 }

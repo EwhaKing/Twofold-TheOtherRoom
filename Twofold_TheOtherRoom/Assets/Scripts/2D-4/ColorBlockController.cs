@@ -25,12 +25,20 @@ public class ColorBlockController : MonoBehaviour
 
     public void IncreaseBlock()
     {
+        if (checker != null && checker.IsSolved)
+        {
+            return;
+        }
+
         if (blockCount < blocks.Length)
         {
             blockCount++;
             UpdateBlocks();
 
-            SoundManager.Instance.PlaySFX(SFXType.UIClick);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.UIClick);
+            }
 
             if (checker != null)
                 checker.CheckAnswer();
@@ -39,12 +47,20 @@ public class ColorBlockController : MonoBehaviour
 
     public void DecreaseBlock()
     {
+        if (checker != null && checker.IsSolved)
+        {
+            return;
+        }
+
         if (blockCount > 0)
         {
             blockCount--;
             UpdateBlocks();
 
-            SoundManager.Instance.PlaySFX(SFXType.UIClick);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.UIClick);
+            }
 
             if (checker != null)
                 checker.CheckAnswer();

@@ -71,7 +71,10 @@ public class MoveBlocks : MonoBehaviour , IInteractable
 
         ZoneChanged?.Invoke(currentZone);
 
-        SoundManager.Instance.PlaySFX(SFXType.Scrape);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Scrape);
+        }
         StartCoroutine(MoveToPosition(targetPosition));
 
         Debug.Log(gameObject.name + " 현재 구역: " + currentZone);

@@ -37,7 +37,11 @@ public class FloorPanel : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {   
         if(!other.CompareTag("Player") || isPlayerOn || frozen) return;
-        SoundManager.Instance.PlaySFX(SFXType.SteppingNormal);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.SteppingNormal);
+        }
         currentState = (currentState == PanelState.Off) ? PanelState.On : PanelState.Off;
         isPlayerOn = true;
         ChangeMaterial();

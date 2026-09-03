@@ -30,7 +30,10 @@ public class PuzzleBreakEffect : MonoBehaviour
         if (isBroken) return;
         isBroken = true;
 
-        SoundManager.Instance.PlaySFX(SFXType.FloorHole);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.FloorHole);
+        }
 
         for (int i = 0; i < breakFrames.Length; i++)
         {

@@ -62,13 +62,19 @@ public sealed class InspectionUIController : MonoBehaviour
 
     public void CloseCurrentInspection()
     {
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
         currentInspection?.CloseInspection();
     }
 
     public void ResetCurrentInspection()
     {
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
         if (currentInspection is IResetInspection resettableInspection)
             resettableInspection.ResetInspection();
     }

@@ -15,7 +15,10 @@ public class BookController : MonoBehaviour
         }
 
         isOpened = true;
-        SoundManager.Instance.PlaySFX(SFXType.Paper);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Paper);
+        }
 
         closedBook.SetActive(false);
         openBook.SetActive(true);
