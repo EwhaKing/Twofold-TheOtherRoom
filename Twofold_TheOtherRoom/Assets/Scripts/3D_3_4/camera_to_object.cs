@@ -102,7 +102,10 @@ inspectionYaw += mouseX * amount;
 
     private void BeginInspection()
     {
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
 
         if (inspectionCamera == null)
         {

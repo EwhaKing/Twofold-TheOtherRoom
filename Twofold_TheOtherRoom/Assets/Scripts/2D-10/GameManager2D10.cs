@@ -32,7 +32,10 @@ public class GameManager2D10 : MonoBehaviour
         if (tube[0].solve == true &&
             tube[1].solve == true &&
             tube[2].solve == true){
-            SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+            }
             PuzzleManager.Instance.ReportSolved(
                 "2D-10",
                 PuzzleDimension.TwoD
@@ -107,8 +110,11 @@ public class GameManager2D10 : MonoBehaviour
         {
             return;
         }
-        
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
 
         foreach (Tube2D10 currentTube in tube)
         {

@@ -20,7 +20,10 @@ public class cylinder3D10_local : MonoBehaviour, IInteractable
         if (isRotating || (controller != null && controller.GetSolve()))
             return;
 
-        SoundManager.Instance.PlaySFX(SFXType.Scrape);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Scrape);
+        }
         currentZ = Mathf.Repeat(currentZ + rotationStep, 360f);
         StartCoroutine(RotateZSmooth());
         controller.CheckAnswer(); 

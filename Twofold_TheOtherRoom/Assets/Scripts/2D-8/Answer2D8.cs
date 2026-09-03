@@ -17,7 +17,11 @@ public class Answer2D8 : MonoBehaviour
 
         Debug.Log("퍼즐 성공");
         _solved =true;
-        SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
+        }
 
         PuzzleManager.Instance.ReportSolved(
             "2D-8",

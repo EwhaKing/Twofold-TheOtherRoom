@@ -54,7 +54,10 @@ public class ShadowBlockAnswer : MonoBehaviour
         }
         // 연출 중에도 다시 판정되지 않도록 먼저 클리어 처리한다.
         isCleared = true;
-        SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+        }
         StartCoroutine(GatherLightAndReportSolved());
     }
 

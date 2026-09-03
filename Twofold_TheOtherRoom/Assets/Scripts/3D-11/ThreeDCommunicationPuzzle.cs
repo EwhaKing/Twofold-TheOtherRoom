@@ -149,7 +149,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     private void OpenPuzzle()
     {
-        SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
+
         BasicCameraControl();
 
         RestartFromBeginning();
@@ -186,7 +190,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
         if (!string.Equals(entered, expected, StringComparison.Ordinal))
         {
-            SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+            }
             SetFeedback("정답이 아닙니다.");
             if (alphabetInput != null)
             {
@@ -324,8 +331,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private void CompletePuzzle()
     {
         solved = true;
-
-        SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+        }
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
         if (stageText != null) stageText.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
