@@ -4851,6 +4851,74 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 50652fa5de6f15a4fa346a2292815aa6, type: 3}
+--- !u!1 &424560936
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 424560939}
+  - component: {fileID: 424560938}
+  - component: {fileID: 424560937}
+  m_Layer: 0
+  m_Name: BasementBGMZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &424560937
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424560936}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 30, y: 10, z: 30}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &424560938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424560936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63926d8a3c5604b489fca574854a3a0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  insideBGM: 2
+  outsideBGM: 1
+--- !u!4 &424560939
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424560936}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -31.76, y: 9.65, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &445159508
 GameObject:
   m_ObjectHideFlags: 0
@@ -6869,6 +6937,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2084866750}
     m_Modifications:
+    - target: {fileID: 159071887465741754, guid: e7b785966b9e4094e8dbde40d8cddb93, type: 3}
+      propertyPath: m_LocalScale.x
+      value: -1.02
+      objectReference: {fileID: 0}
     - target: {fileID: 159071887465741754, guid: e7b785966b9e4094e8dbde40d8cddb93, type: 3}
       propertyPath: m_LocalScale.z
       value: 1.02
@@ -16502,3 +16574,4 @@ SceneRoots:
   - {fileID: 800973587}
   - {fileID: 1834322530}
   - {fileID: 68920707}
+  - {fileID: 424560939}
