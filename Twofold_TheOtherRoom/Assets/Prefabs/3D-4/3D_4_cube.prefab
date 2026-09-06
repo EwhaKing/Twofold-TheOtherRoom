@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1325004605147815043}
   - component: {fileID: 2255698557120131565}
+  - component: {fileID: 4962494504892450727}
   m_Layer: 3
   m_Name: 3D_4_cube
   m_TagString: Untagged
@@ -51,9 +52,24 @@ MonoBehaviour:
   inspectionCamera: {fileID: 0}
   distanceFromCamera: 1
   screenOffset: {x: 0, y: -0.1, z: 0}
-  rotationSpeed: 70
-  verticalRotationLimit: 80
+  rotationSpeed: 80
+  verticalRotationLimit: 100
   behavioursToDisable: []
+--- !u!114 &4962494504892450727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820983209897501182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eed6a6a69aec844db838b15e1212a1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDescriptionImages
+  imageIndexes:
+  - imageIndex: 2
+    text: "\uBB3C\uCCB4 \uC774\uB3D9"
 --- !u!1 &2648249058713869015
 GameObject:
   m_ObjectHideFlags: 0
