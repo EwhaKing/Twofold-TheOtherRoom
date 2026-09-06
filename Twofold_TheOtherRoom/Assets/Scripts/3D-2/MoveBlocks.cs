@@ -1,14 +1,16 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class MoveBlocks : MonoBehaviour , IInteractable
 {
+    public event Action<int> ZoneChanged;
    
     [Header("Zone Settings")]
     public int currentZone = 1;
 
     [Header("Move Settings")]
-    public float stepDistance = 4f;
+    public float stepDistance = 1f;
     public float moveDuration = 0.35f;
 
 
@@ -67,6 +69,12 @@ public class MoveBlocks : MonoBehaviour , IInteractable
         Vector3 targetPosition = transform.position;
         targetPosition.z = targetZ;
 
+        ZoneChanged?.Invoke(currentZone);
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Scrape);
+        }
         StartCoroutine(MoveToPosition(targetPosition));
 
         Debug.Log(gameObject.name + " 현재 구역: " + currentZone);

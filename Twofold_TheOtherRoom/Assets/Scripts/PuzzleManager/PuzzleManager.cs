@@ -35,11 +35,25 @@ public enum PuzzleDimension { TwoD, ThreeD }
 ///       void OnDisable() => PuzzleManager.OnPuzzleSolved -= OnSolved;
 ///       void OnSolved(string id) { if (id == "3D-6") door.Open(); }
 /// </summary>
+/// 
+// [Serializable]
+// public class PuzzleDisplayPosition
+// {
+//     public string puzzleID;
+
+    
+//     public GameObject activateObjectDisplay;
+
+//     public GameObject deactivateObjectDisplay;
+// }
+
 public class PuzzleManager : MonoBehaviour
 {
     #region Singleton
 
     public static PuzzleManager Instance { get; private set; }
+    
+    [SerializeField] private Mirror3D[] mirrors3D;
 
     void Awake()
     {
@@ -49,7 +63,11 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject); // 씬 이동해도 상태 유지
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     #endregion
@@ -86,12 +104,28 @@ public class PuzzleManager : MonoBehaviour
             return;
         }
 
-        if (_solved.ContainsKey(puzzleId)) return; // 이미 풀린 퍼즐이면 무시
+        if (_solved.ContainsKey(puzzleId)) return;
         _solved[puzzleId] = dimension;
 
+        if (puzzleId.StartsWith("3D-"))
+        {
+            foreach (Mirror3D mirror in mirrors3D)
+            {
+                if (mirror != null && mirror.MirrorId == puzzleId)
+                {
+                    mirror.gameObject.SetActive(true);
+                    mirror.GetMirror();
+                    break;
+                }
+            }
+        }
+        
         OnPuzzleSolved?.Invoke(puzzleId);
+
         OnProgressChanged?.Invoke(dimension, SolvedCountOf(dimension), TotalOf(dimension));
     }
+
+
 
     #endregion
 

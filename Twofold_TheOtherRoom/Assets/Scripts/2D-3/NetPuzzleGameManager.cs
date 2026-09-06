@@ -5,7 +5,7 @@ public class NetPuzzleGameManager : MonoBehaviour
 {
     [Header("퍼즐 설정")]
     [Tooltip("팀원과 약속한 이 퍼즐의 고유 ID (예: 2D-1, 2D-3 등)")]
-    public string puzzleID = "2D-1"; 
+    public string puzzleID = "2D-3"; 
     public PuzzleDimension dimension = PuzzleDimension.TwoD;
 
     [Header("검사할 전개도 슬롯들 (5개)")]
@@ -14,12 +14,28 @@ public class NetPuzzleGameManager : MonoBehaviour
     [Header("퍼즐 판 전체 (Puzzle_Net)")]
     public GameObject puzzleContainer;
 
+    [Header("깨지는 연출 스크립트 연결")]
+    public PuzzleBreakEffect breakEffect; // 깨지는 연출 그룹 스크립트
+
+    // [Header("줌 컨트롤러 연결")]
+    // public NetPuzzleZoomController zoomController; // 줌 컨트롤러 추가
+
+    // private void Start()
+    // {
+    //     // 씬/Canvas 구조를 수정하지 않고, 2D-3_panel 스스로 어두운 필터보다 맨 위로 나오도록 설정
+    //     Canvas parentCanvas = GetComponentInParent<Canvas>();
+    //     if (parentCanvas != null)
+    //     {
+    //         parentCanvas.overrideSorting = true;
+    //         parentCanvas.sortingOrder = 100;
+    //     }
+    // }
+
     public void CheckPuzzleComplete()
     {
         StartCoroutine(DelayedCheck());
     }
 
-    // OnDrop 처리 직후 자식 계층구조가 완료된 한 프레임 뒤 검사
     private IEnumerator DelayedCheck()
     {
         yield return null; 
@@ -43,7 +59,6 @@ public class NetPuzzleGameManager : MonoBehaviour
             }
         }
 
-        // 5개 슬롯이 전부 채워졌다면!
         if (filledCount == puzzleSlots.Length)
         {
             if (!hasWrongItem)
@@ -76,6 +91,7 @@ public class NetPuzzleGameManager : MonoBehaviour
 
     private void OnPuzzleSuccess()
     {
+        // 1. PuzzleManager에 퍼즐 해결 보고 
         if (PuzzleManager.Instance != null)
         {
             PuzzleManager.Instance.ReportSolved(puzzleID, dimension);
@@ -85,6 +101,40 @@ public class NetPuzzleGameManager : MonoBehaviour
             Debug.LogWarning("PuzzleManager가 씬에 배치되지 않았습니다!");
         }
 
-        // 추가 성공 연출(소리, 이펙트 등)이 있다면 여기에 작성하시면 됩니다.
+        // 2. 기존 퍼즐 슬롯(조각들) 비활성화
+        if (puzzleSlots != null)
+        {
+            foreach (NetPuzzleSlot slot in puzzleSlots)
+            {
+                if (slot == null) continue;
+                // 드래그 비활성화
+                NetPuzzleDragItem dragItem = slot.GetComponentInChildren<NetPuzzleDragItem>();
+                if (dragItem != null)
+                    dragItem.enabled = false;
+            }
+        }
+
+        // // 3. 줌 컨트롤러에 확대 상태 전달
+        // if (zoomController != null)
+        // {
+        //     zoomController.ZoomInToPuzzle();
+        // }
+
+        // 4. 깨지는 연출 오브젝트 활성화 및 시작
+        StartCoroutine(PlayBreakEffectAfterDelay());
+    }
+
+    private IEnumerator PlayBreakEffectAfterDelay()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        if (breakEffect != null)
+        {
+            breakEffect.gameObject.SetActive(true);
+            breakEffect.PrepareEffect();
+        }
     }
 }
+
+
+

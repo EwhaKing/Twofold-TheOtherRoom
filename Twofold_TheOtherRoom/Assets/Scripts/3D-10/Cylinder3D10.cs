@@ -1,13 +1,17 @@
 using UnityEngine;
 using System.Collections;
 
-public class Cylinder3D10 : MonoBehaviour
+public class Cylinder3D10 : MonoBehaviour, IInteractable
 {
     private bool isRotating = false;
-    private float currentY = 80f;
+    private float currentY;
     public Answer3D10 controller;
 
-    void OnMouseDown()
+    void Start()
+    {
+        currentY = transform.localEulerAngles.y;
+    }
+    public void Interact()
     {   
         if (controller.GetSolve())
         {
@@ -32,7 +36,7 @@ public class Cylinder3D10 : MonoBehaviour
         return currentY;
     }
 
-     IEnumerator RotateSmooth()
+    IEnumerator RotateSmooth()
     {
         isRotating = true;
 

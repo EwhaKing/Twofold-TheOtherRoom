@@ -1,12 +1,10 @@
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
 /// PlayerInteractor를 통해 물체를 카메라 앞에서 자세히 살펴보게 합니다.
 /// 이 컴포넌트를 살펴볼 프리팹의 루트에 추가하세요.
 /// </summary>
-public class camera_to_object : MonoBehaviour, IInteractable
+public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, IResetInspection
 {
   
 
@@ -15,20 +13,15 @@ public class camera_to_object : MonoBehaviour, IInteractable
     [SerializeField, Min(0.1f)] private float distanceFromCamera = 3f;
     public Vector3 screenOffset;
 
-    [Header("Inspection UI")]
-    [Tooltip("검사 중에만 표시할 뒤로가기 버튼 오브젝트입니다.")]
-    [SerializeField] private GameObject backButton;
-
-
     [Header("Rotation")]
-    [SerializeField, Min(1f)] private float rotationSpeed = 50f;
-    [SerializeField, Range(1f, 89f)] private float verticalRotationLimit = 80f;
+    [SerializeField, Min(1f)] private float rotationSpeed;
+    [SerializeField] private float verticalRotationLimit = 180f;
 
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Collider[] objectColliders;
     private Rigidbody objectRigidbody;
 
@@ -37,13 +30,15 @@ public class camera_to_object : MonoBehaviour, IInteractable
     private bool[] originalColliderStates;
     private bool originalIsKinematic;
     private bool originalUseGravity;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
     private bool isInspecting;
     private int enteredFrame;
     private float inspectionYaw;
     private float inspectionPitch;
     private Quaternion objectRotationInCameraSpace;
+
+
+    private float dragStartPitch;
+    private float dragPitchDelta;
 
     private void Awake()
     {
@@ -53,8 +48,6 @@ public class camera_to_object : MonoBehaviour, IInteractable
         objectColliders = GetComponentsInChildren<Collider>(true);
         objectRigidbody = GetComponent<Rigidbody>();
 
-        if (backButton != null)
-            backButton.SetActive(false);
     }
 
     private void Update()
@@ -63,32 +56,40 @@ public class camera_to_object : MonoBehaviour, IInteractable
             return;
 
         // Interact()가 호출된 같은 프레임의 E 입력으로 즉시 닫히는 것을 방지합니다.
-        if (Time.frameCount > enteredFrame &&
-            (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)))
+        if (Time.frameCount > enteredFrame && Input.GetKeyDown(KeyCode.E))
         {
             EndInspection();
             return;
         }
 
-        if (!Input.GetMouseButton(0))
-            return;
+        // 마우스를 처음 누른 순간의 회전값 저장
+if (Input.GetMouseButtonDown(0))
+{
+    dragStartPitch = inspectionPitch;
+    dragPitchDelta = 0f;
+}
 
-        float mouseX = Input.GetAxis("Mouse X") * -1f;
-        float mouseY = Input.GetAxis("Mouse Y");
-        float amount = rotationSpeed * Time.unscaledDeltaTime;
+if (!Input.GetMouseButton(0))
+    return;
 
-        inspectionYaw += mouseX * amount;
-        inspectionPitch = Mathf.Clamp(
-            inspectionPitch + mouseY * amount,
-            -verticalRotationLimit,
-            verticalRotationLimit);
+float mouseX = Input.GetAxis("Mouse X") * -1f;
+float mouseY = Input.GetAxis("Mouse Y");
+float amount = rotationSpeed * Time.unscaledDeltaTime;
 
-        // 월드 회전을 계속 누적하지 않고 카메라 기준 yaw/pitch로 다시 계산합니다.
-        // 좌우와 상하 회전이 섞일 때 생기는 불필요한 Z축 기울기를 방지합니다.
-        transform.rotation =
-            inspectionCamera.transform.rotation
-            * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
-            * objectRotationInCameraSpace;
+inspectionYaw += mouseX * amount;
+
+    // 이번 드래그에서 움직인 양만 제한
+    dragPitchDelta = Mathf.Clamp(
+        dragPitchDelta + mouseY * amount,
+        -verticalRotationLimit,
+        verticalRotationLimit);
+
+    inspectionPitch = dragStartPitch + dragPitchDelta;
+
+    transform.rotation =
+        inspectionCamera.transform.rotation
+        * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
+        * objectRotationInCameraSpace;
     }
 
     public void Interact()
@@ -101,6 +102,11 @@ public class camera_to_object : MonoBehaviour, IInteractable
 
     private void BeginInspection()
     {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
+
         if (inspectionCamera == null)
         {
             inspectionCamera = Camera.main;
@@ -112,7 +118,8 @@ public class camera_to_object : MonoBehaviour, IInteractable
         }
 
         SaveObjectState();
-        DisablePlayerControl();
+        //playercontrollock
+        playerControlLock.Lock(this, behavioursToDisable);
 
         Transform cameraTransform = inspectionCamera.transform;
         // 카메라는 변경하지 않고 물체만 현재 카메라 정면으로 이동합니다.
@@ -127,10 +134,8 @@ public class camera_to_object : MonoBehaviour, IInteractable
         objectRotationInCameraSpace =
             Quaternion.Inverse(cameraTransform.rotation) * transform.rotation;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        if (backButton != null)
-            backButton.SetActive(true);
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         isInspecting = true;
         enteredFrame = Time.frameCount;
@@ -143,15 +148,38 @@ public class camera_to_object : MonoBehaviour, IInteractable
 
         transform.SetPositionAndRotation(originalPosition, originalRotation);
         RestoreObjectState();
-        RestorePlayerControl();
+        //playerControlunLock
+        playerControlLock.Unlock();
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
 
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
-        if (backButton != null)
-            backButton.SetActive(false);
 
         isInspecting = false;
     }
+
+    public void ResetInspectionView()
+{
+    if (!isInspecting || inspectionCamera == null)
+        return;
+
+    // E를 누르기 전의 원래 회전으로 복원
+    transform.rotation = originalRotation;
+
+    // 마우스 회전 누적값 초기화
+    inspectionYaw = 0f;
+    inspectionPitch = 0f;
+
+    // 현재 카메라 기준으로 초기 회전 관계 재설정
+    objectRotationInCameraSpace =
+        Quaternion.Inverse(inspectionCamera.transform.rotation)
+        * originalRotation;
+
+    if (objectRigidbody != null)
+    {
+        objectRigidbody.linearVelocity = Vector3.zero;
+        objectRigidbody.angularVelocity = Vector3.zero;
+    }
+}
 
     /// UI Button의 OnClick 이벤트에 연결할 검사 종료 메서드입니다.
     public void CloseInspection()
@@ -159,13 +187,15 @@ public class camera_to_object : MonoBehaviour, IInteractable
         EndInspection();
     }
 
+    public void ResetInspection()
+    {
+        ResetInspectionView();
+    }
+
     private void SaveObjectState()
     {
         originalPosition = transform.position;
         originalRotation = transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
-
         originalColliderStates = new bool[objectColliders.Length];
         for (int i = 0; i < objectColliders.Length; i++)
         {
@@ -194,42 +224,6 @@ public class camera_to_object : MonoBehaviour, IInteractable
             objectRigidbody.isKinematic = originalIsKinematic;
             objectRigidbody.useGravity = originalUseGravity;
         }
-    }
-
-    private void DisablePlayerControl()
-    {
-        disabledBehaviours.Clear();
-
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
-        {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
-        }
-
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
-
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
-        disabledBehaviours.Clear();
     }
 
 }

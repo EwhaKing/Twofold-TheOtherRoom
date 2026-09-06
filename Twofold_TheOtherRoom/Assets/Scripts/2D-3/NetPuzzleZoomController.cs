@@ -7,22 +7,24 @@ public class NetPuzzleZoomController : MonoBehaviour
     public RectTransform roomBackground; // RoomBackground
     public GameObject puzzleContainer;  // Puzzle_Net
 
+    [Header("깨지는 연출 그룹")]
+    public GameObject puzzleBreakEffect; // Puzzle_BreakEffect
+
     [Header("방 요소들 (확대 시 숨길 것)")]
     public GameObject floorGraphics;   // Simple_Placeholder
+    public GameObject rugObject;       // rug
     public GameObject frameButton;     // FrameButton
-    public GameObject backButton;      // BackButton
 
     [Header("줌 연출 설정")]
-    public float zoomDuration = 0.4f;   // 줌 연출 시간
-    public float targetScale = 2.0f;    // 확대 배율
-    
-    // 💡 바닥 퍼즐(화면 아래)을 확대해서 중앙에 맞추려면 offset Y가 '마이너스(-)'여야 합니다!
+    public float zoomDuration = 0.4f;
+    public float targetScale = 2.0f;
     public float targetOffsetY = -250f; 
 
     private Vector3 initialScale = Vector3.one;
     private Vector2 initialPos = Vector2.zero;
     private CanvasGroup puzzleCanvasGroup;
-    private bool isZoomed = false;
+    public bool isZoomed = false;
+    public bool isPuzzleCleared = false; // 퍼즐 클리어 상태 플래그
 
     void Awake()
     {
@@ -34,26 +36,29 @@ public class NetPuzzleZoomController : MonoBehaviour
 
         if (puzzleContainer != null)
         {
-            // CanvasGroup 컴포넌트 자동 가져오기
             puzzleCanvasGroup = puzzleContainer.GetComponent<CanvasGroup>();
             puzzleContainer.SetActive(false);
         }
 
-        if (backButton != null) backButton.SetActive(false);
+        if (puzzleBreakEffect != null)
+        {
+            puzzleBreakEffect.SetActive(false);
+        }
     }
 
-    // 🔍 바닥 퍼즐 클릭 시 (확대)
     public void ZoomInToPuzzle()
     {
-        if (isZoomed) return;
+        isZoomed = true;
         StopAllCoroutines();
         StartCoroutine(ZoomRoutine(true));
     }
 
-    // 🔙 뒤로가기 클릭 시 (축소)
+    public void ZoomIn() => ZoomInToPuzzle();
+    public void ZoomOut() => ZoomOutToRoom();
+
     public void ZoomOutToRoom()
     {
-        if (!isZoomed) return;
+        Debug.Log("👈 Back 버튼 클릭됨! 줌아웃 시작");
         StopAllCoroutines();
         StartCoroutine(ZoomRoutine(false));
     }
@@ -68,10 +73,16 @@ public class NetPuzzleZoomController : MonoBehaviour
         Vector2 startPos = roomBackground.anchoredPosition;
         Vector2 endPos = zoomingIn ? initialPos + new Vector2(0, targetOffsetY) : initialPos;
 
-        // 줌 시작 시 세팅
+        // 깨지는 연출 오브젝트가 활성화되어 있거나 이미 클리어된 경우
+        if (puzzleBreakEffect != null && puzzleBreakEffect.activeSelf)
+        {
+            isPuzzleCleared = true;
+        }
+
         if (zoomingIn)
         {
             if (floorGraphics != null) floorGraphics.SetActive(false);
+            if (rugObject != null) rugObject.SetActive(false);
             if (frameButton != null) frameButton.SetActive(false);
 
             if (puzzleContainer != null)
@@ -79,7 +90,7 @@ public class NetPuzzleZoomController : MonoBehaviour
                 puzzleContainer.SetActive(true);
                 if (puzzleCanvasGroup != null)
                 {
-                    puzzleCanvasGroup.alpha = 0f; // 일단 투명하게 시작
+                    puzzleCanvasGroup.alpha = 0f;
                     puzzleCanvasGroup.interactable = false;
                     puzzleCanvasGroup.blocksRaycasts = false;
                 }
@@ -87,10 +98,24 @@ public class NetPuzzleZoomController : MonoBehaviour
         }
         else
         {
-            if (backButton != null) backButton.SetActive(false);
+            if (isPuzzleCleared)
+            {
+                PuzzleBreakEffect breakScript = puzzleBreakEffect != null ? puzzleBreakEffect.GetComponent<PuzzleBreakEffect>() : null;
+                // if (breakScript != null)
+                // {
+                //     breakScript.ApplyRoomBreakState();
+                // }
+                if (puzzleBreakEffect != null) puzzleBreakEffect.SetActive(false);
+
+                // RugToggle에도 클리어 상태 전달
+                if (rugObject != null)
+                {
+                    RugToggle rugScript = rugObject.GetComponent<RugToggle>();
+                    if (rugScript != null) rugScript.SetCleared();
+                }
+            }
         }
 
-        // 줌인/줌아웃 애니메이션
         while (elapsed < zoomDuration)
         {
             elapsed += Time.deltaTime;
@@ -99,8 +124,7 @@ public class NetPuzzleZoomController : MonoBehaviour
             roomBackground.localScale = Vector3.Lerp(startScale, endScale, t);
             roomBackground.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
 
-            // 퍼즐 Alpha 페이드 인/아웃
-            if (puzzleCanvasGroup != null)
+            if (puzzleCanvasGroup != null && !isPuzzleCleared)
             {
                 puzzleCanvasGroup.alpha = zoomingIn ? t : (1f - t);
             }
@@ -112,13 +136,11 @@ public class NetPuzzleZoomController : MonoBehaviour
         roomBackground.anchoredPosition = endPos;
         isZoomed = zoomingIn;
 
-        // 줌 완료 후 세팅
         if (zoomingIn)
         {
-            if (backButton != null) backButton.SetActive(true);
             if (puzzleCanvasGroup != null)
             {
-                puzzleCanvasGroup.alpha = 1f; // ★ 투명도 100% 확실히 설정
+                puzzleCanvasGroup.alpha = 1f;
                 puzzleCanvasGroup.interactable = true;
                 puzzleCanvasGroup.blocksRaycasts = true;
             }
@@ -126,8 +148,24 @@ public class NetPuzzleZoomController : MonoBehaviour
         else
         {
             if (puzzleContainer != null) puzzleContainer.SetActive(false);
-            if (floorGraphics != null) floorGraphics.SetActive(true);
-            if (frameButton != null) frameButton.SetActive(true);
+
+            if (isPuzzleCleared)
+            {
+                if (frameButton != null) frameButton.SetActive(true);
+                if (floorGraphics != null) floorGraphics.SetActive(false); // 클리어 시 무조건 비활성화 유지
+            }
+            else
+            {
+                if (floorGraphics != null) floorGraphics.SetActive(true);
+                if (frameButton != null) frameButton.SetActive(true);
+
+                if (rugObject != null)
+                {
+                    rugObject.SetActive(true);
+                    RugToggle rugScript = rugObject.GetComponent<RugToggle>();
+                    if (rugScript != null) rugScript.UpdateRugSprite();
+                }
+            }
         }
     }
 }

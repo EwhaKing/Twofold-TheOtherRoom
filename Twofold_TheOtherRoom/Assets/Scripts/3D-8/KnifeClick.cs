@@ -1,30 +1,15 @@
 using UnityEngine;
 
-public class KnifeClick : MonoBehaviour
+public class KnifeClick : MonoBehaviour, IInteractable
 {
-    public GameObject section;
-    public Renderer cake;          
-    public bool click;
-    void Start()
+    public CutCake controller;
+
+    public void Interact()
     {
-        click = false;
-    }
-    private void OnMouseDown()
-    {
-        section.SetActive(!section.activeSelf);
-        if (click == false)
+        if (SoundManager.Instance != null)
         {
-            Color color = cake.material.color;
-            color.a = 0.5f;      // 30% 정도만 보이게
-            cake.material.color = color;
-            click = true;
+            SoundManager.Instance.PlaySFX(SFXType.Knife);
         }
-        else
-        {
-            Color color = cake.material.color;
-            color.a = 1f;      // 30% 정도만 보이게
-            cake.material.color = color;
-            click = false;
-        }
+        controller.CakePiece(this);
     }
 }

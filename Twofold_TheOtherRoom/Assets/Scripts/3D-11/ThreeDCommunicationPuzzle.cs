@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// 3D 플레이어용 통신 퍼즐.
 /// 알파벳을 순서대로 입력하면 다음 단계의 도형이 3초 동안 표시됩니다.
 
-public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
+public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseInspection
 {
     [Serializable]
     public class StageData
@@ -30,10 +30,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     }
 
     [Header("Puzzle Data")]
-    [SerializeField] private string puzzleId = "3D-4";
+    [SerializeField] private string puzzleId = "3D-11";
     [SerializeField] private PuzzleDimension dimension = PuzzleDimension.ThreeD;
     [Tooltip("맨 처음 입력할 알파벳 3글자. 이 입력에는 시간제한이 없습니다.")]
-    [SerializeField] private string introAlphabetAnswer = "ACF";
+    [SerializeField] private string introAlphabetAnswer = "ACP";
     [Tooltip("Size는 3입니다. 단계별 도형과 그 뒤에 입력할 알파벳을 한 묶음으로 설정합니다.")]
     [SerializeField] private StageData[] stages = new StageData[3];
 
@@ -48,7 +48,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     [SerializeField] private TMP_Text instructionText;
     [SerializeField] private TMP_Text feedbackText;
     [SerializeField] private GameObject resetButton;
-    [SerializeField] private GameObject backButton;
 
     [Header("UI - Alphabet Input")]
     [SerializeField] private TMP_InputField alphabetInput;
@@ -60,17 +59,19 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     [SerializeField] private Slider timerSlider;
     [Tooltip("선택 사항입니다. 비워 두면 숫자는 표시하지 않고 Slider만 줄어듭니다.")]
     [SerializeField] private TMP_Text timerText;
+
+    [Header("UI - ClearPanel")]
+    [SerializeField] private GameObject MirrorPanel;
   
 
-    private readonly List<Behaviour> disabledBehaviours = new List<Behaviour>();
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private Phase phase = Phase.Closed;
     private int currentStageIndex = -1;
     private float revealTimeLeft;
     private bool solved;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
-    private CursorLockMode originalCursorLockMode;
-    private bool originalCursorVisible;
+    private Coroutine beepRoutine;
 
     private void Awake()
     {
@@ -80,11 +81,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
         if (stageText != null) stageText.gameObject.SetActive(false);
-        if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
-        if (backButton != null) backButton.SetActive(false);
+         if (MirrorPanel != null) MirrorPanel.SetActive(false);
 
 
         HideAllShapeSlots();
@@ -92,14 +93,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
     private void Update()
     {
-        if (phase == Phase.Closed || phase == Phase.Cleared)
+        if (phase == Phase.Closed ||phase == Phase.Cleared)
             return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            ClosePuzzle();
-            return;
-        }
 
         if ((phase == Phase.AlphabetInput || phase == Phase.ShapeReveal) &&
             (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
@@ -122,10 +117,14 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     {
         if (phase == Phase.Closed && !solved)
             OpenPuzzle();
+
+        if (phase == Phase.Cleared && solved)
+            BasicCameraControl();
     }
 
-    private void OpenPuzzle()
+    private void BasicCameraControl()
     {
+        
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -137,23 +136,46 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
-        originalCursorLockMode = Cursor.lockState;
-        originalCursorVisible = Cursor.visible;
 
-        DisablePlayerControl();
+        playerControlLock.Lock(this, behavioursToDisable, true);
+
         playerCamera.transform.SetPositionAndRotation(
             cameraFocusPoint.position,
             cameraFocusPoint.rotation);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        if (stageText != null) stageText.gameObject.SetActive(true);
-        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
-        if (backButton != null) backButton.SetActive(true);
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
+    }
+
+    private void OpenPuzzle()
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
+
+        BasicCameraControl();
 
         RestartFromBeginning();
+        StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
+    }
 
+    private IEnumerator ActivateAlphabetInputAfterInteractKeyReleased()
+    {
+        if (alphabetInput == null)
+            yield break;
 
+        // 퍼즐을 연 E 입력이 같은 프레임에 InputField 문자로 들어가는 것을 막습니다.
+        alphabetInput.DeactivateInputField();
+        while (Input.GetKey(KeyCode.E))
+            yield return null;
+        yield return null;
+
+        if (phase == Phase.AlphabetInput)
+        {
+            alphabetInput.text = string.Empty;
+            alphabetInput.ActivateInputField();
+        }
     }
 
 
@@ -168,6 +190,10 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         if (!string.Equals(entered, expected, StringComparison.Ordinal))
         {
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+            }
             SetFeedback("정답이 아닙니다.");
             if (alphabetInput != null)
             {
@@ -176,7 +202,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             }
             return;
         }
-
         SetFeedback("정답입니다.");
 
         // 마지막(3단계 뒤) 알파벳까지 맞히면 7번째 화면 완료 후 Clear.
@@ -196,19 +221,20 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
             RestartFromBeginning();
     }
 
-    ///Back Button의 OnClick에 연결합니다. E를 누르기 전 상태로 돌아갑니다.
-    public void ClosePuzzle()
+    /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
+    public void CloseInspection()
     {
         if (phase == Phase.Closed)
             return;
 
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
+
         playerCamera.transform.SetPositionAndRotation(
             originalCameraPosition,
             originalCameraRotation);
-        RestorePlayerControl();
-
-        Cursor.lockState = originalCursorLockMode;
-        Cursor.visible = originalCursorVisible;
+         //playerControlunLock
+        playerControlLock.Unlock();
 
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
@@ -217,7 +243,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
-        if (backButton != null) backButton.SetActive(false);
         HideAllShapeSlots();
 
         phase = solved ? Phase.Cleared : Phase.Closed;
@@ -237,13 +262,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
 
         SetStageLabel(string.Empty);
         if (instructionText != null)
-            instructionText.text = "상대를 통해 알파벳 4자리를 입력하세요";
+            instructionText.text = "상대를 통해 알파벳 3자리를 입력하세요";
         SetFeedback(string.Empty);
         if (alphabetInput != null)
         {
             alphabetInput.text = string.Empty;
             alphabetInput.characterLimit = 8;
-            alphabetInput.ActivateInputField();
         }
     }
 
@@ -261,6 +285,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         phase = Phase.ShapeReveal;
         revealTimeLeft = 3f;
 
+        if (beepRoutine != null)
+            StopCoroutine(beepRoutine);
+
+        beepRoutine = StartCoroutine(PlayCountdownBeep());
+
         if (alphabetInput != null)
         {
             alphabetInput.characterLimit = 8;
@@ -270,6 +299,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         if (timerSlider != null) timerSlider.gameObject.SetActive(true);
         if (timerText != null) timerText.gameObject.SetActive(true);
         if (resetButton != null) resetButton.SetActive(true);
+        if (stageText != null) stageText.gameObject.SetActive(true);
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
         SetStageLabel($"{stageIndex + 1}단계");
         SetFeedback(string.Empty);
         if (instructionText != null)
@@ -300,22 +331,28 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     private void CompletePuzzle()
     {
         solved = true;
-        instructionText.text = "CLEAR!";
-        instructionText.fontSize = 35f;
-        
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
+        }
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
         if (stageText != null) stageText.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
+        if (instructionText != null) instructionText.gameObject.SetActive(false);
 
 
+        if (MirrorPanel != null) MirrorPanel.gameObject.SetActive(true);
+
+
+/**
         if (PuzzleManager.Instance != null)
             PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
         else
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
-
+**/
         phase = Phase.Cleared;
     }
 
@@ -365,9 +402,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
         float time = Mathf.Max(0f, revealTimeLeft);
         if (timerSlider != null)
         {
+           
+
             timerSlider.minValue = 0f;
             timerSlider.maxValue = 3f;
             timerSlider.value = time;
+
+            if (timerSlider.fillRect != null)
+            {
+                timerSlider.fillRect.gameObject.SetActive(time > 0.001f);
+            }
         }
         if (timerText != null)
             timerText.text = $"{time:0.0}";
@@ -395,45 +439,48 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable
     private void SetStageLabel(string value)
     {
         if (stageText != null) stageText.text = value;
+       
     }
 
     private void SetFeedback(string value)
     {
         if (feedbackText != null) feedbackText.text = value;
+         
     }
 
-    private void DisablePlayerControl()
+    private IEnumerator PlayCountdownBeep()
     {
-        disabledBehaviours.Clear();
-        if (behavioursToDisable == null || behavioursToDisable.Length == 0)
+        // 3.0초
+        if (SoundManager.Instance != null)
         {
-            TryDisable(FindAnyObjectByType<PlayerController>());
-            TryDisable(FindAnyObjectByType<PlayerLocomotionInput>());
-            TryDisable(FindAnyObjectByType<PlayerInteractor>());
-            return;
+            SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
         }
 
-        foreach (Behaviour behaviour in behavioursToDisable)
-            TryDisable(behaviour);
-    }
+        yield return new WaitForSecondsRealtime(1f);
 
-    private void TryDisable(Behaviour behaviour)
-    {
-        if (behaviour == null || behaviour == this || !behaviour.enabled)
-            return;
-
-        behaviour.enabled = false;
-        disabledBehaviours.Add(behaviour);
-    }
-
-    private void RestorePlayerControl()
-    {
-        foreach (Behaviour behaviour in disabledBehaviours)
+        // 2.0초
+        if (SoundManager.Instance != null)
         {
-            if (behaviour != null)
-                behaviour.enabled = true;
+            SoundManager.Instance.PlaySFX(SFXType.Beep1);
         }
-        disabledBehaviours.Clear();
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        // 1.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep1);
+        }
+
+        yield return new WaitForSecondsRealtime(1f);
+
+        // 0.0초
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Beep2);
+        }
+
+        beepRoutine = null;
     }
 
 #if UNITY_EDITOR
