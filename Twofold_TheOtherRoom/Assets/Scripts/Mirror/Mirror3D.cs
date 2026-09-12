@@ -7,7 +7,7 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     public string MirrorId => mirrorId;
 
     [Header("Holding Settings")]
-    [SerializeField] private float holdDistance = 1.5f;
+    [SerializeField] private float holdDistance = 2f;
     [SerializeField] private float holdRightOffset = 0.7f;
     [SerializeField] private float holdDownOffset = 0.5f;
 
@@ -19,8 +19,8 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     private Rigidbody heldBody;
     private BoxCollider heldCollider;
     private RigidbodyConstraints originalConstraints;
-    private const float FollowSpeed = 20f;
-    private const float MaxHoldSpeed = 10f;
+    private const float FollowSpeed = 50f;
+    private const float MaxHoldSpeed = 50f;
 
     private bool isPlaced;
     public bool IsPlaced => isPlaced;
@@ -86,7 +86,7 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             return;
 
         originalConstraints = heldBody.constraints;
-        heldBody.constraints = RigidbodyConstraints.FreezeRotation;
+        //heldBody.constraints = RigidbodyConstraints.FreezeRotation;
         heldBody.angularVelocity = Vector3.zero;
         heldBody.useGravity = false;
 
@@ -113,6 +113,11 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             + cam.transform.forward * holdDistance
             + cam.transform.right * holdRightOffset
             - cam.transform.up * holdDownOffset;
+
+        Quaternion targetRotation =
+        cam.transform.rotation * Quaternion.Euler(0f, 90f, 0f);
+
+        heldBody.MoveRotation(targetRotation); // 여기서 사용
 
         // Follow with physics: wall contacts can stop or slide the mirror.
         // Aim its actual centre at the hand position, not the imported pivot.
