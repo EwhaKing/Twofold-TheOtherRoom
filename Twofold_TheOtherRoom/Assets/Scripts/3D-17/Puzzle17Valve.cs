@@ -33,7 +33,7 @@ public class Puzzle17Valve : MonoBehaviour
         }
 
         // 이미 생성된 Puzzle17이 있는지 확인
-        Puzzle17 puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Id);
+        Puzzle17 puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Key);
 
         // 없다면 공유 프리팹 생성
         if (puzzle == null)

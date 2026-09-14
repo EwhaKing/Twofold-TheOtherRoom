@@ -70,9 +70,7 @@ public class Puzzle17TimerUI : MonoBehaviour
     private void Update()
     {
         if (timerFill == null)
-        {
             return;
-        }
 
         if (puzzle == null)
         {
@@ -80,8 +78,14 @@ public class Puzzle17TimerUI : MonoBehaviour
 
             if (puzzle == null)
             {
+                timerFill.fillAmount = 1f;
                 return;
             }
+        }
+
+        if (puzzle.Activated && !puzzle.Started)
+        {
+            TryStartPuzzle();
         }
 
         if (!puzzle.Started)
