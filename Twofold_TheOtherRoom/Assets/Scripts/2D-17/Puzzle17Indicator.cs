@@ -3,10 +3,9 @@ using UnityEngine.UI;
 
 public class Puzzle17Indicator : MonoBehaviour
 {
-    [Header("깜빡일 배관 배치본")]
+    [Header("2D-17_display")]
     [SerializeField] private Graphic targetGraphic;
 
-    [Header("깜빡임 속도")]
     [SerializeField] private float blinkSpeed = 3f;
 
     private Puzzle17 puzzle;

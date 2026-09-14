@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Puzzle17 : CoopPuzzle
 {
-    public const string Id = "2D-17";
+    public const string Key = "coop-17";   // CoopPuzzle.Find 로 찾을 때 쓰는 이름
+    public const string Id2D = "2D-17";     // 2D 가 PuzzleManager 에 보고할 때
+    public const string Id3D = "3D-17";     // 3D 가 PuzzleManager 에 보고할 때
 
-    public override string PuzzleId => Id;
+    public override string PuzzleId => Key;
 
     /// <summary>
     /// 배관 퍼즐 제한 시간
