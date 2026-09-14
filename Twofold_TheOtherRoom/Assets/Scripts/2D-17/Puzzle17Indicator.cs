@@ -13,7 +13,7 @@ public class Puzzle17Indicator : MonoBehaviour
     private void OnEnable()
     {
         CoopPuzzle.OnRegistered += BindPuzzle;
-        puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Id);
+        puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Key);
     }
 
     private void OnDisable()

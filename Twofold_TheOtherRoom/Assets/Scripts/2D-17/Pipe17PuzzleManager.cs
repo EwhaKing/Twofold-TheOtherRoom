@@ -11,7 +11,7 @@ public class Pipe17PuzzleManager : MonoBehaviour
     [SerializeField] private Image pipeStartImage;
     [SerializeField] private Image pipeEndImage;
 
-    [Header("연결됐을 때 색")]
+    [Header("pipe_start/pipe_end 색 변환")]
     [SerializeField]
     private Color connectedColor =
         new Color(0.2f, 0.65f, 1f, 1f);
@@ -25,6 +25,7 @@ public class Pipe17PuzzleManager : MonoBehaviour
     private Color pipeEndOriginalColor;
 
     private bool solved;
+
     public bool IsSolved => solved;
 
     private void Start()
@@ -43,7 +44,6 @@ public class Pipe17PuzzleManager : MonoBehaviour
         }
 
         RandomizePipes();
-
         UpdateFlowColor();
     }
 
@@ -176,13 +176,11 @@ public class Pipe17PuzzleManager : MonoBehaviour
 
         solved = true;
 
-        Debug.Log(
-            "finished"
-        );
+        Debug.Log("finished");
 
         Puzzle17 puzzle =
             CoopPuzzle.Find<Puzzle17>(
-                Puzzle17.Id
+                Puzzle17.Key
             );
 
         if (puzzle != null)

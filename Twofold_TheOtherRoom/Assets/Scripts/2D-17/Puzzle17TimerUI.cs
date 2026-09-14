@@ -10,13 +10,11 @@ public class Puzzle17TimerUI : MonoBehaviour
     private void OnEnable()
     {
         CoopPuzzle.OnRegistered += BindPuzzle;
-
-        puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Id);
+        puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Key);
     }
 
     private void Start()
     {
-        // DetailView로 2D-17 프리팹이 생성되면 실행
         TryStartPuzzle();
     }
 
@@ -30,7 +28,6 @@ public class Puzzle17TimerUI : MonoBehaviour
         if (coopPuzzle is Puzzle17 puzzle17)
         {
             puzzle = puzzle17;
-
             TryStartPuzzle();
         }
     }
@@ -39,7 +36,7 @@ public class Puzzle17TimerUI : MonoBehaviour
     {
         if (puzzle == null)
         {
-            puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Id);
+            puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Key);
         }
 
         if (puzzle == null)
@@ -50,7 +47,6 @@ public class Puzzle17TimerUI : MonoBehaviour
             return;
         }
 
-        // 3D에서 밸브 먼저 누르면 시작
         if (!puzzle.Activated)
         {
             Debug.Log(
@@ -80,7 +76,7 @@ public class Puzzle17TimerUI : MonoBehaviour
 
         if (puzzle == null)
         {
-            puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Id);
+            puzzle = CoopPuzzle.Find<Puzzle17>(Puzzle17.Key);
 
             if (puzzle == null)
             {
