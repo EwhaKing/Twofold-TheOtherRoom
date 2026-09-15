@@ -20,9 +20,9 @@ public class ObjectCameraManager : MonoBehaviour
     [Header("Camera Transition")]
     [SerializeField] private float transitionDuration = 0.5f;
 
-    private int currentCameraIndex = 0;
+    public int currentCameraIndex = 0;
 
-    public bool isViewing = false;
+    private bool isViewing = false;
     private bool isMoving = false;
 
     private float transitionTimer;

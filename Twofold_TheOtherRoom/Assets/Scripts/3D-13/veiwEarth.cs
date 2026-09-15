@@ -22,6 +22,7 @@ public class veiwEarth : MonoBehaviour, IInteractable
     private int currentTargetIndex = 0;
     private Coroutine moveCoroutine;
     private int moveDirection = 1;
+    private bool _solved=false;
 
 
     [Header("이동 설정")]
@@ -29,11 +30,11 @@ public class veiwEarth : MonoBehaviour, IInteractable
 
     private void OnMouseDown()
     {
-        if (!cameraManager.isViewing)
+        if (cameraManager.currentCameraIndex !=1)
         {
             return;
         }
-        
+
         if (key == null)
         {
             Debug.LogWarning("[GlobeClick] Key가 연결되지 않았습니다.");
