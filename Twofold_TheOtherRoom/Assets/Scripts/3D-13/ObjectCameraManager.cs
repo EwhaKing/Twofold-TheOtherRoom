@@ -22,7 +22,7 @@ public class ObjectCameraManager : MonoBehaviour
 
     private int currentCameraIndex = 0;
 
-    private bool isViewing = false;
+    public bool isViewing = false;
     private bool isMoving = false;
 
     private float transitionTimer;
