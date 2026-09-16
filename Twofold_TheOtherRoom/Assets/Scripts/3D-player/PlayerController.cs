@@ -65,6 +65,10 @@ public class PlayerController : MonoBehaviour
     {
         // 조작 잠금이 풀린 직후 누적된 낙하 속도로 튀지 않게 초기화
         _verticalVelocity = 0f;
+
+        // 카메라를 현재 방향 기준으로 다시 잡음
+        _bodyYaw = transform.eulerAngles.y;
+        _cameraPitch = NormalizeAngle(_playerCamera.transform.localEulerAngles.x);
     }
     #endregion
 
@@ -209,29 +213,48 @@ public class PlayerController : MonoBehaviour
     {
         UpdateCursorLock();
 
-        // 우클릭을 누르고 있을 때만 카메라 회전
-        if (!_playerLocomotionInput.EnableCameraLook)
+        // 마우스 delta는 timeScale의 영향을 받지 않음
+        if (Time.timeScale <= 0f)
         {
             return;
         }
 
+        Vector2 look = _playerLocomotionInput.LookInput;
+
         // 좌우(yaw): 몸체만 회전시키면 자식인 카메라도 함께 돌아감 (이중 회전 방지)
-        _bodyYaw += lookSenseH * _playerLocomotionInput.LookInput.x;
+        _bodyYaw += lookSenseH * look.x;
         transform.rotation = Quaternion.Euler(0f, _bodyYaw, 0f);
 
         // 상하(pitch): 카메라만 로컬 회전
-        _cameraPitch = Mathf.Clamp(_cameraPitch - lookSenseV * _playerLocomotionInput.LookInput.y, -lookLimitV, lookLimitV);
+        _cameraPitch = Mathf.Clamp(_cameraPitch - lookSenseV * look.y, -lookLimitV, lookLimitV);
         _playerCamera.transform.localRotation = Quaternion.Euler(_cameraPitch, 0f, 0f);
     }
     #endregion
 
     #region Camera Control
+    // localEulerAngles는 0~360으로 돌아와 pitch 클램프가 어긋남
+    private static float NormalizeAngle(float angle)
+    {
+        angle %= 360f;
+        return angle > 180f ? angle - 360f : angle;
+    }
+
     private void UpdateCursorLock()
     {
-        // 우클릭 중에는 커서 잠금/숨김, 평소에는 커서로 물체 클릭 가능
-        bool look = _playerLocomotionInput.EnableCameraLook;
-        Cursor.lockState = look ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !look;
+        // 일시정지 중엔 메뉴를 클릭해야 함. Confined라 창 밖으로는 못 나감
+        bool look = Time.timeScale > 0f;
+        CursorLockMode lockMode = look ? CursorLockMode.Locked : CursorLockMode.Confined;
+
+        // 매 프레임 대입하면 네이티브 호출이 반복돼 커서가 튐
+        if (Cursor.lockState != lockMode)
+        {
+            Cursor.lockState = lockMode;
+        }
+
+        if (Cursor.visible == look)
+        {
+            Cursor.visible = !look;
+        }
     }
     #endregion
 
