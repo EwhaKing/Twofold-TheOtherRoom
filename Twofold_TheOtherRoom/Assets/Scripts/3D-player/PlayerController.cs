@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     [Header("Components")]
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private Camera _playerCamera;
+    [Tooltip("화면 중앙 조준점 UI")]
+    [SerializeField] private GameObject reticle;
 
     [Header("Base Movement")]
     [FormerlySerializedAs("runSpeed")] public float walkSpeed = 4f;
@@ -69,6 +71,14 @@ public class PlayerController : MonoBehaviour
         // 카메라를 현재 방향 기준으로 다시 잡음
         _bodyYaw = transform.eulerAngles.y;
         _cameraPitch = NormalizeAngle(_playerCamera.transform.localEulerAngles.x);
+    }
+
+    private void OnDisable()
+    {
+        if (reticle != null)
+        {
+            reticle.SetActive(false);
+        }
     }
     #endregion
 
@@ -212,6 +222,7 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate()
     {
         UpdateCursorLock();
+        UpdateReticle();
 
         // 마우스 delta는 timeScale의 영향을 받지 않음
         if (Time.timeScale <= 0f)
@@ -232,6 +243,22 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Camera Control
+    // 상호작용 안내 -> 조준점 숨김
+    private void UpdateReticle()
+    {
+        if (reticle == null)
+        {
+            return;
+        }
+
+        PlayerInteractor interactor = PlayerInteractor.Instance;
+        bool prompt = interactor != null
+                      && ((interactor.interactText != null && interactor.interactText.gameObject.activeSelf)
+                          || (interactor.MouseHoldUI != null && interactor.MouseHoldUI.activeSelf));
+
+        reticle.SetActive(!prompt && Time.timeScale > 0f);
+    }
+
     // localEulerAngles는 0~360으로 돌아와 pitch 클램프가 어긋남
     private static float NormalizeAngle(float angle)
     {
