@@ -24,6 +24,11 @@ public class TwoFloorRoomNavigator : MonoBehaviour
     [Header("Movement")]
     [SerializeField, Min(0f)] private float moveDuration = 0.45f;
 
+    [Header("Floor Movement Sound")]
+    [SerializeField] private bool playFloorMoveSound = false;
+    // [SerializeField] private SFXType downstairsSound = SFXType.FloorHole;
+    // [SerializeField] private SFXType upstairsSound = SFXType.FloorHole;
+
     public bool IsLowerFloor => isLowerFloor;
     public int CurrentRoomIndex => currentRoomIndex;
 
@@ -59,12 +64,12 @@ public class TwoFloorRoomNavigator : MonoBehaviour
             return;
 
         currentRoomIndex = roomIndex;
+        PlayMoveSound();
         BeginMovement();
     }
 
     private void BeginMovement()
     {
-        PlayMoveSound();
         if (moveDuration <= 0f)
         {
             roomsRoot.anchoredPosition = GetTargetPosition();
@@ -83,6 +88,8 @@ public class TwoFloorRoomNavigator : MonoBehaviour
 
         isLowerFloor = lowerFloor;
         currentRoomIndex = Mathf.Clamp(lowerFloor ? lowerFloorEntryIndex : upperFloorEntryIndex, 0, 1);
+        // if (playFloorMoveSound && SoundManager.Instance != null)
+        //     SoundManager.Instance.PlaySFX(lowerFloor ? downstairsSound : upstairsSound);
         BeginMovement();
     }
 
