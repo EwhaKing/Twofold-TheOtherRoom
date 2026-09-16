@@ -751,7 +751,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1314902050}
-        m_TargetAssemblyTypeName: NavigateRoom2DCanvas, Assembly-CSharp
+        m_TargetAssemblyTypeName: TwoFloorRoomNavigator, Assembly-CSharp
         m_MethodName: MoveRight
         m_Mode: 1
         m_Arguments:
@@ -1039,23 +1039,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 430
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 220
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_LocalScale.x
-      value: 4.7825723
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.637642
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.637642
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3196057354188039250, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1113,13 +1113,17 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4692694620531276232, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8296493663634321058, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 30
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 8296493663634321058, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 30
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 8296493663634321058, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_LocalScale.x
@@ -1135,11 +1139,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8296493663634321058, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 4.8
+      value: 25.8
       objectReference: {fileID: 0}
     - target: {fileID: 8296493663634321058, guid: f97e5fd6d2dc2634e806307579785300, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -16.8
+      value: -32
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1238,6 +1242,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 290819517}
     m_Modifications:
+    - target: {fileID: 659601390790320179, guid: ae87bda83b294034185e126c06650691, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120902143095602468, guid: ae87bda83b294034185e126c06650691, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5631261528826692089, guid: ae87bda83b294034185e126c06650691, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6519651923576495424, guid: ae87bda83b294034185e126c06650691, type: 3}
       propertyPath: manager
       value: 
@@ -1842,7 +1858,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -20}
-  m_SizeDelta: {x: 450, y: 920}
+  m_SizeDelta: {x: 440, y: 920}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &678625489
 MonoBehaviour:
@@ -2407,7 +2423,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 75, y: 125}
-  m_SizeDelta: {x: 190, y: 180}
+  m_SizeDelta: {x: 180, y: 180}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &818879419
 MonoBehaviour:
@@ -2875,7 +2891,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 503130770408717837, guid: cc48e7cfdfccde64a8047b8c384aabea, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 192
+      value: 432.00006
       objectReference: {fileID: 0}
     - target: {fileID: 503130770408717837, guid: cc48e7cfdfccde64a8047b8c384aabea, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2901,6 +2917,10 @@ PrefabInstance:
       propertyPath: holeButton
       value: 
       objectReference: {fileID: 374179409}
+    - target: {fileID: 6127734186992323963, guid: cc48e7cfdfccde64a8047b8c384aabea, type: 3}
+      propertyPath: moveDistance
+      value: 270
+      objectReference: {fileID: 0}
     - target: {fileID: 6127734186992323963, guid: cc48e7cfdfccde64a8047b8c384aabea, type: 3}
       propertyPath: holeButtonComponent
       value: 
@@ -3206,7 +3226,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1314902050}
-        m_TargetAssemblyTypeName: NavigateRoom2DCanvas, Assembly-CSharp
+        m_TargetAssemblyTypeName: TwoFloorRoomNavigator, Assembly-CSharp
         m_MethodName: MoveLeft
         m_Mode: 1
         m_Arguments:
@@ -3285,6 +3305,7 @@ GameObject:
   - component: {fileID: 1040041897}
   - component: {fileID: 1040041899}
   - component: {fileID: 1040041898}
+  - component: {fileID: 1040041900}
   m_Layer: 0
   m_Name: Bridge
   m_TagString: Untagged
@@ -3308,7 +3329,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 696, y: 90}
+  m_AnchoredPosition: {x: -621, y: 90}
   m_SizeDelta: {x: 300, y: 1100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1040041898
@@ -3349,6 +3370,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1040041896}
   m_CullTransparentMesh: 1
+--- !u!114 &1040041900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1040041896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf34f6beebe75a45b11fbf776e20fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomFloorEntrance
+  navigator: {fileID: 1314902050}
+  targetLowerFloor: 0
 --- !u!1 &1092505223
 GameObject:
   m_ObjectHideFlags: 0
@@ -3989,7 +4024,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -193, y: 0}
+  m_AnchoredPosition: {x: 47, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1217622465
@@ -4104,10 +4139,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 886350170}
     m_Modifications:
+    - target: {fileID: 197187372013794068, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 490
+      objectReference: {fileID: 0}
+    - target: {fileID: 197187372013794068, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 428
+      objectReference: {fileID: 0}
+    - target: {fileID: 197187372013794068, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -264
+      objectReference: {fileID: 0}
+    - target: {fileID: 2858531682743186105, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -450
+      objectReference: {fileID: 0}
     - target: {fileID: 3595560743017562785, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_Name
       value: drawer
       objectReference: {fileID: 0}
+    - target: {fileID: 4974252992298105207, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: leftDrawerOpen
+      value: 
+      objectReference: {fileID: 2026541758}
+    - target: {fileID: 4974252992298105207, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: rightDrawerOpen
+      value: 
+      objectReference: {fileID: 742635839}
     - target: {fileID: 6139543083179698520, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: book
       value: 
@@ -4174,15 +4233,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6892119499293478321, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 345
+      value: -575
       objectReference: {fileID: 0}
     - target: {fileID: 6892119499293478321, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -250
+      value: -253
       objectReference: {fileID: 0}
     - target: {fileID: 6892119499293478321, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 13.708
+      objectReference: {fileID: 0}
+    - target: {fileID: 7395821811778126509, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 450
+      objectReference: {fileID: 0}
+    - target: {fileID: 7962227262933367313, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8465213929424450241, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_Pivot.x
@@ -4246,7 +4313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8465213929424450241, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -181
+      value: 221
       objectReference: {fileID: 0}
     - target: {fileID: 8465213929424450241, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -4263,6 +4330,18 @@ PrefabInstance:
     - target: {fileID: 8465213929424450241, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8727027496646933527, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 490
+      objectReference: {fileID: 0}
+    - target: {fileID: 8727027496646933527, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -452
+      objectReference: {fileID: 0}
+    - target: {fileID: 8727027496646933527, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -263
       objectReference: {fileID: 0}
     - target: {fileID: 8849305247626741706, guid: 0a5ded2b4d156be44b326478d100b782, type: 3}
       propertyPath: m_IsActive
@@ -4327,15 +4406,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1314902048}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44e70360dd53c4b41adde01a4d0a7f46, type: 3}
+  m_Script: {fileID: 11500000, guid: f13bbc00bfdd8a04eb2605196b32b84e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NavigateRoom2DCanvas
+  m_EditorClassIdentifier: Assembly-CSharp::TwoFloorRoomNavigator
   roomsRoot: {fileID: 1314902049}
-  totalRooms: 4
-  startRoom: 0
+  isLowerFloor: 0
+  startRoomIndex: 0
   leftArrow: {fileID: 1031822428}
   rightArrow: {fileID: 212794730}
   roomWidth: 1920
+  floorHeight: 1080
+  lowerFloorLeftX: -1920
+  lowerFloorEntryIndex: 0
+  upperFloorEntryIndex: 0
   moveDuration: 0.45
 --- !u!1 &1327369783 stripped
 GameObject:
@@ -4801,6 +4884,7 @@ GameObject:
   - component: {fileID: 1743011431}
   - component: {fileID: 1743011433}
   - component: {fileID: 1743011432}
+  - component: {fileID: 1743011434}
   m_Layer: 0
   m_Name: Hole
   m_TagString: Untagged
@@ -4865,6 +4949,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1743011430}
   m_CullTransparentMesh: 1
+--- !u!114 &1743011434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743011430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf34f6beebe75a45b11fbf776e20fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomFloorEntrance
+  navigator: {fileID: 1314902050}
+  targetLowerFloor: 1
 --- !u!1 &1760073028
 GameObject:
   m_ObjectHideFlags: 0
@@ -5221,7 +5319,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1920, y: -1080}
+  m_AnchoredPosition: {x: 1920, y: -1080}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2026541758 stripped
@@ -5868,7 +5966,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6403690418852496041, guid: 69f85e1ca258fd446b856eeed33ba13a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -156
+      value: -170
       objectReference: {fileID: 0}
     - target: {fileID: 6403690418852496041, guid: 69f85e1ca258fd446b856eeed33ba13a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
