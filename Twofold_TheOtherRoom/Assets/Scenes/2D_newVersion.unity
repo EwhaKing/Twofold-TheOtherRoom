@@ -451,11 +451,11 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 776862920}
-  m_Father: {fileID: 1970482326}
+  m_Father: {fileID: 525650972}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 380}
+  m_AnchoredPosition: {x: -405, y: 263}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &148810455
@@ -546,8 +546,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -42}
-  m_SizeDelta: {x: 350, y: 600}
+  m_AnchoredPosition: {x: 0, y: -3}
+  m_SizeDelta: {x: 360, y: 680}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &163247930
 MonoBehaviour:
@@ -1366,6 +1366,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 148810454}
   - {fileID: 67336976}
   - {fileID: 818879418}
   - {fileID: 1335070492}
@@ -1483,7 +1484,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6480210965708105613, guid: eeb6b78e13f2de14e9090c65f04ffcd9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -411
+      value: -330
       objectReference: {fileID: 0}
     - target: {fileID: 7176378211409774104, guid: eeb6b78e13f2de14e9090c65f04ffcd9, type: 3}
       propertyPath: m_Pivot.x
@@ -3382,7 +3383,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 515, y: 49}
+  m_AnchoredPosition: {x: 515, y: 130}
   m_SizeDelta: {x: 100, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1092505225
@@ -4331,7 +4332,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NavigateRoom2DCanvas
   roomsRoot: {fileID: 1314902049}
   totalRooms: 4
-  startRoom: 1
+  startRoom: 0
   leftArrow: {fileID: 1031822428}
   rightArrow: {fileID: 212794730}
   roomWidth: 1920
@@ -5135,7 +5136,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 148810454}
   - {fileID: 726412571}
   - {fileID: 1092505224}
   - {fileID: 163247929}
