@@ -73,8 +73,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private Quaternion originalCameraRotation;
     private Coroutine beepRoutine;
 
+    public bool HasStartedStages => solved || currentStageIndex >= 0;
+
     private void Awake()
     {
+        if (GetComponent<ThreeDCommunicationDescriptionImages>() == null)
+            gameObject.AddComponent<ThreeDCommunicationDescriptionImages>();
+
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -221,6 +226,17 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     //Reset Button의 OnClick에 연결합니다. 최초 알파벳 입력부터 다시 시작합니다.
     public void ResetPuzzle()
     {
+         if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+        }
+
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopSFX();
+
+
+
         if (phase != Phase.Closed && phase != Phase.Cleared)
             RestartFromBeginning();
     }
@@ -264,6 +280,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         revealTimeLeft = 0f;
         phase = Phase.AlphabetInput;
 
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
+
         HideAllShapeSlots();
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
@@ -294,6 +313,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         currentStageIndex = stageIndex;
         phase = Phase.ShapeReveal;
         revealTimeLeft = 3f;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
 
         if (beepRoutine != null)
             StopCoroutine(beepRoutine);
@@ -364,6 +386,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 **/
         phase = Phase.Cleared;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
     }
 
     private string CurrentExpectedAlphabet()
