@@ -115,14 +115,19 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     public void Interact()
     {
+        if (!BasicCameraControl())
+        {
+            return;
+        }
+
         if (phase == Phase.Closed && !solved)
             OpenPuzzle();
 
-        if (phase == Phase.Cleared && solved)
-            BasicCameraControl();
+        // if (phase == Phase.Cleared && solved)
+        //     BasicCameraControl();
     }
 
-    private void BasicCameraControl()
+    private bool BasicCameraControl()
     {
         
         if (playerCamera == null)
@@ -131,7 +136,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (playerCamera == null || cameraFocusPoint == null)
         {
             Debug.LogWarning("[ThreeDCommunicationPuzzle] Player Camera와 Camera Focus Point를 연결하세요.", this);
-            return;
+            return false;
         }
 
         originalCameraPosition = playerCamera.transform.position;
@@ -145,6 +150,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
+
+        return true;
     }
 
     private void OpenPuzzle()
@@ -153,9 +160,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         {
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
-
-        BasicCameraControl();
-
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
     }
@@ -227,6 +231,15 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (phase == Phase.Closed)
             return;
 
+        if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+        }
+
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopSFX();
+
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Hide(this);
 
@@ -236,14 +249,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
          //playerControlunLock
         playerControlLock.Unlock();
 
-        if (instructionText != null) instructionText.gameObject.SetActive(true);
-        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
+        RestartFromBeginning();
+
+        //if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (stageText != null) stageText.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
-        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
-        if (timerText != null) timerText.gameObject.SetActive(false);
-        if (resetButton != null) resetButton.SetActive(false);
-        HideAllShapeSlots();
 
         phase = solved ? Phase.Cleared : Phase.Closed;
     }
