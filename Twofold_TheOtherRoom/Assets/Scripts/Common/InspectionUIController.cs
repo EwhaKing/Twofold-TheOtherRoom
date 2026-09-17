@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -60,6 +61,14 @@ public sealed class InspectionUIController : MonoBehaviour
         canvasRoot.SetActive(true);
     }
 
+    public void RefreshDescriptionImages(ICloseInspection inspection)
+    {
+        if (!object.ReferenceEquals(currentInspection, inspection) || inspection == null)
+            return;
+
+        ShowRequestedDescriptionImages(inspection);
+    }
+
     public void Hide(ICloseInspection inspection)
     {
         if (!object.ReferenceEquals(currentInspection, inspection))
@@ -99,11 +108,19 @@ public sealed class InspectionUIController : MonoBehaviour
         PuzzleDescriptionImages request =
             inspectionComponent.GetComponent<PuzzleDescriptionImages>();
 
-        if (request == null || request.ImageIndexes == null)
-            return;
+        var descriptions = new List<PuzzleDescriptionImages.DescriptionImage>();
+        if (request != null && request.ImageIndexes != null)
+            descriptions.AddRange(request.ImageIndexes);
+
+        var provider = inspectionComponent.GetComponent<ThreeDCommunicationDescriptionImages>();
+
+        if (provider != null && provider.isActiveAndEnabled)
+        {
+            descriptions.AddRange(provider.GetAdditionalDescriptionImages());
+        }
 
         int visibleCount = 0;
-        foreach (PuzzleDescriptionImages.DescriptionImage description in request.ImageIndexes)
+        foreach (PuzzleDescriptionImages.DescriptionImage description in descriptions)
         {
             
             if (description == null)
