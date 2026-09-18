@@ -159,6 +159,12 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void StopSFX()
+    {
+        if (sfxSource != null)
+            sfxSource.Stop();
+    }
+
     public void PlaySFX(SFXType type)
     {
         if (sfxDictionary.TryGetValue(type, out AudioClip clip))
