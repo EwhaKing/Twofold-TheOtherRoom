@@ -45,7 +45,8 @@ public enum SFXType
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF
+    AlphaF,
+    GlassBallDrop
 }
 
 /// <summary>
