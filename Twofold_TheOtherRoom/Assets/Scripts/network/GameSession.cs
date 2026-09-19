@@ -38,8 +38,12 @@ public class GameSession : NetworkBehaviour
     [Networked] public int StartedTick { get; set; }
     public const float TotalSeconds = 15f * 60f;
 
-    /// 인트로 길이. 실제 연출 소요와 무관한 고정 예산
-    public const float IntroSeconds = 44f;
+    // 인트로 길이. 실제 연출 소요와 무관한 고정 예산
+    public const float Stage1IntroSeconds = 44f;
+    public const float Stage2IntroSeconds = 12f;
+
+    /// 이번 스테이지의 인트로 예산
+    public float IntroSeconds => Stage >= 2 ? Stage2IntroSeconds : Stage1IntroSeconds;
 
     /// 로딩 완료 후 흐른 시간. 인트로 포함
     public float SinceStartSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
