@@ -20,6 +20,7 @@ public class Pipe17PuzzleManager : MonoBehaviour
     [SerializeField] private int minimumWrongPipes = 6;
 
     private Pipe17Piece[] allPipes;
+    private int connectedPipeCount = 0;
 
     private Color pipeStartOriginalColor;
     private Color pipeEndOriginalColor;
@@ -45,6 +46,26 @@ public class Pipe17PuzzleManager : MonoBehaviour
 
         RandomizePipes();
         UpdateFlowColor();
+
+        connectedPipeCount = GetConnectedPipeCount();
+    }
+
+    private int GetConnectedPipeCount()
+    {
+        int count = 0;
+
+        foreach (Pipe17Piece pipe in answerPath)
+        {
+            if (pipe == null)
+                continue;
+
+            if (!pipe.IsCorrect())
+                break;
+
+            count++;
+        }
+
+        return count;
     }
 
     private void RandomizePipes()
@@ -115,7 +136,33 @@ public class Pipe17PuzzleManager : MonoBehaviour
 
     public void RefreshPuzzle()
     {
+        int previousCount = connectedPipeCount;
+
         UpdateFlowColor();
+
+        connectedPipeCount = GetConnectedPipeCount();
+
+        // 전체 퍼즐이 완성됐는지 확인
+        bool puzzleCompleted =
+            connectedPipeCount == answerPath.Length;
+
+        if (puzzleCompleted)
+        {
+            // 마지막에는 WaterDrop 대신 CorrectBtn만 재생
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+            }
+        }
+        else if (connectedPipeCount > previousCount)
+        {
+            // 물이 연결됐을 때
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFXType.WaterDrop);
+            }
+        }
+
         CheckPuzzle();
     }
 
