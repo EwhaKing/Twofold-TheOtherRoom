@@ -61,6 +61,12 @@ public class GameManager2D10 : MonoBehaviour
 
         targetPos = nextTube.GetNextBallPosition(currentball);
         yield return StartCoroutine(MoveBall(currentball, targetPos));
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.GlassBallDrop);
+        }
+
         nextTube.Push(currentball);
         currentTube=null;
         nextTube.Answer(nextTube.GetColor());

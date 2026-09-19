@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Puzzle17 : CoopPuzzle
 {
-    public const string Id = "2D-17";
+    public const string Key = "coop-17";   // CoopPuzzle.Find 로 찾을 때 쓰는 이름
+    public const string Id2D = "2D-17";     // 2D 가 PuzzleManager 에 보고할 때
+    public const string Id3D = "3D-17";     // 3D 가 PuzzleManager 에 보고할 때
 
-    public override string PuzzleId => Id;
+    public override string PuzzleId => Key;
 
     /// <summary>
     /// 배관 퍼즐 제한 시간
@@ -36,6 +38,8 @@ public class Puzzle17 : CoopPuzzle
     [Networked]
     private int StartTick { get; set; }
 
+    [Networked]
+    private int SolvedTick { get; set; }
 
     /// <summary>
     /// 배관 퍼즐 성공 여부
@@ -61,17 +65,22 @@ public class Puzzle17 : CoopPuzzle
     {
         get
         {
-            // 아직 퍼즐을 시작하지 않았다면
-            // 시간은 줄어들지 않는다.
             if (!Started)
                 return 1f;
 
+            int currentTick =
+                Solved && SolvedTick != 0
+                    ? SolvedTick
+                    : Runner.Tick;
+
+            float elapsed =
+                (currentTick - StartTick) * Runner.DeltaTime;
+
             return Mathf.Clamp01(
-                1f - SecondsSince(StartTick) / WaterSeconds
+                1f - elapsed / WaterSeconds
             );
         }
     }
-
 
     /// <summary>
     /// 제한시간이 끝났는데
@@ -177,17 +186,18 @@ public class Puzzle17 : CoopPuzzle
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RpcReportConnected()
     {
-        // 퍼즐을 실제로 시작하지 않았다면 성공 처리하지 않음
         if (!Started)
             return;
 
-        // 제한시간을 넘겼다면 성공 처리하지 않음
         if (Failed)
             return;
 
+        if (Solved)
+            return;
+
+        SolvedTick = Runner.Tick;
         Solved = true;
     }
-
 
     // =========================================================
     // 혼자 테스트할 때 사용하는 디버그 메뉴
