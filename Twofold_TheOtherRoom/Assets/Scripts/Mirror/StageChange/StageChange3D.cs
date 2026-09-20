@@ -8,10 +8,8 @@ using UnityEngine;
 ///
 /// glow 끄기 → 컷신 카메라와 액터로 전환 → 반사가 선명해지며 액터가 거울 앞으로 걸어옴
 /// → 반사된 얼굴의 눈으로 확대 → 암전 → Finished.
-///
-/// Stage 증가와 씬 로드는 Finished 를 구독하는 쪽 담당.
 /// </summary>
-public class StageChange3D : MonoBehaviour
+public class StageChange3D : MonoBehaviour, IStageCutscene
 {
     [Header("Mirror")]
     [Tooltip("완성 거울의 발광. 연출 시작과 함께 끔")]

@@ -35,7 +35,7 @@ public class TimerDebugSkip : MonoBehaviour
         }
 
         int now = gs.IsPaused ? gs.PausedTick : gs.Runner.Tick;
-        float target = GameSession.IntroSeconds + GameSession.TotalSeconds - remainSeconds;
+        float target = gs.IntroSeconds + GameSession.TotalSeconds - remainSeconds;
         int shifted = now - gs.TotalPausedTicks - Mathf.CeilToInt(target / gs.Runner.DeltaTime);
 
         gs.StartedTick = shifted != 0 ? shifted : -1;   // 0 은 "상대 로드 대기" 표식이라 피함
