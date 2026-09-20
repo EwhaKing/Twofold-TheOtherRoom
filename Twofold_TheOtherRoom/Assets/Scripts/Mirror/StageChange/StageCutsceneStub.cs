@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class StageCutsceneStub : MonoBehaviour, IStageCutscene
 {
-    [Tooltip("암전용 풀스크린 검정. 씬에는 alpha 0 으로 저장할 것")]
+    [Tooltip("암전용 풀스크린 검정. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] private CanvasGroup blackout;
 
     [Tooltip("연출 동안 끌 것. 타이머 UI, 거울 완성 이펙트 등")]
@@ -23,6 +23,15 @@ public class StageCutsceneStub : MonoBehaviour, IStageCutscene
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
     private Coroutine routine;
+
+    private void Awake()
+    {
+        // 암전 canvas 끔
+        if (blackout == null) return;
+
+        blackout.alpha = 0f;
+        blackout.gameObject.SetActive(false);
+    }
 
     public event Action Finished;
 
