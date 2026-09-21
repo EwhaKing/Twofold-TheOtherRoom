@@ -20,6 +20,9 @@ public class StageChangeDriver : MonoBehaviour
     private bool reported;
     private float startedAt;
 
+    /// 연출 동안 잠근 일시정지. 연출이 중간에 꺼지면 되돌림
+    private PauseController blockedPause;
+
     private void Awake()
     {
         cutscene = cutsceneSource as IStageCutscene;
@@ -39,6 +42,14 @@ public class StageChangeDriver : MonoBehaviour
         if (cutscene != null) cutscene.Finished -= Report;
     }
 
+    private void OnDisable()
+    {
+        if (blockedPause == null) return;
+
+        blockedPause.BlockPause = false;
+        blockedPause = null;
+    }
+
     private void Update()
     {
         GameSession session = GameSession.Instance;
@@ -48,13 +59,21 @@ public class StageChangeDriver : MonoBehaviour
         {
             if (!session.BothStageReady) return;
 
+            // timeScale 0 Play 시 UI만 꺼지고 연출 시작 못함. 재개 후 양쪽이 같이 시작
+            if (session.IsPaused) return;
+
             started = true;
-            startedAt = Time.unscaledTime;
+            startedAt = Time.time;
+
+            // 연출 중에는 Esc도 일시정지 버튼도 잠금
+            blockedPause = FindAnyObjectByType<PauseController>();
+            if (blockedPause != null) blockedPause.BlockPause = true;
+
             cutscene.Play();
             return;
         }
 
-        if (reported || Time.unscaledTime - startedAt < reportTimeoutSeconds) return;
+        if (reported || Time.time - startedAt < reportTimeoutSeconds) return;
 
         Debug.LogWarning("[StageChange] 연출 완료 신호가 없어 시간 초과로 보고", this);
         Report();
