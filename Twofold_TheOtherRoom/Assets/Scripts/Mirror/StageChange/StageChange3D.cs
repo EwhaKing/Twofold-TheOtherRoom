@@ -88,9 +88,11 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
     [SerializeField] private AnimationCurve reflectionEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private AnimationCurve walkEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     [Header("Debug")]
-    [Tooltip("연출 확인용. 정식 빌드 전에 None 으로 둘 것")]
+    [Tooltip("연출 확인용. 릴리즈 빌드에는 안 들어감, 개발 빌드에서도 막고 싶다면 None 설정")]
     [SerializeField] private KeyCode debugKey = KeyCode.None;
+#endif
 
     /// 컷신 vcam 우선순위. CM2 는 vcam 채널이 없어 3D-6 퍼즐 vcam(10)보다 위여야 함
     private const int MirrorShotPriority = 100;
@@ -116,10 +118,12 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
 
     public bool IsPlaying => routine != null;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void Update()
     {
         if (debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
     }
+#endif
 
     private void OnDisable()
     {
