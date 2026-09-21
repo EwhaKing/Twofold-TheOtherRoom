@@ -29,6 +29,10 @@ public class IntroNarration : MonoBehaviour
 
     [SerializeField] private TMP_Text subtitle;
 
+    [Tooltip("자막 배경 + 텍스트를 묶은 루트. 문구가 없는 동안 꺼둠.\n" +
+             "클릭 차단막은 여기 넣지 말 것 — 같이 꺼져서 인트로 중 클릭이 통과함")]
+    [SerializeField] private GameObject subtitleRoot;
+
     [Header("Content")]
     // start 는 파형의 무음 구간을 재서 앞쪽 쉼 안에 들어가도록 잡음. 클립을 다시 뽑으면 다시 잴 것
     [Tooltip("자막. start 오름차순으로 넣을 것. 마지막 줄은 클립 끝까지 유지")]
@@ -51,7 +55,9 @@ public class IntroNarration : MonoBehaviour
     /// 이 구간에 들어오면 다시 재생하지 않음. 시계가 조금 뒤처졌을 때 끝말이 두 번 나오는 것 방지
     private const float NoRestartTail = 1f;
 
-    private bool _ready;
+    private bool _hasSubtitle;
+
+    private bool _hasAudio;
 
     /// <summary>더빙 길이(초). 인트로 예산 검사용.</summary>
     public float Length => clip != null ? clip.length : 0f;
@@ -66,38 +72,41 @@ public class IntroNarration : MonoBehaviour
             source = SoundManager.Instance.NarrationSource;
         }
         // Awake 아님 — 자막이 인트로 전용이라 씬에 꺼진 채 저장돼 있을 수 있음
-        _ready = source != null && clip != null && subtitle != null;
-        if (!_ready)
+        _hasSubtitle = subtitle != null;
+        _hasAudio    = source != null && clip != null;
+
+        if (!_hasSubtitle)
+            Debug.LogError("[Intro] subtitle 인스펙터 참조 연결할 것", this);
+
+        if (!_hasAudio)
+            Debug.LogWarning($"[Intro] 더빙 없이 자막만 재생 — " +
+                             $"SoundManager: {SoundManager.Instance != null}, clip: {clip != null}", this);
+
+        if (_hasAudio)
         {
-            Debug.LogError("[Intro] source / clip / subtitle 인스펙터 참조 연결할 것", this);
-            return;
+            source.clip         = clip;
+            source.playOnAwake  = false;
+            source.loop         = false;
+            source.spatialBlend = 0f;   // 나레이션은 위치 없음. 임포터의 3D 기본값 무시
+
+            source.Stop();
         }
 
-        source.clip         = clip;
-        source.playOnAwake  = false;
-        source.loop         = false;
-        source.spatialBlend = 0f;   // 나레이션은 위치 없음. 임포터의 3D 기본값 무시
-
-        source.Stop();
-        subtitle.text = string.Empty;
+        SetSubtitle(string.Empty);
     }
 
     /// <summary>나레이션 시작 기준 경과 시각을 넣으면 자막과 오디오에 반영. 음수면 아직 시작 전.</summary>
     public void ApplyTime(float seconds, bool paused)
     {
-        if (!_ready) return;
-
-        ApplySubtitle(seconds);
-        ApplyAudio(seconds, paused);
+        if (_hasSubtitle) ApplySubtitle(seconds);
+        if (_hasAudio) ApplyAudio(seconds, paused);
     }
 
     /// <summary>소리와 자막을 끔.</summary>
     public void Finish()
     {
-        if (!_ready) return;
-
-        source.Stop();
-        subtitle.text = string.Empty;
+        if (_hasAudio) source.Stop();
+        SetSubtitle(string.Empty);
     }
 
     // ---------- 내부 ----------
@@ -112,7 +121,17 @@ public class IntroNarration : MonoBehaviour
             text = line.text;
         }
 
+        SetSubtitle(text);
+    }
+
+    private void SetSubtitle(string text)
+    {
+        if (!_hasSubtitle) return;
+
         if (subtitle.text != text) subtitle.text = text;   // 같은 값을 넣어도 TMP 가 매번 다시 그림
+
+        bool show = !string.IsNullOrEmpty(text);
+        if (subtitleRoot != null && subtitleRoot.activeSelf != show) subtitleRoot.SetActive(show);
     }
 
     private void ApplyAudio(float seconds, bool paused)
