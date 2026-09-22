@@ -104,6 +104,9 @@ public class GameSession : NetworkBehaviour
     public bool BothStageReady => P1StageReady && P2StageReady;
     public bool HasRequestedStageChange(bool isHost) => isHost ? P1StageReady : P2StageReady;
 
+    // 스테이지 관리 - 3D 지하실
+    [Networked] public bool BasementOpen { get; set; }
+
     ChangeDetector _changes;
 
     public override void Spawned()
@@ -207,6 +210,7 @@ public class GameSession : NetworkBehaviour
         P2Loaded = false;
         P1SkipIntro = false;
         P2SkipIntro = false;
+        BasementOpen = false;
         P1Cleared = false;
         P2Cleared = false;
         P1StageReady = false;
@@ -274,6 +278,14 @@ public class GameSession : NetworkBehaviour
     {
         ResetStageState();
         Stage++;
+    }
+
+    // 3d 지하실 열림 보고 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportBasementOpen()
+    {
+        if (BasementOpen) return;
+        BasementOpen = true;
     }
 
 }
