@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class ObjectCameraManager : MonoBehaviour
+public class InspectionCameraRig : MonoBehaviour
 {
-    public static ObjectCameraManager Instance { get; private set; }
+    public static InspectionCameraRig Instance { get; private set; }
 
     [Header("Camera Positions")]
     [SerializeField] private Camera[] objectCameras;
@@ -14,13 +14,19 @@ public class ObjectCameraManager : MonoBehaviour
     [Header("Player Camera")]
     [SerializeField] private Camera playerCamera;
 
-    [Header("Player Control")]
-    [SerializeField] private PlayerController playerController;
+    [Header("Player Lock")]
+    [Tooltip("비워 두면 PlayerControlLock이 플레이어 이동과 상호작용을 자동으로 잠금.")]
+    [SerializeField] private Behaviour[] behavioursToDisable;
 
     [Header("Camera Transition")]
     [SerializeField] private float transitionDuration = 0.5f;
 
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+
     public int currentCameraIndex = 0;
+
+    // 보기 진입 성공 여부. 공통 캔버스 표시 조건
+    public bool IsViewing => isViewing;
 
     private bool isViewing = false;
     private bool isMoving = false;
@@ -50,9 +56,6 @@ public class ObjectCameraManager : MonoBehaviour
     {
         if (playerCamera == null)
             playerCamera = Camera.main;
-
-        if (playerController == null)
-            playerController = FindFirstObjectByType<PlayerController>();
 
         SetAllObjectCameras(false);
         cameraUI.SetActive(false);
@@ -96,8 +99,10 @@ public class ObjectCameraManager : MonoBehaviour
         currentCameraIndex = 0;
 
 
-        if (playerController != null)
-            playerController.enabled = false;
+        playerControlLock.Lock(
+            this,
+            behavioursToDisable,
+            alwaysDisablePlayerInteractor: true);
 
 
         if (playerCamera != null)
@@ -236,9 +241,8 @@ public class ObjectCameraManager : MonoBehaviour
             playerCamera.gameObject.SetActive(true);
 
 
-        if (playerController != null)
-            playerController.enabled = true;
-        
+        playerControlLock.Unlock();
+
         cameraUI.SetActive(false);
 
 

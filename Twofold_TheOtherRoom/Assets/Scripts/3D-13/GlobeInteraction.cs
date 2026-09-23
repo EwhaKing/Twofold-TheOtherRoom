@@ -1,16 +1,32 @@
 using UnityEngine;
 using System.Collections;
 
-public class veiwEarth : MonoBehaviour, IInteractable
+public class GlobeInteraction : MonoBehaviour, IInteractable, ICloseInspection
 {
-    [SerializeField] private ObjectCameraManager cameraManager;
+    [SerializeField] private InspectionCameraRig cameraRig;
 
     public void Interact()
     {
-        if (cameraManager != null)
-        {
-            cameraManager.StartView();
-        }
+        if (cameraRig == null)
+            return;
+
+        cameraRig.StartView();
+
+        if (!cameraRig.IsViewing)
+            return;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
+    }
+
+    /// CommonCanvas 뒤로가기 버튼
+    public void CloseInspection()
+    {
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
+
+        if (cameraRig != null)
+            cameraRig.ExitView();
     }
 
     [Header("이동할 Key")]
@@ -30,7 +46,7 @@ public class veiwEarth : MonoBehaviour, IInteractable
 
     private void OnMouseDown()
     {
-        if (cameraManager.currentCameraIndex !=1)
+        if (cameraRig.currentCameraIndex !=1)
         {
             return;
         }
