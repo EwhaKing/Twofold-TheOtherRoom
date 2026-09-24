@@ -6,7 +6,7 @@ using UnityEngine;
 ///
 /// 정답 판정은 각 뷰가 함. 여기는 '맞췄다/틀렸다'만 받음.
 /// </summary>
-public class MapCoordinatePuzzle : CoopPuzzle
+public class Puzzle13 : CoopPuzzle
 {
     public const string Key = "coop-13";   // CoopPuzzle.Find로 찾을 때
     public const string Id2D = "2D-13";    // 2D가 PuzzleManager에 보고할 때
