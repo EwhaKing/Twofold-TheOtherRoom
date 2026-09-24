@@ -79,8 +79,13 @@ public class IntroSequencer : MonoBehaviour
             return;
         }
 
-        if (PlaybackSeconds > GameSession.IntroSeconds)
-            Debug.LogError($"[Intro] 연출 {PlaybackSeconds}초가 인트로 예산 {GameSession.IntroSeconds}초를 넘음 " +
+        // 디버그 옵션으로 씬을 단독 실행 시 GameSession 이 없어 Stage를 못 읽음
+        float budget = GameSession.Instance != null
+            ? GameSession.Instance.IntroSeconds
+            : GameSession.Stage1IntroSeconds;
+
+        if (PlaybackSeconds > budget)
+            Debug.LogError($"[Intro] 연출 {PlaybackSeconds}초가 인트로 예산 {budget}초를 넘음 " +
                            "— 연출이 끝나기 전에 타이머가 시작됨", this);
 
         Apply(Phase);

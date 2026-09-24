@@ -45,7 +45,8 @@ public enum SFXType
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF
+    AlphaF,
+    GlassBallDrop
 }
 
 /// <summary>
@@ -156,6 +157,12 @@ public class SoundManager : MonoBehaviour
                 sfxDictionary.Add(sound.type, sound.clip);
             }
         }
+    }
+
+    public void StopSFX()
+    {
+        if (sfxSource != null)
+            sfxSource.Stop();
     }
 
     public void PlaySFX(SFXType type)

@@ -75,6 +75,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _characterController: {fileID: 4074828784022414830}
   _playerCamera: {fileID: 6974200433956483467}
+  reticle: {fileID: 0}
   walkSpeed: 6
   sprintSpeed: 12
   movingThreshold: 0.01
@@ -309,7 +310,11 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 8
+  mouseHoldLayer:
+    serializedVersion: 2
+    m_Bits: 64
   interactText: {fileID: 0}
+  MouseHoldUI: {fileID: 0}
   playerCamera: {fileID: 6974200433956483467}
 --- !u!1001 &6465582849275437880
 PrefabInstance:

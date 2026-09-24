@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 종료 패널. 제한시간 종료는 스스로 판정하고, 거울 완성 엔딩은 ShowEnding 을 불러 같은 패널을 쓴다.
-/// 게임플레이 씬마다 하나. 패널이 아니라 항상 켜져 있는 오브젝트에 붙일 것 — 꺼진 패널 위에서는 Update 가 안 돈다.
+/// 제한시간 종료 패널. 스스로 판정해서 띄움.
+/// 게임플레이 씬마다 하나. 패널이 아니라 항상 켜져 있는 오브젝트에 붙일 것 — 꺼진 패널 위에서는 Update 안됨.
 /// </summary>
 public class TimeoutPresenter : MonoBehaviour
 {
@@ -17,9 +17,6 @@ public class TimeoutPresenter : MonoBehaviour
 
     [Tooltip("시간 종료 문구. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] GameObject timeoutText;
-
-    [Tooltip("거울 완성 엔딩 문구. 씬에는 꺼둔 채로 저장할 것")]
-    [SerializeField] GameObject endingText;
 
     [Tooltip("클리어 타임이 들어갈 칸. 00:00 형식으로 채움. 비워두면 표시 안 함")]
     [SerializeField] TMP_Text clearTimeText;
@@ -61,7 +58,7 @@ public class TimeoutPresenter : MonoBehaviour
         if (gs == null) return;             // 단독 실행
         if (gs.StartedTick == 0) return;    // 상대 로드 대기
 
-        // 클리어. 시계는 여기서 멈춰 있고, 그 값이 곧 클리어 타임
+        // 양쪽 클리어 뒤에는 시계가 멈춰 있음. 전환 연출 중에 시간 종료가 뜨면 안 됨
         if (gs.ClearedTick != 0)
         {
             if (_clearSeconds < 0f) _clearSeconds = gs.ElapsedSeconds;
@@ -70,21 +67,16 @@ public class TimeoutPresenter : MonoBehaviour
 
         if (GameSession.TotalSeconds - gs.ElapsedSeconds > 0f) return;
 
-        Show(timeoutText);
+        Show();
     }
 
-    /// <summary>거울 완성 엔딩. 시간 종료와 같은 패널, 문구만 다름</summary>
-    public void ShowEnding() => Show(endingText);
-
-    /// 패널을 띄우고 조작을 잠근다. 먼저 뜬 쪽이 이기고 이후 호출은 무시
-    void Show(GameObject text)
+    /// 패널을 띄우고 조작 잠금. 이후 호출은 무시
+    void Show()
     {
         if (_fired || gameoverPanel == null) return;
         _fired = true;
 
-        if (timeoutText != null) timeoutText.SetActive(false);
-        if (endingText != null) endingText.SetActive(false);
-        if (text != null) text.SetActive(true);
+        if (timeoutText != null) timeoutText.SetActive(true);
 
         ApplyClearTime();
 

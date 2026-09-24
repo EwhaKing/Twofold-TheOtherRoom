@@ -1,9 +1,15 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ColorBlockController : MonoBehaviour
 {
     public GameObject[] blocks;
     public PuzzleChecker checker;
+
+    [Header("버튼 색")]
+    public Image upButton;
+    public Image downButton;
+    public Color buttonColor = Color.white;
 
     private int blockCount = 0;
 
@@ -13,6 +19,12 @@ public class ColorBlockController : MonoBehaviour
     void Start()
     {
         UpdateBlocks();
+
+        if (upButton != null)
+            upButton.color = buttonColor;
+
+        if (downButton != null)
+            downButton.color = buttonColor;
     }
 
     void UpdateBlocks()
