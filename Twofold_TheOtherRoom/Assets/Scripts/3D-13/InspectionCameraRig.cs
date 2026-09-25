@@ -5,7 +5,7 @@ public class InspectionCameraRig : MonoBehaviour
     public static InspectionCameraRig Instance { get; private set; }
 
     [Header("Camera Positions")]
-    [SerializeField] private Camera[] objectCameras;
+    [SerializeField] private Camera[] cameraPoints;
 
     [Header("View Camera")]
     [SerializeField] private Camera viewCamera;
@@ -27,6 +27,9 @@ public class InspectionCameraRig : MonoBehaviour
 
     // 보기 진입 성공 여부. 공통 캔버스 표시 조건
     public bool IsViewing => isViewing;
+
+    // 보기 중 화면을 그리는 카메라. 클릭 레이 원점
+    public Camera ViewCamera => viewCamera;
 
     private bool isViewing = false;
     private bool isMoving = false;
@@ -74,10 +77,10 @@ public class InspectionCameraRig : MonoBehaviour
 
     public void StartView()
     {
-        if (objectCameras == null || objectCameras.Length == 0)
+        if (cameraPoints == null || cameraPoints.Length == 0)
         {
             Debug.LogWarning(
-                "[ObjectCameraManager] 등록된 카메라가 없습니다."
+                $"[{nameof(InspectionCameraRig)}] 등록된 카메라가 없습니다."
             );
 
             return;
@@ -86,7 +89,7 @@ public class InspectionCameraRig : MonoBehaviour
         if (viewCamera == null)
         {
             Debug.LogWarning(
-                "[ObjectCameraManager] View Camera가 연결되지 않았습니다."
+                $"[{nameof(InspectionCameraRig)}] View Camera가 연결되지 않았습니다."
             );
 
             return;
@@ -113,41 +116,33 @@ public class InspectionCameraRig : MonoBehaviour
         cameraUI.SetActive(true);
 
         viewCamera.transform.position =
-            objectCameras[currentCameraIndex].transform.position;
+            cameraPoints[currentCameraIndex].transform.position;
 
         viewCamera.transform.rotation =
-            objectCameras[currentCameraIndex].transform.rotation;
+            cameraPoints[currentCameraIndex].transform.rotation;
 
 
         Debug.Log(
-            $"[ObjectCameraManager] 카메라 시작: {currentCameraIndex}"
+            $"[{nameof(InspectionCameraRig)}] 카메라 시작: {currentCameraIndex}"
         );
     }
 
 
-    public void NextCamera()
+    /// <summary>지정 카메라로 전환. Btn_top은 0, Btn_side는 1</summary>
+    public void ShowCamera(int index)
     {
-        if (!isViewing || isMoving)
+        if (!isViewing || isMoving) return;
+        if (index == currentCameraIndex) return;
+
+        if (cameraPoints == null || index < 0 || index >= cameraPoints.Length)
+        {
+            Debug.LogWarning(
+                $"[{nameof(InspectionCameraRig)}] 카메라 인덱스 범위 밖: {index}"
+            );
             return;
+        }
 
-        currentCameraIndex++;
-
-        if (currentCameraIndex >= objectCameras.Length)
-            currentCameraIndex = 0;
-
-        StartCameraTransition();
-    }
-
-    public void PreviousCamera()
-    {
-        if (!isViewing || isMoving)
-            return;
-    
-        currentCameraIndex--;
-    
-        if (currentCameraIndex < 0)
-            currentCameraIndex = objectCameras.Length - 1;
-    
+        currentCameraIndex = index;
         StartCameraTransition();
     }
 
@@ -166,10 +161,10 @@ public class InspectionCameraRig : MonoBehaviour
 
 
         targetPosition =
-            objectCameras[currentCameraIndex].transform.position;
+            cameraPoints[currentCameraIndex].transform.position;
 
         targetRotation =
-            objectCameras[currentCameraIndex].transform.rotation;
+            cameraPoints[currentCameraIndex].transform.rotation;
 
 
         transitionTimer = 0f;
@@ -178,7 +173,7 @@ public class InspectionCameraRig : MonoBehaviour
 
 
         Debug.Log(
-            $"[ObjectCameraManager] 카메라 이동 → {currentCameraIndex}"
+            $"[{nameof(InspectionCameraRig)}] 카메라 이동 → {currentCameraIndex}"
         );
     }
 
@@ -250,12 +245,12 @@ public class InspectionCameraRig : MonoBehaviour
         currentCameraIndex = 0;
 
 
-        Debug.Log("[ObjectCameraManager] 카메라 보기 종료");
+        Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 보기 종료");
     }
 
     private void SetAllObjectCameras(bool active)
     {
-        foreach (Camera cam in objectCameras)
+        foreach (Camera cam in cameraPoints)
         {
             if (cam != null)
                 cam.gameObject.SetActive(active);
