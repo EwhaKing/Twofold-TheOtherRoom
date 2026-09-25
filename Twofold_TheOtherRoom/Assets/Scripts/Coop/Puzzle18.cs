@@ -18,7 +18,7 @@ public struct SignalBarStage
 ///
 /// 스폰: 2D, 씬 진입 시 1회. 실패해도 재스폰 없음.
 /// </summary>
-public class SignalBarPuzzle : CoopPuzzle
+public class Puzzle18 : CoopPuzzle
 {
     public const string Key = "coop-18";   // CoopPuzzle.Find로 찾을 때
     public const string Id2D = "2D-18";    // 2D가 PuzzleManager에 보고할 때
@@ -192,7 +192,7 @@ public class SignalBarPuzzle : CoopPuzzle
     private void DebugLogAnswers()
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"[{nameof(SignalBarPuzzle)}] 막대 {BarCount}개 / {stages.Length}단계 / 현재 {Step}단계");
+        sb.AppendLine($"[{nameof(Puzzle18)}] 막대 {BarCount}개 / {stages.Length}단계 / 현재 {Step}단계");
 
         for (int i = 0; i < stages.Length; i++)
         {

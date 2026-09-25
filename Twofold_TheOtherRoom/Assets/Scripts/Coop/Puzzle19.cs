@@ -17,7 +17,7 @@ public struct VehicleSpeedStage
 /// 차량 속도 퍼즐 공유 상태.
 /// 페달을 읽는 쪽이 곧 시뮬을 도는 StateAuthority라 스폰은 반드시 3D.
 /// </summary>
-public class VehicleSpeedPuzzle : CoopPuzzle
+public class Puzzle19 : CoopPuzzle
 {
     /// CoopPuzzle.Find 로 이 퍼즐을 찾을 때 쓰는 키
     public const string Key = "coop-19";
@@ -76,7 +76,7 @@ public class VehicleSpeedPuzzle : CoopPuzzle
         if (!_warnedNoAuthority)
         {
             _warnedNoAuthority = true;
-            Debug.LogWarning($"[{nameof(VehicleSpeedPuzzle)}] 스폰하지 않은 쪽의 페달 입력은 무시 - 이 퍼즐은 3D가 스폰해야 함");
+            Debug.LogWarning($"[{nameof(Puzzle19)}] 스폰하지 않은 쪽의 페달 입력은 무시 - 이 퍼즐은 3D가 스폰해야 함");
         }
         return true;
     }
