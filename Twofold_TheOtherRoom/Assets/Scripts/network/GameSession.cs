@@ -38,8 +38,12 @@ public class GameSession : NetworkBehaviour
     [Networked] public int StartedTick { get; set; }
     public const float TotalSeconds = 15f * 60f;
 
-    /// 인트로 길이. 실제 연출 소요와 무관한 고정 예산
-    public const float IntroSeconds = 44f;
+    // 인트로 길이. 실제 연출 소요와 무관한 고정 예산
+    public const float Stage1IntroSeconds = 44f;
+    public const float Stage2IntroSeconds = 12f;
+
+    /// 이번 스테이지의 인트로 예산
+    public float IntroSeconds => Stage >= 2 ? Stage2IntroSeconds : Stage1IntroSeconds;
 
     /// 로딩 완료 후 흐른 시간. 인트로 포함
     public float SinceStartSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
@@ -90,7 +94,18 @@ public class GameSession : NetworkBehaviour
 
     /// 양쪽 클리어 시각. 0이면 아직. 이 값이 잡히면 타이머가 여기서 멈춤
     [Networked] public int ClearedTick { get; set; }
+    
+    // 스테이지 관리 - 스테이지 이동
+    [Networked] public int Stage { get; set; }
+    [Networked] public bool P1StageReady { get; set; }
+    [Networked] public bool P2StageReady { get; set; }
+    [Networked] public bool P1StageDone { get; set; }
+    [Networked] public bool P2StageDone { get; set; }
+    public bool BothStageReady => P1StageReady && P2StageReady;
+    public bool HasRequestedStageChange(bool isHost) => isHost ? P1StageReady : P2StageReady;
 
+    // 스테이지 관리 - 3D 지하실
+    [Networked] public bool BasementOpen { get; set; }
 
     ChangeDetector _changes;
 
@@ -122,6 +137,10 @@ public class GameSession : NetworkBehaviour
                 case nameof(Phase):
                     GameFlow.Instance?.ApplyPhase(Phase);
                     break;
+
+                case nameof(Stage):
+                    GameFlow.Instance?.BeginStage(Stage);
+                    break;
             }
         }
     }
@@ -140,7 +159,8 @@ public class GameSession : NetworkBehaviour
     public void ConfirmMode(int mode)
     {
         if (!Object.HasStateAuthority) return;
-        ResetTimer();
+        ResetStageState();
+        Stage = 1;
         Mode  = mode;
         Phase = RoomPhase.Playing;
     }
@@ -183,15 +203,20 @@ public class GameSession : NetworkBehaviour
         StartedTick = shifted != 0 ? shifted : -1;   // 0 은 "상대 로드 대기" 표식이라 피함
     }
 
-    // 타이머 초기화
-    private void ResetTimer()
+    // 초기화
+    private void ResetStageState()
     {
         P1Loaded = false;
         P2Loaded = false;
         P1SkipIntro = false;
         P2SkipIntro = false;
+        BasementOpen = false;
         P1Cleared = false;
         P2Cleared = false;
+        P1StageReady = false;
+        P2StageReady = false;
+        P1StageDone = false;
+        P2StageDone = false;
         ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
@@ -228,4 +253,39 @@ public class GameSession : NetworkBehaviour
 
         if (BothCleared && ClearedTick == 0) ClearedTick = Runner.Tick;
     }
+
+    // 스테이지 전환 연출 요청 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestStageChange(bool isHost)
+    {
+        if(!BothCleared) return;
+        if(isHost) P1StageReady = true;
+        else P2StageReady = true;
+    }
+
+    // 스테이지 전환 연출 완료 보고 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportStageDone(bool isHost)
+    {
+        if(!BothStageReady) return;
+        if(isHost) P1StageDone = true;
+        else P2StageDone = true;
+
+        if(P1StageDone && P2StageDone) AdvanceStage();
+    }
+
+    private void AdvanceStage()
+    {
+        ResetStageState();
+        Stage++;
+    }
+
+    // 3d 지하실 열림 보고 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportBasementOpen()
+    {
+        if (BasementOpen) return;
+        BasementOpen = true;
+    }
+
 }

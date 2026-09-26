@@ -7,7 +7,7 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     public string MirrorId => mirrorId;
 
     [Header("Holding Settings")]
-    [SerializeField] private float holdDistance = 1.5f;
+    [SerializeField] private float holdDistance = 2f;
     [SerializeField] private float holdRightOffset = 0.7f;
     [SerializeField] private float holdDownOffset = 0.5f;
 
@@ -15,6 +15,12 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     [SerializeField] private float snapDistance = 0.5f;
 
     public bool IsHolding { get; private set; }
+
+    private Rigidbody heldBody;
+    private BoxCollider heldCollider;
+    private RigidbodyConstraints originalConstraints;
+    private const float FollowSpeed = 40f;
+    private const float MaxHoldSpeed = 40f;
 
     private bool isPlaced;
     public bool IsPlaced => isPlaced;
@@ -45,9 +51,9 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
         {
             return;
         }
-        MoveMirror();
 
-        if (Input.GetMouseButtonUp(0))
+
+        if (!Input.GetMouseButton(0))
         {
             IsHolding=false;
            
@@ -70,18 +76,35 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
 
     private void PickMirror()
     {
+        heldCollider = GetComponent<BoxCollider>();
+        if (heldCollider == null || Camera.main == null)
+            return;
+
+        heldBody = GetComponent<Rigidbody>();
+
+        if (heldBody == null)
+            return;
+
+        originalConstraints = heldBody.constraints;
+        heldBody.constraints = RigidbodyConstraints.FreezeRotation;
+        heldBody.angularVelocity = Vector3.zero;
+        heldBody.useGravity = false;
+
         IsHolding = true;
+    }
 
-        Debug.Log($"[Mirror3D] 거울 들기: {mirrorId}");
-
+    private void FixedUpdate()
+    {
+        if (IsHolding)
+            MoveMirror();
     }
 
     private void MoveMirror()
     {
         Camera cam = Camera.main;
-
         if (cam == null)
         {
+            ReleasePhysics();
             return;
         }
 
@@ -91,13 +114,44 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             + cam.transform.right * holdRightOffset
             - cam.transform.up * holdDownOffset;
 
-        transform.position = targetPosition;
+        //Quaternion targetRotation =
+        //cam.transform.rotation * Quaternion.Euler(0f, 90f, 0f);
 
-        transform.rotation = cam.transform.rotation;
+        //heldBody.MoveRotation(targetRotation); // 여기서 사용
+
+        // Follow with physics: wall contacts can stop or slide the mirror.
+        // Aim its actual centre at the hand position, not the imported pivot.
+        heldBody.linearVelocity = Vector3.ClampMagnitude(
+            (targetPosition - heldCollider.bounds.center) * FollowSpeed, MaxHoldSpeed);
+    }
+
+    private void ReleasePhysics()
+    {
+        IsHolding = false;
+        if (heldBody == null)
+            return;
+
+        heldBody.linearVelocity = Vector3.zero;
+        heldBody.angularVelocity = Vector3.zero;
+        heldBody.constraints = originalConstraints;
+        heldBody.useGravity = true;
+    }
+
+    private void OnDisable()
+    {
+        if (IsHolding)
+            ReleasePhysics();
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus && IsHolding)
+            ReleasePhysics();
     }
 
     private void PutMirror()
     {
+        ReleasePhysics();
         if (IsCorrectPosition())
         {
             PlaceMirror();
@@ -163,26 +217,22 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
 
     private void PlaceOnGround()
     {
-        Ray ray = new Ray(
-            transform.position + Vector3.up * 1f,
-            Vector3.down
-        );
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 10f))
+        // Let gravity place it; teleporting the pivot onto the floor embeds the mesh.
+        foreach (RaycastHit hit in Physics.RaycastAll(
+            heldCollider.bounds.center, Vector3.down, 10f, ~0, QueryTriggerInteraction.Ignore))
         {
-            transform.position = hit.point;
+            if (!hit.collider.transform.IsChildOf(transform))
+                return;
+        }
 
-            transform.rotation = Quaternion.Euler(
-                0f,
-                transform.rotation.eulerAngles.z,
-                270f
-            );
-
+        // Preserve the requested recovery when there is no floor below the mirror.
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            heldBody.position = player.transform.position;
             return;
         }
 
-        Debug.LogWarning(
-            $"[Mirror3D] {mirrorId}가 내려놓을 바닥을 찾지 못했습니다."
-        );
+        Debug.LogWarning($"[Mirror3D] {mirrorId}: 바닥과 Player를 찾지 못했습니다.");
     }
 }
