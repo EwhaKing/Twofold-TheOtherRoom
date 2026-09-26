@@ -141,6 +141,10 @@ public class GameSession : NetworkBehaviour
                 case nameof(Stage):
                     GameFlow.Instance?.BeginStage(Stage);
                     break;
+
+                case nameof(BasementOpen):
+                    FloorHole2D.Instance?.SetOpen(BasementOpen);
+                    break;
             }
         }
     }
