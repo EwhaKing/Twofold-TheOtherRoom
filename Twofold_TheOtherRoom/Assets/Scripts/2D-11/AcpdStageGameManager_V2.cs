@@ -29,6 +29,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     private int currentStepIndex = 0;    
     private int subStepIndex = 0;        
     private bool isShowingWrongFeedback = false;
+    private List<int> playerSequence = new List<int>();
 
     private Coroutine activeTimerCoroutine;
 
@@ -90,6 +91,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         isShowingWrongFeedback = false;
         currentStepIndex = 0;
         subStepIndex = 0;
+        playerSequence.Clear();
 
         StartStepSequence();
     }
@@ -197,6 +199,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         subStepIndex = 0;
+        playerSequence.Clear();
         isShowingWrongFeedback = false;
 
         displayAlphabetText.text = "";
@@ -204,50 +207,80 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
     public void OnShapeButtonClicked(int buttonIndex)
     {
-        if (isShowingWrongFeedback) return; 
+        if (isShowingWrongFeedback)
+            return;
 
         if (currentStepIndex < patternSteps.Count - 1)
         {
-            int[] targetSequence = patternSteps[currentStepIndex].correctSequence;
+            int[] targetSequence =
+                patternSteps[currentStepIndex].correctSequence;
 
-            if (buttonIndex == targetSequence[subStepIndex])
+            // 누른 버튼 저장
+            playerSequence.Add(buttonIndex);
+
+            // 버튼을 누를 때는 DefaultClick만 재생
+            if (SoundManager.Instance != null)
             {
+                SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+            }
+
+            // 아직 필요한 개수만큼 안 눌렀으면 기다림
+            if (playerSequence.Count < targetSequence.Length)
+            {
+                return;
+            }
+
+            // 필요한 개수를 전부 눌렀으면 정답 검사
+            bool isCorrect = true;
+
+            for (int i = 0; i < targetSequence.Length; i++)
+            {
+                if (playerSequence[i] != targetSequence[i])
+                {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCorrect)
+            {
+                // 전부 맞았을 때만 CorrectBtn
                 if (SoundManager.Instance != null)
                 {
                     SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
                 }
 
-                subStepIndex++;
+                playerSequence.Clear();
 
-                if (subStepIndex >= targetSequence.Length)
+                if (activeTimerCoroutine != null)
                 {
-                    if (activeTimerCoroutine != null)
-                    {
-                        StopCoroutine(activeTimerCoroutine);
-                        activeTimerCoroutine = null;
-                    }
+                    StopCoroutine(activeTimerCoroutine);
+                    activeTimerCoroutine = null;
+                }
 
-                    currentStepIndex++;
-                    subStepIndex = 0;
+                currentStepIndex++;
+                subStepIndex = 0;
 
-                    if (currentStepIndex >= patternSteps.Count - 1)
-                    {
-                        OnPuzzleSuccess();
-                    }
-                    else
-                    {
-                        StartStepSequence(); 
-                    }
+                if (currentStepIndex >= patternSteps.Count - 1)
+                {
+                    OnPuzzleSuccess();
+                }
+                else
+                {
+                    StartStepSequence();
                 }
             }
             else
             {
+                // 전부 입력한 후 틀렸을 때만 WrongBtn
                 if (SoundManager.Instance != null)
                 {
                     SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
                 }
 
-                StartCoroutine(WrongAnswerFeedbackRoutine()); 
+                playerSequence.Clear();
+
+                StartCoroutine(WrongAnswerFeedbackRoutine());
             }
         }
     }
