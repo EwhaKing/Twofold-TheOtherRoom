@@ -30,8 +30,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundProbeDepth = 0.2f;
 
     [Header("Camera Settings")]
-    public float lookSenseH = 0.1f;
-    public float lookSenseV = 0.1f;
+    [Tooltip("설정 감도 가운데일 때의 마우스 1px당 회전 각도")]
+    [FormerlySerializedAs("lookSenseH")] public float lookSense = 0.1f;
     public float lookLimitV = 89f;
 
     [Header("Footstep")]
@@ -231,13 +231,14 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 look = _playerLocomotionInput.LookInput;
+        float sense = lookSense * GameSettings.Current.LookMultiplier;
 
         // 좌우(yaw): 몸체만 회전시키면 자식인 카메라도 함께 돌아감 (이중 회전 방지)
-        _bodyYaw += lookSenseH * look.x;
+        _bodyYaw += sense * look.x;
         transform.rotation = Quaternion.Euler(0f, _bodyYaw, 0f);
 
         // 상하(pitch): 카메라만 로컬 회전
-        _cameraPitch = Mathf.Clamp(_cameraPitch - lookSenseV * look.y, -lookLimitV, lookLimitV);
+        _cameraPitch = Mathf.Clamp(_cameraPitch - sense * look.y, -lookLimitV, lookLimitV);
         _playerCamera.transform.localRotation = Quaternion.Euler(_cameraPitch, 0f, 0f);
     }
     #endregion
