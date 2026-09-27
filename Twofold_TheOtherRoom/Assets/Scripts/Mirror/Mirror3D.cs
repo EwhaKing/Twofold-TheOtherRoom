@@ -255,7 +255,8 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             return false;
         }
 
-        Vector3 originalPosition = transform.position;
+        Quaternion placeRotation = Quaternion.Euler(0f, cam.transform.eulerAngles.z, 270f);
+        Vector3 originalPosition = transform.TransformPoint(boxCollider.center);
 
         // 현재 위치부터 플레이어 방향으로 조금씩 당겨오면서
         // 안전한 위치를 찾음
@@ -268,6 +269,7 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             // 후보 위치 아래에 Ground가 있는지 검사
             if (!TryGetGroundPosition(
                     candidatePosition,
+                    placeRotation,
                     out Vector3 groundPosition))
             {
                 continue;
@@ -280,15 +282,7 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
                 continue;
             }
 
-            // 바닥에 놓일 때 최종 회전값
-            // 들 때 회전 보정이 들어가므로 거울이 아니라 카메라 기준으로 계산
-            Quaternion placeRotation = Quaternion.Euler(
-                0f,
-                cam.transform.eulerAngles.z,
-                270f
-            );
-
-            // 실제로 배치할 위치에서 Wall과 겹치는지 검사
+            // 배치할 위치에서 계단을 포함한 Ground와 Wall의 겹침 검사
             if (!IsSafePosition(
                     groundPosition,
                     placeRotation))
@@ -329,23 +323,35 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
         return false;
     }
 
+    private Vector3 GetPlacementHalfExtents()
+    {
+        Vector3 scale = transform.lossyScale;
+        scale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+        return Vector3.Scale(boxCollider.size * 0.5f, scale);
+    }
+
     private bool TryGetGroundPosition(
         Vector3 candidatePosition,
+        Quaternion rotation,
         out Vector3 groundPosition)
     {
-        Vector3 rayStart =
-            candidatePosition;
-
-        // Ground 레이어만 검사
         if (Physics.Raycast(
-                rayStart,
+                candidatePosition,
                 Vector3.down,
                 out RaycastHit hit,
                 groundCheckDistance,
                 groundLayer,
                 QueryTriggerInteraction.Ignore))
         {
-            groundPosition = hit.point;
+            Vector3 halfExtents = GetPlacementHalfExtents();
+            float verticalExtent =
+                Mathf.Abs((rotation * Vector3.right).y) * halfExtents.x +
+                Mathf.Abs((rotation * Vector3.up).y) * halfExtents.y +
+                Mathf.Abs((rotation * Vector3.forward).y) * halfExtents.z;
+            Vector3 centerOffset = rotation * Vector3.Scale(boxCollider.center, transform.lossyScale);
+
+            // 피벗 대신 콜라이더 밑면을 바닥 위에 둔다. 간격은 바닥 접촉의 오검출을 방지한다.
+            groundPosition = hit.point + Vector3.up * (verticalExtent + 0.02f) - centerOffset;
             return true;
         }
 
@@ -375,46 +381,29 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             return false;
         }
 
-        // BoxCollider.size는 전체 크기이므로
-        // CheckBox에 넣기 위해 절반 크기로 변경
-        Vector3 halfExtents = Vector3.Scale(
-            boxCollider.size * 0.5f,
-            transform.lossyScale
-        );
-
-
-
-        // BoxCollider.center가 (0,0,0)이 아닐 수도 있으므로
-        // 실제 월드 중심 계산
-        Vector3 scaledCenter = Vector3.Scale(
-            boxCollider.center,
-            transform.lossyScale
-        );
-
-        Vector3 worldCenter =
-            position + rotation * scaledCenter;
-
-        // Wall 레이어와 겹치는지 검사
-        bool isTouchingWall = Physics.CheckBox(
-            worldCenter,
-            halfExtents,
-            rotation,
-            wallLayer,
-            QueryTriggerInteraction.Ignore
-        );
-
+        Vector3 worldCenter = position + rotation * Vector3.Scale(
+            boxCollider.center, transform.lossyScale);
         Collider[] hits = Physics.OverlapBox(
-            worldCenter, halfExtents, rotation, wallLayer,
-            QueryTriggerInteraction.Collide);
+            worldCenter,
+            GetPlacementHalfExtents(),
+            rotation,
+            groundLayer | wallLayer,
+            QueryTriggerInteraction.Ignore);
 
-        foreach (Collider c in hits)
+        foreach (Collider hit in hits)
         {
-            Debug.Log($"[겹침] {c.name} / layer={LayerMask.LayerToName(c.gameObject.layer)} / trigger={c.isTrigger}");
+            if (hit == boxCollider || (rb != null && hit.attachedRigidbody == rb))
+            {
+                continue;
+            }
+
+            if (debugPlacement)
+            {
+                Debug.Log($"[Mirror3D] 배치 공간 겹침: {hit.name}");
+            }
+            return false;
         }
 
-        // 벽과 안 겹치면 안전
-        return !isTouchingWall;
+        return true;
     }
-
-
 }
