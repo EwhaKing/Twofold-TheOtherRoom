@@ -79,6 +79,10 @@ public class PlayerController : MonoBehaviour
         {
             reticle.SetActive(false);
         }
+
+        // 나가기, 씬 전환 후 남는 커서 잠금 해제
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
     #endregion
 
@@ -269,9 +273,9 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateCursorLock()
     {
-        // 일시정지 중엔 메뉴를 클릭해야 함. Confined라 창 밖으로는 못 나감
+        // 일시정지 중엔 메뉴 클릭용 자유 커서
         bool look = Time.timeScale > 0f;
-        CursorLockMode lockMode = look ? CursorLockMode.Locked : CursorLockMode.Confined;
+        CursorLockMode lockMode = look ? CursorLockMode.Locked : CursorLockMode.None;
 
         // 매 프레임 대입하면 네이티브 호출이 반복돼 커서가 튐
         if (Cursor.lockState != lockMode)
