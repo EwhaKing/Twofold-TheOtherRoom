@@ -247,14 +247,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (phase == Phase.Closed)
             return;
 
+        // StopSFX는 공용 SFX 소스를 통째로 멈춰 문 열림 소리 등도 끊으므로
+        // 카운트다운 중일 때만 호출
         if (beepRoutine != null)
         {
             StopCoroutine(beepRoutine);
             beepRoutine = null;
-        }
 
-        if (SoundManager.Instance != null)
-            SoundManager.Instance.StopSFX();
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.StopSFX();
+        }
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Hide(this);
@@ -374,6 +376,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (timerText != null) timerText.gameObject.SetActive(false);
         if (resetButton != null) resetButton.SetActive(false);
         if (instructionText != null) instructionText.gameObject.SetActive(false);
+
+         if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+        }
+
 
 
         if (MirrorPanel != null) MirrorPanel.gameObject.SetActive(true);
