@@ -10,6 +10,8 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     [SerializeField] private float holdDistance = 1.5f;
     [SerializeField] private float holdRightOffset = 0.7f;
     [SerializeField] private float holdDownOffset = 0.5f;
+    [Tooltip("거울 조각은 로컬 X축이 면의 법선이라, 카메라 쪽을 보도록 돌려서 듦")]
+    [SerializeField] private Vector3 holdRotationOffset = new Vector3(0f, 90f, 0f);
 
     [Header("Correct Position")]
     [SerializeField] private float snapDistance = 0.5f;
@@ -23,6 +25,9 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
 
     [SerializeField] private int searchIterations = 20;
     [SerializeField] private float searchStep = 0.1f;
+
+    [Tooltip("벽/문에서 이만큼 떨어진 곳까지만 거울을 들 수 있음")]
+    [SerializeField] private float wallMargin = 0.1f;
 
     public bool IsHolding { get; private set; }
 
@@ -130,11 +135,36 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             + cam.transform.right * holdRightOffset
             - cam.transform.up * holdDownOffset;
 
-        transform.SetPositionAndRotation(targetPosition, cam.transform.rotation);
+        // 카메라와 거울 사이에 벽/문이 있으면 벽 앞까지만 들고 있음
+        Vector3 toTarget = targetPosition - cam.transform.position;
+        if (Physics.Raycast(
+                cam.transform.position,
+                toTarget.normalized,
+                out RaycastHit wallHit,
+                toTarget.magnitude,
+                wallLayer,
+                QueryTriggerInteraction.Ignore))
+        {
+            targetPosition =
+                cam.transform.position
+                + toTarget.normalized * Mathf.Max(0f, wallHit.distance - wallMargin);
+        }
+
+        Quaternion holdRotation = cam.transform.rotation * Quaternion.Euler(holdRotationOffset);
+
+        // 조각의 pivot은 전체 거울 원점이라 조각마다 메쉬가 pivot에서 떨어져 있음
+        // → 조각 중심(콜라이더 중심)이 목표 위치에 오도록 보정
+        if (boxCollider != null)
+        {
+            Vector3 pieceOffset = holdRotation * Vector3.Scale(boxCollider.center, transform.lossyScale);
+            targetPosition -= pieceOffset;
+        }
+
+        transform.SetPositionAndRotation(targetPosition, holdRotation);
         if (rb != null)
         {
             rb.position = targetPosition;
-            rb.rotation = cam.transform.rotation;
+            rb.rotation = holdRotation;
         }
     }
 
@@ -226,7 +256,6 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
         }
 
         Vector3 originalPosition = transform.position;
-        Quaternion originalRotation = transform.rotation;
 
         // 현재 위치부터 플레이어 방향으로 조금씩 당겨오면서
         // 안전한 위치를 찾음
@@ -244,10 +273,18 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
                 continue;
             }
 
+            // 카메라에서 놓을 위치까지 벽/문에 막혀 있으면
+            // 벽 너머 바닥이므로 제외
+            if (IsBlockedFromCamera(cam, groundPosition))
+            {
+                continue;
+            }
+
             // 바닥에 놓일 때 최종 회전값
+            // 들 때 회전 보정이 들어가므로 거울이 아니라 카메라 기준으로 계산
             Quaternion placeRotation = Quaternion.Euler(
                 0f,
-                originalRotation.eulerAngles.z,
+                cam.transform.eulerAngles.z,
                 270f
             );
 
@@ -314,6 +351,19 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
 
         groundPosition = Vector3.zero;
         return false;
+    }
+
+    private bool IsBlockedFromCamera(Camera cam, Vector3 groundPosition)
+    {
+        // 바닥 표면에 딱 붙은 점은 바닥 모서리에 걸릴 수 있어 살짝 띄움
+        Vector3 target = groundPosition + Vector3.up * 0.05f;
+
+        return Physics.Linecast(
+            cam.transform.position,
+            target,
+            wallLayer,
+            QueryTriggerInteraction.Ignore
+        );
     }
 
     private bool IsSafePosition(
