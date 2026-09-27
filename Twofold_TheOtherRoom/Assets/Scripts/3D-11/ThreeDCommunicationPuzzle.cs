@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -65,6 +66,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
   
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    private readonly Dictionary<Renderer, bool> playerRendererStates = new Dictionary<Renderer, bool>();
+    private bool isInspecting;
     private Phase phase = Phase.Closed;
     private int currentStageIndex = -1;
     private float revealTimeLeft;
@@ -120,6 +123,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     public void Interact()
     {
+        if (isInspecting)
+            return;
+
         if (!BasicCameraControl())
         {
             return;
@@ -143,6 +149,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Debug.LogWarning("[ThreeDCommunicationPuzzle] Player Camera와 Camera Focus Point를 연결하세요.", this);
             return false;
         }
+
+        isInspecting = true;
+        HidePlayerRenderers();
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
@@ -244,7 +253,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
     public void CloseInspection()
     {
-        if (phase == Phase.Closed)
+        if (!isInspecting)
             return;
 
         // StopSFX는 공용 SFX 소스를 통째로 멈춰 문 열림 소리 등도 끊으므로
@@ -261,9 +270,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Hide(this);
 
-        playerCamera.transform.SetPositionAndRotation(
-            originalCameraPosition,
-            originalCameraRotation);
+        if (playerCamera != null)
+            playerCamera.transform.SetPositionAndRotation(
+                originalCameraPosition,
+                originalCameraRotation);
+
+        RestorePlayerRenderers();
+        isInspecting = false;
          //playerControlunLock
         playerControlLock.Unlock();
 
@@ -274,6 +287,37 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
 
         phase = solved ? Phase.Cleared : Phase.Closed;
+    }
+
+    private void HidePlayerRenderers()
+    {
+        foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            foreach (Renderer playerRenderer in player.GetComponentsInChildren<Renderer>(true))
+            {
+                // 부모와 자식 모두 Player 태그여도 원래 상태는 한 번만 저장한다.
+                if (playerRendererStates.ContainsKey(playerRenderer))
+                    continue;
+
+                playerRendererStates.Add(playerRenderer, playerRenderer.enabled);
+                playerRenderer.enabled = false;
+            }
+        }
+    }
+
+    private void RestorePlayerRenderers()
+    {
+        foreach (KeyValuePair<Renderer, bool> state in playerRendererStates)
+        {
+            if (state.Key != null)
+                state.Key.enabled = state.Value;
+        }
+        playerRendererStates.Clear();
+    }
+
+    private void OnDisable()
+    {
+        CloseInspection();
     }
 
     private void RestartFromBeginning()
