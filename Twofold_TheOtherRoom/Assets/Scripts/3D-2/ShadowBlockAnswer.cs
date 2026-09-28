@@ -22,14 +22,14 @@ public class ShadowBlockAnswer : MonoBehaviour
     [Header("Puzzle Report")]
     [SerializeField] private string puzzleId = "3D-2";
 
-    [SerializeField] private GameObject mirror_2;
+    // [SerializeField] private GameObject mirror_2;
 
     private readonly int[] answer = { 1, 3, 4, 2 };
     private bool isCleared;
 
     void Awake()
     {
-        if (mirror_2 != null) mirror_2.SetActive(false);
+        // if (mirror_2 != null) mirror_2.SetActive(false);
     }
 
     public void CheckClear()
@@ -122,6 +122,6 @@ public class ShadowBlockAnswer : MonoBehaviour
 
         PuzzleManager.Instance.ReportSolved(puzzleId, PuzzleDimension.ThreeD);
 
-        mirror_2.SetActive(true);
+        // mirror_2.SetActive(true);
     }
 }
