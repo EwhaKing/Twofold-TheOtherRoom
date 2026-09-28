@@ -10,7 +10,7 @@ public class NavigateRoom2DCanvas : MonoBehaviour
     [Header("Rooms")]
     [SerializeField] private RectTransform roomsRoot;
     [SerializeField, Min(1)] private int totalRooms = 4;
-    [SerializeField, Min(0)] private int startRoom = 1; 
+    [SerializeField, Min(0)] private int startRoom = 0; 
 
     [Header("UI Arrows")]
     [SerializeField] private GameObject leftArrow;
