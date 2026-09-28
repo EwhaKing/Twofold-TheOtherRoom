@@ -7,9 +7,11 @@ public class FloorHole2D : MonoBehaviour
 
     [SerializeField] private Image holeImage;
 
-    [Header("Hole")]
-    [SerializeField] private Sprite closedSprite; // 닫힌 개구멍
-    [SerializeField] private Sprite openSprite;   // 열린 개구멍
+    [SerializeField] private Sprite closedSprite;
+    [SerializeField] private Sprite openSprite;
+
+    [SerializeField] private DetailView detailView;
+    [SerializeField] private RoomFloorEntrance floorEntrance;
 
     private void Awake()
     {
@@ -19,28 +21,28 @@ public class FloorHole2D : MonoBehaviour
     private void Start()
     {
         if (GameSession.Instance != null)
-        {
             SetOpen(GameSession.Instance.BasementOpen);
-        }
         else
-        {
             SetOpen(false);
-        }
     }
 
     public void SetOpen(bool open)
     {
-        if (holeImage == null)
-            return;
+        if (holeImage != null)
+            holeImage.sprite = open ? openSprite : closedSprite;
 
-        holeImage.sprite = open ? openSprite : closedSprite;
+        // 닫혀 있을 때:
+        if (detailView != null)
+            detailView.enabled = !open;
+
+        // 열려 있을 때:
+        if (floorEntrance != null)
+            floorEntrance.enabled = open;
     }
 
     private void OnDestroy()
     {
         if (Instance == this)
-        {
             Instance = null;
-        }
     }
 }

@@ -4887,6 +4887,7 @@ GameObject:
   - component: {fileID: 1743011432}
   - component: {fileID: 1743011434}
   - component: {fileID: 1743011435}
+  - component: {fileID: 1743011436}
   m_Layer: 0
   m_Name: Hole
   m_TagString: Untagged
@@ -4980,6 +4981,24 @@ MonoBehaviour:
   holeImage: {fileID: 1743011432}
   closedSprite: {fileID: -1370472306, guid: bb046911cbf3e4441b2374489af5dab0, type: 3}
   openSprite: {fileID: 770236416, guid: bb046911cbf3e4441b2374489af5dab0, type: 3}
+  detailView: {fileID: 8050823070240431680}
+  floorEntrance: {fileID: 1743011434}
+--- !u!114 &1743011436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743011430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 117f02b5d4fca09488782d71c215e922, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetailView
+  detailView: {fileID: 0}
+  detailRoot: {fileID: 0}
+  manager: {fileID: 8050823070240431680}
+  detailPrefab: {fileID: 2151523374331315607, guid: 40ac561ab1546f347943d74f75e2017b, type: 3}
 --- !u!1 &1760073028
 GameObject:
   m_ObjectHideFlags: 0
