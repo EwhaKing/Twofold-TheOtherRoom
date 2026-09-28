@@ -23,6 +23,9 @@ public sealed class InspectionUIController : MonoBehaviour
 
     private ICloseInspection currentInspection;
 
+    /// 같은 인덱스를 두 번 이상 쓸 때 만든 항목 복제본. 숨길 때 지움
+    private readonly List<GameObject> spawnedItems = new List<GameObject>();
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -121,9 +124,11 @@ public sealed class InspectionUIController : MonoBehaviour
         }
 
         int visibleCount = 0;
+        // 인덱스별로 마지막에 켠 항목. 같은 인덱스가 또 나오면 이 뒤에 복제본을 붙임
+        var lastShown = new Dictionary<int, GameObject>();
+
         foreach (PuzzleDescriptionImages.DescriptionImage description in descriptions)
         {
-            
             if (description == null)
                 continue;
 
@@ -139,6 +144,16 @@ public sealed class InspectionUIController : MonoBehaviour
                 continue;
 
             GameObject item = GetItem(image);
+
+            // 이미 이 항목을 썼으면 같은 아이콘으로 한 줄 더
+            if (lastShown.TryGetValue(imageIndex, out GameObject previous))
+            {
+                item = Instantiate(item, item.transform.parent);
+                item.transform.SetSiblingIndex(previous.transform.GetSiblingIndex() + 1);
+                spawnedItems.Add(item);
+            }
+
+            lastShown[imageIndex] = item;
             SetLabel(item, description.text ?? string.Empty);
 
             item.SetActive(true);
@@ -151,6 +166,13 @@ public sealed class InspectionUIController : MonoBehaviour
 
     private void HideDescriptionImages()
     {
+        foreach (GameObject spawned in spawnedItems)
+        {
+            if (spawned != null)
+                Destroy(spawned);
+        }
+        spawnedItems.Clear();
+
         if (descriptionImages != null)
         {
             foreach (Image image in descriptionImages)
