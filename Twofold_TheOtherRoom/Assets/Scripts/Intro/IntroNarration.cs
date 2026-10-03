@@ -39,14 +39,13 @@ public class IntroNarration : MonoBehaviour
     [SerializeField]
     private Line[] lines =
     {
-        new Line { start =  0.00f, text = "Twofold에 오신 것을 환영합니다." },
-        new Line { start =  2.90f, text = "두 사람은 서로 다른 차원에서 게임을 시작합니다." },
-        new Line { start =  6.70f, text = "2D에서는 마우스로 조작하고," },
-        new Line { start =  9.20f, text = "3D에서는 WASD로 이동하며 E키 또는 마우스로 상호작용합니다." },
-        new Line { start = 16.10f, text = "각 차원의 퍼즐을 풀고, 숨겨진 거울 조각을 찾아 각자의 거울을 완성해야 합니다." },
-        new Line { start = 22.70f, text = "퍼즐은 총 10개. 각 차원에는 5개의 거울 조각이 존재합니다." },
-        new Line { start = 28.60f, text = "제한 시간은 15분입니다." },
-        new Line { start = 31.30f, text = "두 차원의 협력만이 이곳을 탈출할 수 있는 유일한 방법입니다." },
+        new Line { start =  0.20f, text = "Twofold에 오신 것을 환영합니다." },
+        new Line { start =  3.45f, text = "지금, 두 사람은 서로 다른 차원에 존재하고 있습니다." },
+        new Line { start =  8.10f, text = "각자의 세계에 흩어진 거울 조각을 모아 거울을 완성해야 합니다." },
+        new Line { start =  14.15f, text = "하지만 조각을 찾을 단서는 언제나 다른 차원에 존재합니다." },
+        new Line { start = 19.58f, text = "주어진 시간은 단 15분." },
+        new Line { start = 23.35f, text = "기억하십시오. 두 개의 거울을 완성하는 열쇠는 서로 다른 두 차원의 협력입니다." },
+        new Line { start = 31.00f, text = "행운을 빕니다." },
     };
 
     /// 시계와 오디오가 이만큼 벌어지면 되감음. 매 프레임 맞추면 소리가 끊김
