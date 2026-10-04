@@ -71,9 +71,18 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
     [Range(0f, 1f)]
     [SerializeField] private float freezeNormalizedTime = 0f;
 
-    [Tooltip("눈 확대 길이. 재생 시 Brain 의 Default Blend 길이로 반영됨.\n" +
-             "확대의 모양(천천히 하다가 확)은 Brain 의 Custom 커브에서 조절할 것")]
-    [SerializeField] private float eyeZoomSeconds = 3.5f;
+    [Tooltip("거울 앞에 멈춰 선 채로 있는 시간. 이게 끝나야 확대 시작")]
+    [SerializeField] private float holdSeconds = 2f;
+
+    [Tooltip("눈 확대 앞부분. 천천히 다가감")]
+    [SerializeField] private float slowZoomSeconds = 4f;
+
+    [Tooltip("눈 확대 뒷부분. 확 다가감")]
+    [SerializeField] private float fastZoomSeconds = 1f;
+
+    [Tooltip("천천히 구간이 끝날 때 얼마나 다가가 있을지(0~1). 작을수록 마지막 1초가 더 확 들어감")]
+    [Range(0f, 1f)]
+    [SerializeField] private float slowZoomProgress = 0.3f;
 
     [Tooltip("암전 길이. 눈 확대 끝에 맞물리도록 뒤에서부터 겹쳐 시작")]
     [SerializeField] private float blackoutSeconds = 0.4f;
@@ -186,13 +195,17 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
 
         yield return walk;
 
-        // 5. 눈 확대. 실제 카메라 움직임은 Brain 의 블렌드가 만듦
-        ApplyZoomBlendTime();
+        // 5. 거울 앞에 멈춰 섬
+        yield return new WaitForSeconds(holdSeconds);
+
+        // 6. 눈 확대. 천천히 → 확. 실제 카메라 움직임은 Brain 의 블렌드가 만듦
+        float zoomSeconds = slowZoomSeconds + fastZoomSeconds;
+        ApplyZoomBlend(zoomSeconds);
         if (vcamEyeCloseUp != null) vcamEyeCloseUp.Priority = EyeShotPriority;
 
-        yield return new WaitForSeconds(Mathf.Max(0f, eyeZoomSeconds - blackoutSeconds));
+        yield return new WaitForSeconds(Mathf.Max(0f, zoomSeconds - blackoutSeconds));
 
-        // 6. 암전. 눈동자가 화면을 채우는 순간과 맞물림
+        // 7. 암전. 눈동자가 화면을 채우는 순간과 맞물림
         if (blackout != null)
         {
             blackout.gameObject.SetActive(true);
@@ -290,24 +303,30 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
         if (cutsceneListener != null) cutsceneListener.enabled = true;
     }
 
-    /// eyeZoomSeconds 를 Brain 의 블렌드 길이로 반영. 모양(커브)은 Brain 것을 씀
-    private void ApplyZoomBlendTime()
+    /// 눈 확대를 Brain 의 Default Blend 로 설정. 길이와 커브(천천히 → 확)를 여기서 덮어씀
+    private void ApplyZoomBlend(float zoomSeconds)
     {
         CinemachineBrain brain = cutsceneCamera != null
             ? cutsceneCamera.GetComponent<CinemachineBrain>()
             : null;
 
-        if (brain == null) return;
+        if (brain == null || zoomSeconds <= 0f) return;
 
-        if (brain.m_DefaultBlend.m_Style == CinemachineBlendDefinition.Style.Cut)
-        {
-            Debug.LogWarning("[StageChange3D] Brain 의 Default Blend 가 Cut — 눈 확대가 즉시 끝남. " +
-                             "Ease In Out 이나 Custom 으로 바꿀 것", this);
-            return;
-        }
+        // 천천히 구간이 끝나는 시점(0~1)과 그때의 진행도
+        float slowEnd = slowZoomSeconds / zoomSeconds;
+        float slowSpeed = slowEnd > 0f ? slowZoomProgress / slowEnd : 0f;
+        float fastSpeed = slowEnd < 1f ? (1f - slowZoomProgress) / (1f - slowEnd) : 0f;
+
+        // 구간마다 일정한 속도. 경계에서 속도가 확 바뀜
+        AnimationCurve curve = new AnimationCurve(
+            new Keyframe(0f, 0f, slowSpeed, slowSpeed),
+            new Keyframe(slowEnd, slowZoomProgress, slowSpeed, fastSpeed),
+            new Keyframe(1f, 1f, fastSpeed, fastSpeed));
 
         CinemachineBlendDefinition blend = brain.m_DefaultBlend;
-        blend.m_Time = eyeZoomSeconds;
+        blend.m_Style = CinemachineBlendDefinition.Style.Custom;
+        blend.m_Time = zoomSeconds;
+        blend.m_CustomCurve = curve;
         brain.m_DefaultBlend = blend;
     }
 

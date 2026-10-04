@@ -73,19 +73,28 @@ public class MirrorReflection : MonoBehaviour
 
     // ---------- 외부 구동 (StageChange3D) ----------
 
-    /// <summary>반사가 따라갈 카메라. Enable(true) 전에 넣을 것.</summary>
+    /// 반사가 따라갈 카메라. Enable(true) 전에 넣을 것.
     public void SetSourceCamera(Camera cam)
     {
         sourceCamera = cam;
     }
 
-    /// <summary>반사 켜기 · 끄기. 두 번 이상 불러도 안전.</summary>
+    /// 반사 켜기 · 끄기. 두 번 이상 불러도 안전.
     public void Enable(bool on)
     {
         if (on == running) return;
 
         if (on) Setup();
         else Teardown();
+    }
+
+    /// 월드 좌표의 점을 거울 면 기준으로 뒤집은 위치. 거울 속에 비친 그 점의 자리.
+    public Vector3 ReflectPoint(Vector3 worldPoint)
+    {
+        Vector3 normal = transform.TransformDirection(planeNormalLocal).normalized;
+        float signedDistance = Vector3.Dot(worldPoint - transform.position, normal);
+
+        return worldPoint - 2f * signedDistance * normal;
     }
 
     // ---------- 내부 ----------
