@@ -240,6 +240,10 @@ public class GameFlow : MonoBehaviour
         var op = SceneManager.LoadSceneAsync(_loadedGamePlayScene, LoadSceneMode.Additive);
         yield return op;
 
+        // Additive 로드는 Active Scene 이 로비로 남음 — 조명(Ambient · Skybox · 반사)은 Active Scene 것만 쓰이므로 게임 씬으로 넘김
+        var loaded = SceneManager.GetSceneByName(_loadedGamePlayScene);
+        if (loaded.isLoaded) SceneManager.SetActiveScene(loaded);
+
         // 로드 도중에 방을 나갔으면 이미 로비로 돌아간 상태
         if (_gameplayStarted) DisableLobbyCamera();
 
