@@ -42,6 +42,18 @@ public class DrawerController : MonoBehaviour
                 isOpen ? SFXType.CabinetOpen : SFXType.CabinetClose
             );
         }
+        
+        if (book != null)
+        {
+            book.SetActive(isOpen);
+
+            // RightClickArea overlaps the book and is later in the Canvas hierarchy,
+            // so it otherwise receives the UI raycast before the book does.
+            if (isOpen)
+            {
+                book.transform.SetAsLastSibling();
+            }
+        }
     }
 
     public void ToggleRightDrawer()
@@ -62,16 +74,5 @@ public class DrawerController : MonoBehaviour
             );
         }
 
-        if (book != null)
-        {
-            book.SetActive(isOpen);
-
-            // RightClickArea overlaps the book and is later in the Canvas hierarchy,
-            // so it otherwise receives the UI raycast before the book does.
-            if (isOpen)
-            {
-                book.transform.SetAsLastSibling();
-            }
-        }
     }
 }
