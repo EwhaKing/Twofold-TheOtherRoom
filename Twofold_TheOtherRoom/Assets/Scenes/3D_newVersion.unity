@@ -8606,15 +8606,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3301630121750217930, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.25
+      value: -38.24
       objectReference: {fileID: 0}
     - target: {fileID: 3301630121750217930, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -4.73
       objectReference: {fileID: 0}
     - target: {fileID: 3301630121750217930, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.33
+      value: 14.74
       objectReference: {fileID: 0}
     - target: {fileID: 3301630121750217930, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10101,6 +10101,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 928619095}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &937730994 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+  m_PrefabInstance: {fileID: 1881759612}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &966490469
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11291,6 +11296,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -2
       objectReference: {fileID: 0}
+    - target: {fileID: 8356028248530625933, guid: cb482ab2fc2eb5540bfe65614b1b2add, type: 3}
+      propertyPath: mirrorPiece
+      value: 
+      objectReference: {fileID: 937730994}
     - target: {fileID: 8356028248530625933, guid: cb482ab2fc2eb5540bfe65614b1b2add, type: 3}
       propertyPath: mirrorObject
       value: 
@@ -16361,15 +16370,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -24.54
+      value: -24.34
       objectReference: {fileID: 0}
     - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.672
+      value: -2.658
       objectReference: {fileID: 0}
     - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.153
+      value: 2.2025473
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.71435136
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.60011387
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.03351415
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.35838863
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -123.554
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -120.134
+      objectReference: {fileID: 0}
+    - target: {fileID: 1214226324727498220, guid: bcce329985ade8d4dad29164433602de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 92.368
       objectReference: {fileID: 0}
     - target: {fileID: 1331270748676959760, guid: bcce329985ade8d4dad29164433602de, type: 3}
       propertyPath: m_LocalPosition.x
@@ -16760,7 +16797,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 2

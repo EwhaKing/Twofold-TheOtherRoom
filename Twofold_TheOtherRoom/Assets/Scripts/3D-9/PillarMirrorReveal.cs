@@ -55,12 +55,22 @@ public class PillarMirrorReveal : MonoBehaviour
         Transform mirrorParent = null;      // 거울 조각 원래 부모 (거울틀)
         Vector3 mirrorEndPos = Vector3.zero;
         Quaternion mirrorEndRot = Quaternion.identity;
+        Rigidbody mirrorBody = null;        // 거울 조각 리지드바디
+        RigidbodyInterpolation mirrorInterpolation = RigidbodyInterpolation.None;   // 원래 보간 설정
 
         if (mirrorPiece != null)
         {
             // 배치된 자리를 기억해두고, 기둥이 올라올 만큼 내려서 기둥에 임시로 붙임
             mirrorParent = mirrorPiece.parent;
             mirrorPiece.GetPositionAndRotation(out mirrorEndPos, out mirrorEndRot);
+
+            // 부모 이동과 충돌하는 보간 해제
+            mirrorBody = mirrorPiece.GetComponent<Rigidbody>();
+            if (mirrorBody != null)
+            {
+                mirrorInterpolation = mirrorBody.interpolation;
+                mirrorBody.interpolation = RigidbodyInterpolation.None;
+            }
 
             mirrorPiece.position = mirrorEndPos - RiseDelta(downPos);
             mirrorPiece.SetParent(pillarInside, true);
@@ -80,6 +90,14 @@ public class PillarMirrorReveal : MonoBehaviour
             // 스냅 판정이 거울틀 기준 localPosition이라 원래 부모로 되돌림
             mirrorPiece.SetParent(mirrorParent, true);
             mirrorPiece.SetPositionAndRotation(mirrorEndPos, mirrorEndRot);
+
+            // 물리 위치를 맞춘 뒤 보간 복구
+            if (mirrorBody != null)
+            {
+                mirrorBody.position = mirrorEndPos;
+                mirrorBody.rotation = mirrorEndRot;
+                mirrorBody.interpolation = mirrorInterpolation;
+            }
         }
     }
 
