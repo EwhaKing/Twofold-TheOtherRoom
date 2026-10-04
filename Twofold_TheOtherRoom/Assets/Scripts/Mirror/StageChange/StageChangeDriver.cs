@@ -13,6 +13,14 @@ public class StageChangeDriver : MonoBehaviour
              "한쪽이 안 끝나면 양쪽이 검은 화면에서 같이 멈춤")]
     [SerializeField] private float reportTimeoutSeconds = 40f;
 
+    [Header("Demo Ending")]
+    [Tooltip("다음 스테이지 X, 데모 엔딩 띄울 것인지\n" +
+             "2D,3D 씬 둘 다 같은 값으로 두기")]
+    [SerializeField] private bool endDemoAfterCutscene;
+
+    [Tooltip("엔딩 패널. 비워두면 씬에서 찾음")]
+    [SerializeField] private TimeoutPresenter ending;
+
     private IStageCutscene cutscene;
 
     private bool started;
@@ -83,6 +91,16 @@ public class StageChangeDriver : MonoBehaviour
     {
         if (reported) return;
         reported = true;
+
+        // 데모 엔딩
+        if (endDemoAfterCutscene)
+        {
+            if (ending == null) ending = FindAnyObjectByType<TimeoutPresenter>();
+
+            if (ending != null) ending.ShowEnding();
+            else Debug.LogError("[StageChange] 엔딩을 띄울 TimeoutPresenter가 씬에 없음", this);
+            return;
+        }
 
         RoomService room = RoomService.Instance;
         if (room == null) return;

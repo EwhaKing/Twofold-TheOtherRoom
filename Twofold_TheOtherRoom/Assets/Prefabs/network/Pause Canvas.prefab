@@ -1930,6 +1930,11 @@ MonoBehaviour:
   gameoverPanel: {fileID: 2424913812089317630}
   exitButton: {fileID: 7345585737784700759}
   timeoutText: {fileID: 5644948587482664999}
+  endingText: {fileID: 2857296197905819757}
+  endingFadeGroup: {fileID: 8756390370801825852}
+  endingFadeSeconds: 3
+  panelBackground: {fileID: 5111502672937969767}
+  endingPanelColor: {r: 0, g: 0, b: 0, a: 1}
   clearTimeText: {fileID: 7200868227758001841}
   hideOnTimeout: []
   inputToLock: []
@@ -2120,7 +2125,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2691,6 +2696,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2315612454392618566}
+  - component: {fileID: 8756390370801825852}
   m_Layer: 5
   m_Name: EndingText
   m_TagString: Untagged
@@ -2720,6 +2726,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 120}
   m_SizeDelta: {x: 1000, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &8756390370801825852
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2857296197905819757}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2943836113372007854
 GameObject:
   m_ObjectHideFlags: 0
@@ -5055,7 +5073,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6961,7 +6979,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
