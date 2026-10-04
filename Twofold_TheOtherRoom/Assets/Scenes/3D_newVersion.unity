@@ -1468,6 +1468,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8350746464184951175, guid: 9b089f8496bfb6849a9612b32e6d0b27, type: 3}
   m_PrefabInstance: {fileID: 109272604}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &109272606 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3316652076815283546, guid: 9b089f8496bfb6849a9612b32e6d0b27, type: 3}
+  m_PrefabInstance: {fileID: 109272604}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c44752efb3d71554a90658f2f8515e0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeoutPresenter
 --- !u!1001 &115858500
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14452,6 +14463,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageChangeDriver
   cutsceneSource: {fileID: 562210087}
   reportTimeoutSeconds: 40
+  endDemoAfterCutscene: 1
+  ending: {fileID: 109272606}
 --- !u!4 &1619037662
 Transform:
   m_ObjectHideFlags: 0
