@@ -1,9 +1,10 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 제한시간 종료 패널. 스스로 판정해서 띄움.
+/// 종료 패널. 제한시간 종료는 스스로 판정하고, 데모 엔딩은 ShowEnding 으로 같은 패널을 씀.
 /// 게임플레이 씬마다 하나. 패널이 아니라 항상 켜져 있는 오브젝트에 붙일 것 — 꺼진 패널 위에서는 Update 안됨.
 /// </summary>
 public class TimeoutPresenter : MonoBehaviour
@@ -17,6 +18,21 @@ public class TimeoutPresenter : MonoBehaviour
 
     [Tooltip("시간 종료 문구. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] GameObject timeoutText;
+
+    [Tooltip("데모 엔딩 문구. 씬에는 꺼둔 채로 저장할 것")]
+    [SerializeField] GameObject endingText;
+
+    [Tooltip("엔딩 때 서서히 띄울 그룹. 비워두면 바로 뜸")]
+    [SerializeField] CanvasGroup endingFadeGroup;
+
+    [Tooltip("엔딩 페이드인 시간(초)")]
+    [SerializeField] float endingFadeSeconds = 2f;
+
+    [Tooltip("엔딩 때 색을 바꿀 패널 배경. 비워두면 TimeoutPresenter의 gameoverPanel")]
+    [SerializeField] Graphic panelBackground;
+
+    [Tooltip("엔딩 때 패널 배경색 설정")]
+    [SerializeField] Color endingPanelColor = Color.black;
 
     [Tooltip("클리어 타임이 들어갈 칸. 00:00 형식으로 채움. 비워두면 표시 안 함")]
     [SerializeField] TMP_Text clearTimeText;
@@ -67,16 +83,21 @@ public class TimeoutPresenter : MonoBehaviour
 
         if (GameSession.TotalSeconds - gs.ElapsedSeconds > 0f) return;
 
-        Show();
+        Show(timeoutText, false);
     }
 
-    /// 패널을 띄우고 조작 잠금. 이후 호출은 무시
-    void Show()
+    /// <summary>데모 엔딩. 시간 종료와 같은 패널</summary>
+    public void ShowEnding() => Show(endingText, true);
+
+    /// 패널을 띄우고 조작 잠금. 먼저 뜬 쪽만 적용, 이후 호출은 무시
+    void Show(GameObject text, bool fade)
     {
         if (_fired || gameoverPanel == null) return;
         _fired = true;
 
-        if (timeoutText != null) timeoutText.SetActive(true);
+        if (timeoutText != null) timeoutText.SetActive(false);
+        if (endingText != null) endingText.SetActive(false);
+        if (text != null) text.SetActive(true);
 
         ApplyClearTime();
 
@@ -88,6 +109,43 @@ public class TimeoutPresenter : MonoBehaviour
 
         var pause = FindAnyObjectByType<PauseController>();
         if (pause != null) pause.BlockPause = true;
+
+        if (fade) TintBackground();
+
+        // 엔딩은 글씨가 다 뜬 뒤 버튼
+        bool fading = fade && endingFadeGroup != null;
+        exitButton.gameObject.SetActive(!fading);
+
+        if (endingFadeGroup == null) return;
+
+        endingFadeGroup.alpha = 1f;
+        if (fading) StartCoroutine(FadeIn(endingFadeGroup, endingFadeSeconds));
+    }
+
+    /// 패널 배경색 교체
+    void TintBackground()
+    {
+        if (panelBackground == null) panelBackground = gameoverPanel.GetComponent<Graphic>();
+        if (panelBackground == null) return;
+
+        Color c = endingPanelColor;
+        c.a = panelBackground.color.a;
+        panelBackground.color = c;
+    }
+
+    /// 알파 0 → 1, 끝나면 나가기 버튼
+    IEnumerator FadeIn(CanvasGroup group, float seconds)
+    {
+        float elapsed = 0f;
+        while (elapsed < seconds)
+        {
+            group.alpha = elapsed / seconds;
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        group.alpha = 1f;
+        exitButton.gameObject.SetActive(true);
     }
 
     /// 클리어 타임 채우기. 시간 종료거나 값을 못 잡았으면 칸을 끔
