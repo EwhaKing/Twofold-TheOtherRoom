@@ -107,6 +107,28 @@ public class GameSession : NetworkBehaviour
     // 스테이지 관리 - 3D 지하실
     [Networked] public bool BasementOpen { get; set; }
 
+    // 스테이지 관리 - 지하실(개구멍) 확대창에 표시할 3D 퍼즐 클리어. 비트 n = "3D-n"
+    [Networked] public int BasementPuzzleMask { get; set; }
+
+    /// BasementPuzzleMask가 바뀔 때 호출. 나중에 생성되는 UI도 있으니 구독 시 Is3DSolved로 현재 상태를 먼저 맞출 것
+    public static event System.Action On3DSolvedChanged;
+
+    /// "3D-6" 같은 3D 퍼즐이 풀렸는지
+    public bool Is3DSolved(string puzzleId)
+        => TryGet3DNumber(puzzleId, out int n) && (BasementPuzzleMask & (1 << n)) != 0;
+
+    /// "3D-6" → 6. 비트 범위(0~31) 밖이거나 형식이 다르면 false
+    public static bool TryGet3DNumber(string puzzleId, out int number)
+    {
+        number = -1;
+        if (string.IsNullOrEmpty(puzzleId)) return false;
+
+        string id = puzzleId.Trim();
+        if (!id.StartsWith("3D-", System.StringComparison.OrdinalIgnoreCase)) return false;
+
+        return int.TryParse(id.Substring(3), out number) && number >= 0 && number < 32;
+    }
+
     ChangeDetector _changes;
 
     public override void Spawned()
@@ -144,6 +166,10 @@ public class GameSession : NetworkBehaviour
 
                 case nameof(BasementOpen):
                     FloorHole2D.Instance?.SetOpen(BasementOpen);
+                    break;
+
+                case nameof(BasementPuzzleMask):
+                    On3DSolvedChanged?.Invoke();
                     break;
             }
         }
@@ -215,6 +241,7 @@ public class GameSession : NetworkBehaviour
         P1SkipIntro = false;
         P2SkipIntro = false;
         BasementOpen = false;
+        BasementPuzzleMask = 0;
         P1Cleared = false;
         P2Cleared = false;
         P1StageReady = false;
@@ -290,6 +317,14 @@ public class GameSession : NetworkBehaviour
     {
         if (BasementOpen) return;
         BasementOpen = true;
+    }
+
+    // 3D 퍼즐 클리어 보고 RPC. number는 "3D-n"의 n
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReport3DSolved(int number)
+    {
+        if (number < 0 || number >= 32) return;
+        BasementPuzzleMask |= 1 << number;
     }
 
 }
