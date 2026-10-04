@@ -1,14 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class FloorHole2D : MonoBehaviour
 {
     public static FloorHole2D Instance { get; private set; }
 
-    [SerializeField] private Image holeImage;
-
-    [SerializeField] private Sprite closedSprite;
-    [SerializeField] private Sprite openSprite;
+    [SerializeField] private GameObject openHole;
+    [SerializeField] private GameObject closeHole;
 
     [SerializeField] private DetailView detailView;
     [SerializeField] private RoomFloorEntrance floorEntrance;
@@ -28,8 +25,11 @@ public class FloorHole2D : MonoBehaviour
 
     public void SetOpen(bool open)
     {
-        if (holeImage != null)
-            holeImage.sprite = open ? openSprite : closedSprite;
+        if (openHole != null)
+            openHole.SetActive(open);
+
+        if (closeHole != null)
+            closeHole.SetActive(!open);
 
         // 닫혀 있을 때:
         if (detailView != null)
