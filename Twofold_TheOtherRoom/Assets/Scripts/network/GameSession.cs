@@ -39,7 +39,7 @@ public class GameSession : NetworkBehaviour
     public const float TotalSeconds = 15f * 60f;
 
     // 인트로 길이. 실제 연출 소요와 무관한 고정 예산
-    public const float Stage1IntroSeconds = 44f;
+    public const float Stage1IntroSeconds = 40f;
     public const float Stage2IntroSeconds = 12f;
 
     /// 이번 스테이지의 인트로 예산
