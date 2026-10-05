@@ -78,6 +78,9 @@ public class PuzzleManager : MonoBehaviour
     public int total2DPuzzles = 5;
     public int total3DPuzzles = 5;
 
+    [Tooltip("풀리면 2D 쪽에도 알려줄 3D 퍼즐 ID")]
+    [SerializeField] private string[] syncTo2DPuzzleIds = { "3D-6", "3D-11" };
+
     readonly Dictionary<string, PuzzleDimension> _solved = new();
 
     public int SolvedCount => _solved.Count; // 전체 푼 퍼즐 수
@@ -119,7 +122,14 @@ public class PuzzleManager : MonoBehaviour
                 }
             }
         }
-        
+
+        // 2D 화면에 표시해야 하는 3D 퍼즐만 상대에게 알려줌. 2D 쪽은 GameSession.Is3DSolved로 확인
+        if (Array.IndexOf(syncTo2DPuzzleIds, puzzleId) >= 0 &&
+            GameSession.TryGet3DNumber(puzzleId, out int number))
+        {
+            GameSession.Instance?.RpcReport3DSolved(number);
+        }
+
         OnPuzzleSolved?.Invoke(puzzleId);
 
         OnProgressChanged?.Invoke(dimension, SolvedCountOf(dimension), TotalOf(dimension));

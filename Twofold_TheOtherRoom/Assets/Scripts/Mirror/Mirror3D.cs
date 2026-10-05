@@ -241,6 +241,12 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             boxCollider.enabled = false;
         }
 
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.Ding);
+        }
+
+
         MirrorManager.Instance?.MirrorPiecePlaced(mirrorId);
 
         Debug.Log($"[Mirror3D] 거울 배치 완료: {mirrorId}");
