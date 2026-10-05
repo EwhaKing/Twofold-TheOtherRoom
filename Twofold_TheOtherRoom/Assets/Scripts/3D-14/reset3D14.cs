@@ -58,7 +58,6 @@ public class reset3D14 : MonoBehaviour
 
     public void ResetPuzzle()
     {
-        Debug.Log("[reset3D14] 퍼즐 리셋 시작");
         if (figures == null)
             return;
 
@@ -69,7 +68,5 @@ public class reset3D14 : MonoBehaviour
 
             figure.ResetPos();
         }
-
-        Debug.Log("[reset3D14] 퍼즐 리셋 완료");
     }
 }

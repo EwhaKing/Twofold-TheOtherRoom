@@ -23,6 +23,23 @@ public class board3D14 : MonoBehaviour, IInteractable
         isViewing = true;
     }
 
+    public bool CanMoveToPosition(
+        figure3D14 movingFigure,
+        FigurePositionName targetPosition)
+    {
+        foreach (figure3D14 figure in figures)
+        {
+            if (figure == null || figure == movingFigure)
+                continue;
+
+            if (figure.GetCurrentPositionName() == targetPosition)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
   /*  
     public void CheckPuzzleSolved()
     {

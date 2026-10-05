@@ -1,17 +1,30 @@
 using UnityEngine;
 
+public enum FigurePositionName
+{
+    Front,
+    Right,
+    Back,
+    Left,
+    None
+}
+
 public class figure3D14 : MonoBehaviour, IMouseHoldable
 {
+    private board3D14 board;
+
     [System.Serializable]
     public class FigurePosition
     {
-        public string positionName;
+        public FigurePositionName positionName;
         public Vector3 localPosition;
     }
 
     [Header("Figure Positions")]
     [SerializeField] private FigurePosition[] possiblePositions;
 
+    private FigurePositionName currentPosition = FigurePositionName.None;
+    
     [Header("Drag Settings")]
     [SerializeField] private float snapDistance = 0.5f;
 
@@ -28,6 +41,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     private void Awake()
     {
         returnPosition = transform.localPosition;
+        board = GetComponentInParent<board3D14>();
     }
 
     private void Update()
@@ -72,6 +86,11 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             return false;
 
         return InspectionCameraRig.Instance.IsViewing;
+    }
+    
+    public FigurePositionName GetCurrentPositionName()
+    {
+        return currentPosition;
     }
 
     private void TryStartDrag()
@@ -175,9 +194,9 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     private void CheckPosition()
     {
         FigurePosition nearestPosition = null;
-
         float nearestDistance = Mathf.Infinity;
 
+        // 가장 가까운 위치 찾기
         foreach (FigurePosition position in possiblePositions)
         {
             float distance = Vector3.Distance(
@@ -192,17 +211,50 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             }
         }
 
-        if (nearestPosition != null &&
-            nearestDistance <= snapDistance)
+        // 가까운 위치가 없거나 snapDistance 밖이면 원래 위치로
+        if (nearestPosition == null ||
+            nearestDistance > snapDistance)
         {
+            transform.localPosition = returnPosition;
+
+            Debug.Log(
+                $"[Figure] {currentPosition} → 이동 실패 (위치를 찾지 못함)"
+            );
+
+            return;
+        }
+
+        // 이동 전 위치 저장
+        FigurePositionName previousPosition = currentPosition;
+
+        // Board에게 이동 가능한지 확인
+        bool canMove = board.CanMoveToPosition(
+            this,
+            nearestPosition.positionName
+        );
+
+        if (canMove)
+        {
+            // 해당 위치로 이동
             transform.localPosition =
                 nearestPosition.localPosition;
 
+            // 현재 위치 갱신
+            currentPosition =
+                nearestPosition.positionName;
+
+            Debug.Log(
+                $"[Figure] {previousPosition} → {currentPosition} 이동 성공"
+            );
         }
         else
         {
-            transform.localPosition =
-                returnPosition;
+            // 다른 Figure가 이미 사용 중
+            transform.localPosition = returnPosition;
+
+            Debug.Log(
+                $"[Figure] {previousPosition} → {nearestPosition.positionName} 이동 실패 (이미 사용 중)"
+            );
         }
     }
 
@@ -210,11 +262,6 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
     public void ResetPos()
     {
-        Debug.Log(
-        $"[Figure3D14] {gameObject.name} RESET 호출됨"
-        );
         transform.localPosition = returnPosition;
-
-        Debug.Log($"[Figure3D14] {gameObject.name} → 초기 위치로 복귀");
     }
 }
