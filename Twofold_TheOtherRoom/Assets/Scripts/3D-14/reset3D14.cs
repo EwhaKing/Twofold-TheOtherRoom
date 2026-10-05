@@ -2,15 +2,24 @@ using UnityEngine;
 
 public class reset3D14 : MonoBehaviour
 {
-    
+    private board3D14 board;
+
     [Header("Inspection Camera")]
     [SerializeField] private Camera inspectionCamera;
 
     [Header("Figures")]
     [SerializeField] private figure3D14[] figures;
 
+    private void Awake()
+    {
+        board = GetComponentInParent<board3D14>();
+    }
+
     private void Update()
     {
+        if (board != null && board.IsSolved)
+            return;
+
         if (!IsInspectionView())
             return;
 

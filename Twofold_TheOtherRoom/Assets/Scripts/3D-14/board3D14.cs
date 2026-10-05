@@ -1,12 +1,27 @@
 using UnityEngine;
+using System.Collections;
 
 public class board3D14 : MonoBehaviour, IInteractable
 {
-    [Header("Figures")]
-    [SerializeField] private figure3D14[] figures;
+    [System.Serializable]
+    public class FigureAnswer
+    {
+        public figure3D14 figure;
+        public FigurePositionName correctPosition;
+    }
+    
+    [Header("Figures & Answers")]
+    [SerializeField] private FigureAnswer[] figureAnswers;
 
-    public bool isViewing = false;
+    [Header("Clear Animation")]
+    [SerializeField] private Transform shelf;
+    [SerializeField] private float shelfMoveDistance = 1f;
+    [SerializeField] private float shelfMoveDuration = 1f;
 
+    private bool shelfMoved = false;
+
+    private bool _isSolved = false;
+    public bool IsSolved => _isSolved;
 
     public void Interact()
     {
@@ -20,57 +35,83 @@ public class board3D14 : MonoBehaviour, IInteractable
         }
 
         InspectionCameraRig.Instance.StartView();
-        isViewing = true;
     }
 
     public bool CanMoveToPosition(
         figure3D14 movingFigure,
         FigurePositionName targetPosition)
+
     {
-        foreach (figure3D14 figure in figures)
+        foreach (FigureAnswer answer in figureAnswers)
         {
-            if (figure == null || figure == movingFigure)
+            if (answer == null || answer.figure == null)
                 continue;
 
-            if (figure.GetCurrentPositionName() == targetPosition)
+            if (answer.figure == movingFigure)
+                continue;
+
+            if (answer.figure.GetCurrentPositionName() == targetPosition)
             {
                 return false;
             }
         }
-
         return true;
     }
-  /*  
-    public void CheckPuzzleSolved()
+
+    private IEnumerator MoveShelf()
     {
-        if (figures == null || figures.Length == 0)
-            return;
+        shelfMoved = true;
 
-        foreach (figure3D14 figure in figures)
+        Vector3 startPosition = shelf.localPosition;
+        Vector3 targetPosition = startPosition + Vector3.forward * shelfMoveDistance;
+
+        float elapsed = 0f;
+
+        while (elapsed < shelfMoveDuration)
         {
-            if (figure == null)
-                return;
+            elapsed += Time.deltaTime;
 
-            if (!figure.IsCorrectPosition())
-                return;
+            float t = elapsed / shelfMoveDuration;
+
+            // 부드럽게 움직이기
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            shelf.localPosition =
+                Vector3.Lerp(startPosition, targetPosition, t);
+
+            yield return null;
         }
 
-        PuzzleSolved();
+        shelf.localPosition = targetPosition;
     }
-
-
-    private void PuzzleSolved()
+    public void CheckPuzzleSolved()
     {
-        Debug.Log(
-            "[board3D14] ★ 퍼즐 성공 ★"
-        );
+        if (figureAnswers == null || figureAnswers.Length == 0)
+            return;
 
-        // 나중에 PuzzleManager 연결
-        /*
-        PuzzleManager.Instance.ReportSolved(
-            "3D-14",
-            PuzzleDimension.ThreeD
+        foreach (FigureAnswer answer in figureAnswers)
+        {
+            if (answer == null || answer.figure == null)
+                return;
+
+            if (answer.figure.GetCurrentPositionName() != answer.correctPosition)
+            {
+                return;
+            }
+        }
+
+        Debug.Log("[FigureBoardPuzzle] ★ 퍼즐 성공 ★");
+        _isSolved = true;
+
+        if (shelf != null && !shelfMoved)
+        {
+            StartCoroutine(MoveShelf());
+        }
+
+        PuzzleManager.Instance.ReportSolved
+        (
+            "3D-14", PuzzleDimension.ThreeD
         );
-        */
+    }
 }
     

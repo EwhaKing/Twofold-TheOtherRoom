@@ -46,6 +46,11 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
     private void Update()
     {
+        if (board != null && board.IsSolved)
+        {
+            return;
+        }
+
         if (!IsInspectionView())
         {
             return;
@@ -87,7 +92,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
         return InspectionCameraRig.Instance.IsViewing;
     }
-    
+
     public FigurePositionName GetCurrentPositionName()
     {
         return currentPosition;
@@ -196,7 +201,6 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
         FigurePosition nearestPosition = null;
         float nearestDistance = Mathf.Infinity;
 
-        // 가장 가까운 위치 찾기
         foreach (FigurePosition position in possiblePositions)
         {
             float distance = Vector3.Distance(
@@ -211,7 +215,6 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             }
         }
 
-        // 가까운 위치가 없거나 snapDistance 밖이면 원래 위치로
         if (nearestPosition == null ||
             nearestDistance > snapDistance)
         {
@@ -224,10 +227,8 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             return;
         }
 
-        // 이동 전 위치 저장
         FigurePositionName previousPosition = currentPosition;
 
-        // Board에게 이동 가능한지 확인
         bool canMove = board.CanMoveToPosition(
             this,
             nearestPosition.positionName
@@ -235,27 +236,19 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
         if (canMove)
         {
-            // 해당 위치로 이동
             transform.localPosition =
                 nearestPosition.localPosition;
 
-            // 현재 위치 갱신
             currentPosition =
                 nearestPosition.positionName;
-
-            Debug.Log(
-                $"[Figure] {previousPosition} → {currentPosition} 이동 성공"
-            );
+            
+            board.CheckPuzzleSolved();
         }
         else
         {
-            // 다른 Figure가 이미 사용 중
             transform.localPosition = returnPosition;
-
-            Debug.Log(
-                $"[Figure] {previousPosition} → {nearestPosition.positionName} 이동 실패 (이미 사용 중)"
-            );
         }
+
     }
 
     public void MouseHoldInteract(){}
@@ -263,5 +256,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     public void ResetPos()
     {
         transform.localPosition = returnPosition;
+
+        currentPosition = FigurePositionName.None;
     }
 }
