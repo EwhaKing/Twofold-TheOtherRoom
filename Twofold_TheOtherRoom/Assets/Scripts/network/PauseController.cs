@@ -25,12 +25,14 @@ public class PauseController : MonoBehaviour
     [Header("Notice Panel")]
     [SerializeField] GameObject noticePanel;
     [SerializeField] TMP_Text noticeText;
+    [SerializeField] Button exitNowButton;
 
     /// 일시정지 차단. Esc · 일시정지 버튼 둘 다 잠김. TimeoutPresenter 가 켬
     public bool BlockPause { get; set; }
 
     bool _lastPause;
     bool _lastBlockPause;
+    Coroutine _leaveNotice;
 
     void Start()
     {
@@ -41,6 +43,7 @@ public class PauseController : MonoBehaviour
         exitButton.onClick.AddListener(OpenExitConfirm);
         exitConfirmYes.onClick.AddListener(OnExit);
         exitConfirmNo.onClick.AddListener(CloseExitConfirm);
+        exitNowButton.onClick.AddListener(OnExitNow);
 
         // 이벤트 구독
         RoomService.Instance.PeerLeftDuringGamePlay += OnPeerLeft;
@@ -163,7 +166,8 @@ public class PauseController : MonoBehaviour
     {
         if (BlockPause) return;   // 시간 종료 중. 이미 종료 패널이 떠 있음
 
-        StartCoroutine(LeaveNoticeRoutine(nickname));
+        CloseExitConfirm();
+        _leaveNotice = StartCoroutine(LeaveNoticeRoutine(nickname));
     }
 
     IEnumerator LeaveNoticeRoutine(string nickname)
@@ -173,8 +177,16 @@ public class PauseController : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(5f);
 
-        Time.timeScale = 1f;
-        RoomService.Instance.Leave();
+        OnExit();
+    }
+
+    /// 대기 없이 즉시 퇴장. 자동 퇴장 코루틴 중단
+    void OnExitNow()
+    {
+        if (_leaveNotice != null) StopCoroutine(_leaveNotice);
+        exitNowButton.interactable = false;
+
+        OnExit();
     }
     #endregion
 }
