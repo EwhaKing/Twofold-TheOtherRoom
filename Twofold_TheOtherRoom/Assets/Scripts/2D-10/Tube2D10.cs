@@ -14,8 +14,8 @@ public class Tube2D10 : MonoBehaviour, IPointerClickHandler
     public Ball2D10[] ball;
     public enum TubeColor
     {
-        Red,
-        Yellow,
+        Purple,
+        Orange,
         Green
     }  
     public TubeColor tubeColor;
