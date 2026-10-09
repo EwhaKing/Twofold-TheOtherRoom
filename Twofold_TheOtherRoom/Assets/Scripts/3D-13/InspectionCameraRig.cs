@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InspectionCameraRig : MonoBehaviour
@@ -18,10 +19,12 @@ public class InspectionCameraRig : MonoBehaviour
     [Tooltip("비워 두면 PlayerControlLock이 플레이어 이동과 상호작용을 자동으로 잠금.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
+    [Header("Player Model")]
+    [Tooltip("보기 중 숨길 캐릭터 모델. 비우면 Player 태그 오브젝트")]
+    [SerializeField] private GameObject playerModel;
+
     [Header("Camera Transition")]
     [SerializeField] private float transitionDuration = 0.5f;
-
-    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
     public int currentCameraIndex = 0;
 
@@ -31,17 +34,17 @@ public class InspectionCameraRig : MonoBehaviour
     // 보기 중 화면을 그리는 카메라. 클릭 레이 원점
     public Camera ViewCamera => viewCamera;
 
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    private readonly Dictionary<Renderer, bool> hiddenRenderers = new Dictionary<Renderer, bool>();
+
     private bool isViewing = false;
     private bool isMoving = false;
 
     private float transitionTimer;
-
     private Vector3 startPosition;
     private Quaternion startRotation;
-
     private Vector3 targetPosition;
     private Quaternion targetRotation;
-
 
     private void Awake()
     {
@@ -54,24 +57,20 @@ public class InspectionCameraRig : MonoBehaviour
         Instance = this;
     }
 
-
     private void Start()
     {
-        if (playerCamera == null)
-            playerCamera = Camera.main;
+        if (playerCamera == null) playerCamera = Camera.main;
 
         SetAllObjectCameras(false);
         cameraUI.SetActive(false);
 
-        if (viewCamera != null)
-            viewCamera.gameObject.SetActive(false);
+        if (viewCamera != null) viewCamera.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (!isViewing)
-            return;
-            
+        if (!isViewing) return;
+
         UpdateCameraTransition();
     }
 
@@ -79,54 +78,49 @@ public class InspectionCameraRig : MonoBehaviour
     {
         if (cameraPoints == null || cameraPoints.Length == 0)
         {
-            Debug.LogWarning(
-                $"[{nameof(InspectionCameraRig)}] 등록된 카메라가 없습니다."
-            );
-
+            Debug.LogWarning($"[{nameof(InspectionCameraRig)}] 등록된 카메라가 없습니다.");
             return;
         }
-
         if (viewCamera == null)
         {
-            Debug.LogWarning(
-                $"[{nameof(InspectionCameraRig)}] View Camera가 연결되지 않았습니다."
-            );
-
+            Debug.LogWarning($"[{nameof(InspectionCameraRig)}] View Camera가 연결되지 않았습니다.");
             return;
         }
-
 
         isViewing = true;
         isMoving = false;
-
         currentCameraIndex = 0;
 
+        playerControlLock.Lock(this, behavioursToDisable, alwaysDisablePlayerInteractor: true);
+        HidePlayerModel();
 
-        playerControlLock.Lock(
-            this,
-            behavioursToDisable,
-            alwaysDisablePlayerInteractor: true);
-
-
-        if (playerCamera != null)
-            playerCamera.gameObject.SetActive(false);
-
-
+        if (playerCamera != null) playerCamera.gameObject.SetActive(false);
         viewCamera.gameObject.SetActive(true);
         cameraUI.SetActive(true);
 
-        viewCamera.transform.position =
-            cameraPoints[currentCameraIndex].transform.position;
+        Transform startPoint = cameraPoints[currentCameraIndex].transform;
+        viewCamera.transform.SetPositionAndRotation(startPoint.position, startPoint.rotation);
 
-        viewCamera.transform.rotation =
-            cameraPoints[currentCameraIndex].transform.rotation;
-
-
-        Debug.Log(
-            $"[{nameof(InspectionCameraRig)}] 카메라 시작: {currentCameraIndex}"
-        );
+        Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 시작: {currentCameraIndex}");
     }
 
+    public void ExitView()
+    {
+        if (!isViewing) return;
+
+        isViewing = false;
+        isMoving = false;
+        currentCameraIndex = 0;
+
+        if (viewCamera != null) viewCamera.gameObject.SetActive(false);
+        if (playerCamera != null) playerCamera.gameObject.SetActive(true);
+        cameraUI.SetActive(false);
+
+        playerControlLock.Unlock();
+        RestorePlayerModel();
+
+        Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 보기 종료");
+    }
 
     /// <summary>지정 카메라로 전환. Btn_top은 0, Btn_side는 1</summary>
     public void ShowCamera(int index)
@@ -136,9 +130,7 @@ public class InspectionCameraRig : MonoBehaviour
 
         if (cameraPoints == null || index < 0 || index >= cameraPoints.Length)
         {
-            Debug.LogWarning(
-                $"[{nameof(InspectionCameraRig)}] 카메라 인덱스 범위 밖: {index}"
-            );
+            Debug.LogWarning($"[{nameof(InspectionCameraRig)}] 카메라 인덱스 범위 밖: {index}");
             return;
         }
 
@@ -146,114 +138,78 @@ public class InspectionCameraRig : MonoBehaviour
         StartCameraTransition();
     }
 
-
     private void StartCameraTransition()
     {
-        if (viewCamera == null)
-            return;
+        if (viewCamera == null) return;
 
+        Transform target = cameraPoints[currentCameraIndex].transform;
 
-        startPosition =
-            viewCamera.transform.position;
-
-        startRotation =
-            viewCamera.transform.rotation;
-
-
-        targetPosition =
-            cameraPoints[currentCameraIndex].transform.position;
-
-        targetRotation =
-            cameraPoints[currentCameraIndex].transform.rotation;
-
+        startPosition = viewCamera.transform.position;
+        startRotation = viewCamera.transform.rotation;
+        targetPosition = target.position;
+        targetRotation = target.rotation;
 
         transitionTimer = 0f;
-
         isMoving = true;
 
-
-        Debug.Log(
-            $"[{nameof(InspectionCameraRig)}] 카메라 이동 → {currentCameraIndex}"
-        );
+        Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 이동 → {currentCameraIndex}");
     }
-
 
     private void UpdateCameraTransition()
     {
-        if (!isMoving)
-            return;
-    
+        if (!isMoving) return;
+
         transitionTimer += Time.deltaTime;
-    
-        float t = transitionTimer / transitionDuration;
-    
-        t = Mathf.Clamp01(t);
-    
+
         // 부드러운 시작 + 부드러운 끝
-        t = Mathf.SmoothStep(0f, 1f, t);
-    
-        viewCamera.transform.position =
-            Vector3.Lerp(
-                startPosition,
-                targetPosition,
-                t
-            );
-    
-        viewCamera.transform.rotation =
-            Quaternion.Slerp(
-                startRotation,
-                targetRotation,
-                t
-            );
-    
-        if (t >= 1f)
-        {
-            viewCamera.transform.position =
-                targetPosition;
-    
-            viewCamera.transform.rotation =
-                targetRotation;
-    
-            isMoving = false;
-        }
-    }
+        float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(transitionTimer / transitionDuration));
 
-    public void ExitView()
-    {
-        if (!isViewing)
-            return;
+        viewCamera.transform.SetPositionAndRotation(
+            Vector3.Lerp(startPosition, targetPosition, t),
+            Quaternion.Slerp(startRotation, targetRotation, t));
 
+        if (t < 1f) return;
 
-        isViewing = false;
+        viewCamera.transform.SetPositionAndRotation(targetPosition, targetRotation);
         isMoving = false;
-
-
-        if (viewCamera != null)
-            viewCamera.gameObject.SetActive(false);
-
-
-        if (playerCamera != null)
-            playerCamera.gameObject.SetActive(true);
-
-
-        playerControlLock.Unlock();
-
-        cameraUI.SetActive(false);
-
-
-
-        currentCameraIndex = 0;
-
-
-        Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 보기 종료");
     }
 
     private void SetAllObjectCameras(bool active)
     {
         foreach (Camera cam in cameraPoints)
         {
-            if (cam != null)
-                cam.gameObject.SetActive(active);
+            if (cam != null) cam.gameObject.SetActive(active);
         }
+    }
+
+    private void HidePlayerModel()
+    {
+        RestorePlayerModel();
+
+        GameObject target = playerModel != null
+            ? playerModel
+            : GameObject.FindGameObjectWithTag("Player");
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[{nameof(InspectionCameraRig)}] 숨길 플레이어 모델 없음");
+            return;
+        }
+
+        foreach (Renderer targetRenderer in target.GetComponentsInChildren<Renderer>(true))
+        {
+            hiddenRenderers.Add(targetRenderer, targetRenderer.enabled);
+            targetRenderer.enabled = false;
+        }
+    }
+
+    private void RestorePlayerModel()
+    {
+        foreach (KeyValuePair<Renderer, bool> state in hiddenRenderers)
+        {
+            if (state.Key != null) state.Key.enabled = state.Value;
+        }
+
+        hiddenRenderers.Clear();
     }
 }

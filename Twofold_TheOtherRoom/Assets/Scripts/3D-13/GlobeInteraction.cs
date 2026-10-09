@@ -29,6 +29,26 @@ public class GlobeInteraction : MonoBehaviour, IInteractable, ICloseInspection
     [Header("이동 설정")]
     [SerializeField] private float moveDuration = 0.5f;
 
+    [Header("거울 연출")]
+    [Tooltip("반구 회전축 피벗")]
+    [SerializeField] private GameObject leftPivot;
+    [SerializeField] private GameObject rightPivot;
+    [SerializeField] private float sphereMoveDuration = 4f;
+
+    [Tooltip("로컬 z축 회전 각도. left는 +, right는 -")]
+    [SerializeField] private float sphereMoveAngle = 60f;
+
+    [Tooltip("피벗 아래 반구 메쉬")]
+    [SerializeField] private Transform leftHalfMesh;
+    [SerializeField] private Transform rightHalfMesh;
+
+    [Tooltip("반구 localPosition 이동량. 단면 z-fighting 방지용")]
+    [SerializeField] private Vector3 leftGapOffset = new Vector3(0f, 0.003f, 0f);
+    [SerializeField] private Vector3 rightGapOffset = new Vector3(0f, -0.003f, 0f);
+
+    [Tooltip("전체 연출 시간 대비 반구 offset 이동 비율")]
+    [SerializeField, Range(0.01f, 1f)] private float sphereGapRatio = 0.3f;
+
     [Header("연동 퍼즐")]
     [Tooltip("정답 위도에 해당하는 Key Target 인덱스")]
     [SerializeField] private int answerTargetIndex;
@@ -91,6 +111,8 @@ public class GlobeInteraction : MonoBehaviour, IInteractable, ICloseInspection
             PuzzleManager.Instance.ReportSolved(
                 Puzzle13.Id3D, PuzzleDimension.ThreeD);
         }
+
+        StartCoroutine(PlayMirrorReveal());
 
         Debug.Log($"[{nameof(GlobeInteraction)}] 좌표 일치. 3D-13 클리어");
     }
@@ -283,6 +305,58 @@ public class GlobeInteraction : MonoBehaviour, IInteractable, ICloseInspection
         key.position = targetPosition;
         key.rotation = targetRotation;
         moveCoroutine = null;
+    }
+
+    #endregion
+
+
+    #region 거울 연출
+
+    private IEnumerator PlayMirrorReveal()
+    {
+        if (leftPivot == null || rightPivot == null || leftHalfMesh == null || rightHalfMesh == null)
+        {
+            Debug.LogWarning($"[{nameof(GlobeInteraction)}] 거울 연출 피벗/반구 메쉬 미연결");
+            yield break;
+        }
+
+        leftPivot.SetActive(true);
+        rightPivot.SetActive(true);
+
+        Transform leftPivotTransform = leftPivot.transform;
+        Transform rightPivotTransform = rightPivot.transform;
+
+        Quaternion leftStartRotation = leftPivotTransform.localRotation;
+        Quaternion rightStartRotation = rightPivotTransform.localRotation;
+
+        Vector3 leftMeshStart = leftHalfMesh.localPosition;
+        Vector3 rightMeshStart = rightHalfMesh.localPosition;
+
+        float timer = 0f;
+
+        while (timer < sphereMoveDuration)
+        {
+            timer += Time.deltaTime;
+
+            float progress = timer / sphereMoveDuration;
+            float rotateT = Mathf.SmoothStep(0f, 1f, progress);
+            float gapT = Mathf.SmoothStep(0f, 1f, progress / sphereGapRatio);
+
+            RotatePivot(leftPivotTransform, leftStartRotation, sphereMoveAngle * rotateT);
+            RotatePivot(rightPivotTransform, rightStartRotation, -sphereMoveAngle * rotateT);
+
+            leftHalfMesh.localPosition = leftMeshStart + leftGapOffset * gapT;
+            rightHalfMesh.localPosition = rightMeshStart + rightGapOffset * gapT;
+
+            yield return null;
+        }
+    }
+
+
+    /// 시작 회전 기준 로컬 z축 회전
+    private static void RotatePivot(Transform pivot, Quaternion startRotation, float angle)
+    {
+        pivot.localRotation = startRotation * Quaternion.Euler(0f, 0f, angle);
     }
 
     #endregion
