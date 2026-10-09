@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 2086953422269697759}
   - component: {fileID: 2070594719732162920}
   - component: {fileID: 8790934561172871358}
+  - component: {fileID: 9150803057969750563}
   m_Layer: 5
   m_Name: Retry
   m_TagString: Untagged
@@ -192,7 +193,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 3330927017215786594}
+  m_TargetGraphic: {fileID: 2070594719732162920}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
@@ -208,6 +209,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &9150803057969750563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2472726566418802837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e2cf1eef1828fa4eb7fb1574e5bc799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonTintSync2D10
+  extraGraphics:
+  - {fileID: 3330927017215786594}
 --- !u!1 &2660049395375165937
 GameObject:
   m_ObjectHideFlags: 0
