@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 5781921331491217679}
   - component: {fileID: 3197716020936433381}
   - component: {fileID: 4503442637563984723}
+  - component: {fileID: 1829023274833264402}
   m_Layer: 0
   m_Name: Intro
   m_TagString: Untagged
@@ -290,8 +291,11 @@ MonoBehaviour:
   inputToLock:
   - {fileID: 0}
   - {fileID: 0}
+  controlGuide: {fileID: 1829023274833264402}
   blinkSeconds: 7
   narrationStartSeconds: 7
+  guideHoldSeconds: 3
+  guideFadeSeconds: 1.5
   playLocallyWithoutNetwork: 0
 --- !u!114 &3197716020936433381
 MonoBehaviour:
@@ -426,6 +430,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1829023274833264402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4286918676697841504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eed6a6a69aec844db838b15e1212a1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDescriptionImages
+  imageIndexes:
+  - imageIndex: 0
+    text: "- \uC0C1\uD638\uC791\uC6A9"
 --- !u!1 &5543820362477204105
 GameObject:
   m_ObjectHideFlags: 0
