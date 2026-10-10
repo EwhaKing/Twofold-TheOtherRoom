@@ -22,6 +22,11 @@ public class PuzzleResetController : MonoBehaviour
 
     public void ResetPuzzle()
     {
+            if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
+        }
+        
         // 1. 씬 내의 모든 드래그 아이템 원위치 복원 및 맨 앞으로 배치
         if (allDragItems != null)
         {

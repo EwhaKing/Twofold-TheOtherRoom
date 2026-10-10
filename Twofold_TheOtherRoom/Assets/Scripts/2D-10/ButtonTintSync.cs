@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 // Button의 Color Tint(Normal/Highlighted/Pressed/Disabled)를 자식 그래픽에도 똑같이 적용
 [RequireComponent(typeof(Button))]
-public class ButtonTintSync2D10 : MonoBehaviour
+public class ButtonTintSync : MonoBehaviour
 {
     [SerializeField] private Graphic[] extraGraphics;
 
