@@ -19,6 +19,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private IInteractable currentInteractable;
     private IMouseHoldable mouseholdInteractable;
+    private Mirror3D heldMirror;   // 마지막으로 집은 거울
 
     public static PlayerInteractor Instance { get; private set; }
 
@@ -74,11 +75,14 @@ public class PlayerInteractor : MonoBehaviour
         {
             MouseHoldUI.SetActive(false);
             mouseholdInteractable.MouseHoldInteract();
+            heldMirror = mouseholdInteractable as Mirror3D;
         }
 
         if (currentInteractable != null &&
             Input.GetKeyDown(interactKey))
         {
+            if (heldMirror != null && heldMirror.IsHolding) return;
+
             interactText.gameObject.SetActive(false);
             currentInteractable.Interact();
         }
