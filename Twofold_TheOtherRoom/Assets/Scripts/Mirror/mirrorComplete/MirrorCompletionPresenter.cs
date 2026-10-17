@@ -1,5 +1,3 @@
-using System.Collections;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -23,12 +21,6 @@ public class MirrorCompletionPresenter : MonoBehaviour
     [SerializeField] private GameObject bothClearedEffect;
 
     [Header("Subtitle")]
-    [Tooltip("자막 루트. 배경과 텍스트를 자식으로 두면 같이 페이드됨. 씬에는 꺼둔 채로 저장할 것.\n" +
-             "공용 Canvas 루트를 물리면 안 됨 — 여기를 SetActive(false) 하므로 UI 전체가 꺼짐")]
-    [SerializeField] private CanvasGroup noticeRoot;
-
-    [SerializeField] private TMP_Text noticeText;
-
     [Tooltip("잠깐 뜨는 자막을 선명하게 유지하는 시간(초). 문구를 다 읽을 만큼")]
     [SerializeField] private float holdSeconds = 2.5f;
 
@@ -55,9 +47,6 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 직전에 적용한 상태. null 이면 아직 한 번도 적용 안 함
     private bool? applied;
 
-    /// 잠깐 떴다 사라지는 자막. 대기 안내와 양쪽 완성 알림이 같이 씀
-    private Coroutine transientRoutine;
-
     /// 상대 대기 자막이 떠 있는지. 같은 UI 를 쓰므로 잠깐 자막보다 이쪽이 우선
     private bool peerWaitShown;
 
@@ -83,14 +72,6 @@ public class MirrorCompletionPresenter : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        if (noticeRoot == null) return;
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
-    }
-
     private void Update()
     {
         Apply(BothDone);
@@ -103,7 +84,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// </summary>
     public void RequestInspect()
     {
-        if (!MineDone || noticeRoot == null) return;
+        if (!MineDone || NoticeSubtitle.Main == null) return;
 
         if (!BothDone)
         {
@@ -121,7 +102,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 내가 요청한 뒤 상대를 기다리는 동안 안내 UI.
     private void ApplyPeerWait()
     {
-        if (noticeRoot == null) return;
+        if (NoticeSubtitle.Main == null) return;
 
         GameSession session = GameSession.Instance;
         bool waiting = session != null
@@ -133,12 +114,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
         peerWaitShown = waiting;
 
         // 양쪽 준비 시 없앰
-        HideTransient();
-        if (!waiting) return;
-
-        if (noticeText != null) noticeText.text = peerWaitMessage;
-        noticeRoot.gameObject.SetActive(true);
-        noticeRoot.alpha = 1f;
+        NoticeSubtitle.Main.Set(waiting ? peerWaitMessage : string.Empty);
     }
 
     private void Apply(bool bothDone)
@@ -159,43 +135,8 @@ public class MirrorCompletionPresenter : MonoBehaviour
     private void ShowTransient(string message)
     {
         if (peerWaitShown) return;
+        if (NoticeSubtitle.Main == null) return;
 
-        if (transientRoutine != null) StopCoroutine(transientRoutine);
-        transientRoutine = StartCoroutine(TransientRoutine(message));
-    }
-
-    private IEnumerator TransientRoutine(string message)
-    {
-        if (noticeText != null) noticeText.text = message;
-
-        noticeRoot.gameObject.SetActive(true);
-        noticeRoot.alpha = 1f;
-
-        yield return new WaitForSeconds(holdSeconds);
-
-        float elapsed = 0f;
-        while (elapsed < fadeSeconds)
-        {
-            elapsed += Time.deltaTime;
-            noticeRoot.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeSeconds);
-            yield return null;
-        }
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
-        transientRoutine = null;
-    }
-
-    /// <summary>떠 있는 자막을 즉시 없앰.</summary>
-    private void HideTransient()
-    {
-        if (transientRoutine != null)
-        {
-            StopCoroutine(transientRoutine);
-            transientRoutine = null;
-        }
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
+        NoticeSubtitle.Main.Show(message, holdSeconds, fadeSeconds);
     }
 }

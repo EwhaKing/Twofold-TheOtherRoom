@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -27,11 +26,9 @@ public class IntroNarration : MonoBehaviour
     [Tooltip("더빙 클립. Preload Audio Data 켤 것")]
     [SerializeField] private AudioClip clip;
 
-    [SerializeField] private TMP_Text subtitle;
-
-    [Tooltip("자막 배경 + 텍스트를 묶은 루트. 문구가 없는 동안 꺼둠.\n" +
-             "클릭 차단막은 여기 넣지 말 것 — 같이 꺼져서 인트로 중 클릭이 통과함")]
-    [SerializeField] private GameObject subtitleRoot;
+    [Tooltip("인트로 자막. Register As Main 끈 NoticeSubtitle.\n" +
+             "클릭 차단막은 그 content 에 넣지 말 것 — 같이 꺼져서 인트로 중 클릭이 통과함")]
+    [SerializeField] private NoticeSubtitle subtitle;
 
     [Header("Content")]
     // start 는 파형의 무음 구간을 재서 앞쪽 쉼 안에 들어가도록 잡음. 클립을 다시 뽑으면 다시 잴 것
@@ -127,10 +124,7 @@ public class IntroNarration : MonoBehaviour
     {
         if (!_hasSubtitle) return;
 
-        if (subtitle.text != text) subtitle.text = text;   // 같은 값을 넣어도 TMP 가 매번 다시 그림
-
-        bool show = !string.IsNullOrEmpty(text);
-        if (subtitleRoot != null && subtitleRoot.activeSelf != show) subtitleRoot.SetActive(show);
+        subtitle.Set(text);
     }
 
     private void ApplyAudio(float seconds, bool paused)
