@@ -1,24 +1,34 @@
+using System;
 using UnityEngine;
 
+[RequireComponent(typeof(MirrorPiece))]
 public class MirrorObtainNoticeTrigger : MonoBehaviour
 {
     [Header("자막 설정")]
     [TextArea]
     [SerializeField] private string noticeText = "거울을 얻었다. 거울 프레임에 맞춰보자";
 
-    private bool isQuitting = false;
+    private MirrorPiece piece;
 
-    private void OnApplicationQuit()
+    private void Awake()
     {
-        isQuitting = true;
+        piece = GetComponent<MirrorPiece>();
     }
 
-    // MirrorPiece가 거울을 끄는(SetActive false) 순간 자동 발동
+    private void OnEnable()
+    {
+        MirrorManager.OnMirrorPieceObtained += HandleObtained;
+    }
+
     private void OnDisable()
     {
-        if (isQuitting) return;
-        if (!gameObject.scene.isLoaded) return;   // 씬 언로드
-        if (transform.parent == null || !transform.parent.gameObject.activeInHierarchy) return;   // 패널째 꺼짐
+        MirrorManager.OnMirrorPieceObtained -= HandleObtained;
+    }
+
+    private void HandleObtained(string obtainedId)
+    {
+        if (piece == null || piece.PuzzleId == null) return;
+        if (!string.Equals(obtainedId, piece.PuzzleId.Trim(), StringComparison.OrdinalIgnoreCase)) return;   // 다른 조각
 
         if (NoticeSubtitle.Main == null)
         {
