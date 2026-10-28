@@ -706,7 +706,7 @@ PrefabInstance:
       objectReference: {fileID: 726412570}
     - target: {fileID: 4610322426828156645, guid: a1e0fc84f6007da45b5a7b332a0cfd60, type: 3}
       propertyPath: treatMineAsBothLocally
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7448130538274767370, guid: a1e0fc84f6007da45b5a7b332a0cfd60, type: 3}
       propertyPath: m_Name
@@ -4746,37 +4746,6 @@ MonoBehaviour:
   puzzleId: 2D-10
   activateObject: {fileID: 1939012793}
   deactivateObject: {fileID: 0}
---- !u!1 &1339755613
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1339755614}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1339755614
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1339755613}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 864.77625, y: 608.98206, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1388049560 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 680612720985748668, guid: 368ca4c715b0b3d47bf1fc1ba1a20654, type: 3}
@@ -7171,7 +7140,6 @@ SceneRoots:
   - {fileID: 1144792259}
   - {fileID: 630538611}
   - {fileID: 2775218141644868963}
-  - {fileID: 1339755614}
   - {fileID: 1174484997}
   - {fileID: 925266845}
   - {fileID: 1493205564}
