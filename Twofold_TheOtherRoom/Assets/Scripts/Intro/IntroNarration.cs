@@ -26,9 +26,8 @@ public class IntroNarration : MonoBehaviour
     [Tooltip("더빙 클립. Preload Audio Data 켤 것")]
     [SerializeField] private AudioClip clip;
 
-    [Tooltip("인트로 자막. Register As Main 끈 NoticeSubtitle.\n" +
-             "클릭 차단막은 그 content 에 넣지 말 것 — 같이 꺼져서 인트로 중 클릭이 통과함")]
-    [SerializeField] private NoticeSubtitle subtitle;
+    /// 씬 공용 자막. Begin에서 연결
+    private NoticeSubtitle subtitle;
 
     [Header("Content")]
     // start 는 파형의 무음 구간을 재서 앞쪽 쉼 안에 들어가도록 잡음. 클립을 다시 뽑으면 다시 잴 것
@@ -67,12 +66,12 @@ public class IntroNarration : MonoBehaviour
         {
             source = SoundManager.Instance.NarrationSource;
         }
-        // Awake 아님 — 자막이 인트로 전용이라 씬에 꺼진 채 저장돼 있을 수 있음
+        subtitle     = NoticeSubtitle.Instance;
         _hasSubtitle = subtitle != null;
         _hasAudio    = source != null && clip != null;
 
         if (!_hasSubtitle)
-            Debug.LogError("[Intro] subtitle 인스펙터 참조 연결할 것", this);
+            Debug.LogError("[Intro] 씬에 NoticeCanvas 없음 — 자막 없이 진행", this);
 
         if (!_hasAudio)
             Debug.LogWarning($"[Intro] 더빙 없이 자막만 재생 — " +
