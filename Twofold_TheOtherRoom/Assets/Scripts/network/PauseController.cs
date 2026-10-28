@@ -34,6 +34,9 @@ public class PauseController : MonoBehaviour
     bool _lastBlockPause;
     Coroutine _leaveNotice;
 
+    /// 3D 커서 잠금 해제. 퇴장 안내 나가기 버튼 클릭 위함.
+    readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+
     void Start()
     {
         // 버튼 메서드 등록
@@ -166,7 +169,12 @@ public class PauseController : MonoBehaviour
     {
         if (BlockPause) return;   // 시간 종료 중. 이미 종료 패널이 떠 있음
 
+        // 방장이 나가면 GameSession이 사라져 일시정지 풀리므로 게스트 나간 경우도 동일하게 처리.
+        pausePanel.SetActive(false);
+        CloseSetting();
         CloseExitConfirm();
+        Time.timeScale = 1f;
+
         _leaveNotice = StartCoroutine(LeaveNoticeRoutine(nickname));
     }
 
@@ -174,6 +182,7 @@ public class PauseController : MonoBehaviour
     {
         noticeText.text = $"{nickname}님이 나갔습니다.\n 5초 뒤 타이틀 화면으로 돌아갑니다.";
         noticePanel.SetActive(true);
+        playerControlLock.Lock(this, null);
 
         yield return new WaitForSecondsRealtime(5f);
 

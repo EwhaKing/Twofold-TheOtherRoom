@@ -57,7 +57,10 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 한 번 완성이면 계속 완성. 방장이 나가면 GameSession 이 사라져 값이 false 로 돌아감
     private bool cachedBothDone;
 
-    /// <summary>양쪽 다 완성했는지. GameSession 이 없으면(단독 실행) 디버그 옵션대로</summary>
+    /// GameSession이 한 번이라도 있었는지. 방장이 나가 사라진 경우를 단독 실행과 구분
+    private bool sawSession;
+
+    /// <summary>양쪽 다 완성했는지. GameSession이 처음부터 없으면(단독 실행) 디버그 옵션대로</summary>
     public bool BothDone
     {
         get
@@ -65,8 +68,9 @@ public class MirrorCompletionPresenter : MonoBehaviour
             if (cachedBothDone) return true;
 
             GameSession session = GameSession.Instance;
-            if (session == null) return treatMineAsBothLocally && MineDone;
+            if (session == null) return !sawSession && treatMineAsBothLocally && MineDone;
 
+            sawSession = true;
             cachedBothDone = session.BothCleared;
             return cachedBothDone;
         }
