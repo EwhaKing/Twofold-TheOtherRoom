@@ -84,7 +84,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// </summary>
     public void RequestInspect()
     {
-        if (!MineDone || NoticeSubtitle.Main == null) return;
+        if (!MineDone || NoticeSubtitle.Instance == null) return;
 
         if (!BothDone)
         {
@@ -102,7 +102,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 내가 요청한 뒤 상대를 기다리는 동안 안내 UI.
     private void ApplyPeerWait()
     {
-        if (NoticeSubtitle.Main == null) return;
+        if (NoticeSubtitle.Instance == null) return;
 
         GameSession session = GameSession.Instance;
         bool waiting = session != null
@@ -114,7 +114,7 @@ public class MirrorCompletionPresenter : MonoBehaviour
         peerWaitShown = waiting;
 
         // 양쪽 준비 시 없앰
-        NoticeSubtitle.Main.Set(waiting ? peerWaitMessage : string.Empty);
+        NoticeSubtitle.Instance.Set(waiting ? peerWaitMessage : string.Empty);
     }
 
     private void Apply(bool bothDone)
@@ -135,8 +135,8 @@ public class MirrorCompletionPresenter : MonoBehaviour
     private void ShowTransient(string message)
     {
         if (peerWaitShown) return;
-        if (NoticeSubtitle.Main == null) return;
+        if (NoticeSubtitle.Instance == null) return;
 
-        NoticeSubtitle.Main.Show(message, holdSeconds, fadeSeconds);
+        NoticeSubtitle.Instance.Show(message, holdSeconds, fadeSeconds);
     }
 }

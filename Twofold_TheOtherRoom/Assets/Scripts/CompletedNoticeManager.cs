@@ -13,12 +13,12 @@ public class CompletedNoticeManager : MonoBehaviour
     // 이미 완료된 퍼즐 클릭 시 호출
     public void ShowNotice(string message = "이미 푼 퍼즐이다")
     {
-        if (NoticeSubtitle.Main == null)
+        if (NoticeSubtitle.Instance == null)
         {
-            Debug.LogWarning("[Notice] 씬에 NoticeSubtitle Main 없음 (CommonCanvas 확인)", this);
+            Debug.LogWarning("[Notice] 씬에 NoticeCanvas 없음", this);
             return;
         }
 
-        NoticeSubtitle.Main.Show(message);
+        NoticeSubtitle.Instance.Show(message);
     }
 }

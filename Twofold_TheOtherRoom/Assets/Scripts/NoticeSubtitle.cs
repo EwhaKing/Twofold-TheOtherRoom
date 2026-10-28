@@ -9,8 +9,8 @@ using UnityEngine;
 /// </summary>
 public class NoticeSubtitle : MonoBehaviour
 {
-    /// <summary>패널 프리팹들이 쓰는 씬 공용 자막. CommonCanvas의 NoticeCanvas 인스턴스</summary>
-    public static NoticeSubtitle Main { get; private set; }
+    /// <summary>패널 프리팹들이 쓰는 씬 공용 자막. 씬 루트의 NoticeCanvas</summary>
+    public static NoticeSubtitle Instance { get; private set; }
 
     [Header("References")]
     [SerializeField] private TMP_Text text;
@@ -27,8 +27,8 @@ public class NoticeSubtitle : MonoBehaviour
     [Tooltip("사라지는 시간(초)")]
     [SerializeField] private float fade = 1f;
 
-    [Tooltip("Main 등록 여부. 씬에 하나만 켤 것. 인트로 자막은 끔")]
-    [SerializeField] private bool registerAsMain;
+    /// 캔버스 정렬. 인트로(500) 위, 일시정지(1000) 아래
+    private const int SortingOrder = 600;
 
     private Coroutine _routine;
 
@@ -43,20 +43,19 @@ public class NoticeSubtitle : MonoBehaviour
 
     private void Awake()
     {
-        if (registerAsMain)
-        {
-            if (Main != null && Main != this)
-                Debug.LogWarning("[Notice] registerAsMain 인스턴스가 둘 이상", this);
+        if (Instance != null && Instance != this)
+            Debug.LogWarning("[Notice] 씬에 NoticeCanvas 가 둘 이상", this);
 
-            Main = this;
-        }
+        Instance = this;
+
+        if (TryGetComponent(out Canvas canvas)) canvas.sortingOrder = SortingOrder;
 
         Hide();
     }
 
     private void OnDestroy()
     {
-        if (Main == this) Main = null;
+        if (Instance == this) Instance = null;
     }
 
     #region 외부 호출

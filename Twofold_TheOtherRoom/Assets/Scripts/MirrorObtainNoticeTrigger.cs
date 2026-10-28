@@ -30,12 +30,12 @@ public class MirrorObtainNoticeTrigger : MonoBehaviour
         if (piece == null || piece.PuzzleId == null) return;
         if (!string.Equals(obtainedId, piece.PuzzleId.Trim(), StringComparison.OrdinalIgnoreCase)) return;   // 다른 조각
 
-        if (NoticeSubtitle.Main == null)
+        if (NoticeSubtitle.Instance == null)
         {
-            Debug.LogWarning("[Notice] 씬에 NoticeSubtitle Main 없음 (CommonCanvas 확인)", this);
+            Debug.LogWarning("[Notice] 씬에 NoticeCanvas 없음", this);
             return;
         }
 
-        NoticeSubtitle.Main.Show(noticeText);
+        NoticeSubtitle.Instance.Show(noticeText);
     }
 }
