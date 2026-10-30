@@ -16,7 +16,7 @@ public class TitleView : ScreenView
     void Start()
     {
         btnStart.onClick.AddListener(() => GameFlow.Instance.Show(ScreenId.Menu));
-        btnSetting.onClick.AddListener(() => GameFlow.Instance.Show(ScreenId.Setting));
+        btnSetting.onClick.AddListener(() => GameFlow.Instance.OpenSetting(ScreenId.Title));
         btnQuit.onClick.AddListener(() => GameFlow.Instance.QuitGame());
     }
 }

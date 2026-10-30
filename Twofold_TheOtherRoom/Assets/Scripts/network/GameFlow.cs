@@ -56,6 +56,9 @@ public class GameFlow : MonoBehaviour
     // 로비 카메라의 원래 태그. 로비로 돌아올 때 되돌림
     string _lobbyCameraTag;
 
+    // 설정 화면을 닫을 때 돌아갈 화면
+    ScreenId _settingReturn = ScreenId.Title;
+
     void Awake()
     {
         Instance = this;
@@ -77,6 +80,19 @@ public class GameFlow : MonoBehaviour
         Show(ScreenId.Title);
     }
 
+    void Update()
+    {
+        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+        // 접속 중엔 뒤로가기도 잠겨 있음. 실패 문구를 놓치지 않게 Esc도 무시
+        if (RoomService.Instance != null && RoomService.Instance.IsConnecting) return;
+
+        if (Current == ScreenId.Setting)
+            CloseSetting();
+        else if (CanOpenSettingByEscape(Current))
+            OpenSetting(Current);
+    }
+
     void OnDestroy()
     {
         if (RoomService.Instance == null) return;
@@ -92,6 +108,31 @@ public class GameFlow : MonoBehaviour
 
         foreach (var screen in _screens)
             screen.SetVisible(screen.Id == id);
+    }
+
+    /// 설정 화면 열기. 닫으면 returnTo로 돌아감
+    /// 열려 있는 동안 Phase가 바뀌면 ApplyPhase의 Show가 설정 화면을 그대로 덮어 닫음
+    public void OpenSetting(ScreenId returnTo)
+    {
+        _settingReturn = returnTo;
+        Show(ScreenId.Setting);
+    }
+
+    public void CloseSetting()
+    {
+        if (Current == ScreenId.Setting)
+            Show(_settingReturn);
+    }
+
+    // 방 안 대기 화면에서만 Esc로 설정을 엶. 게임플레이 중 Esc는 PauseController 담당
+    static bool CanOpenSettingByEscape(ScreenId id)
+    {
+        return id == ScreenId.Lobby
+            || id == ScreenId.Menu
+            || id == ScreenId.FindRoom
+            || id == ScreenId.MicInfo
+            || id == ScreenId.ModeSelect
+            || id == ScreenId.Waiting;
     }
 
     public void QuitGame()
