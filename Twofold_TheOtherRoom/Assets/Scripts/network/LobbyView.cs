@@ -40,7 +40,7 @@ public class LobbyView : ScreenView
         textHostName.text  = PlayerNames.Host;
         textGuestName.text = PlayerNames.Guest;
 
-        btnStart.onClick.AddListener(() => GameSession.Instance?.RequestModeSelect());
+        btnStart.onClick.AddListener(() => GameSession.Instance?.RequestMicInfo());
         btnLeave.onClick.AddListener(() => Room.Leave());
 
         Room.LogLine    += AppendLog;

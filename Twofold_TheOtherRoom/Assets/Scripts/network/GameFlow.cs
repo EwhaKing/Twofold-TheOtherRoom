@@ -10,6 +10,7 @@ public enum ScreenId
     Menu,
     FindRoom,
     Lobby,
+    MicInfo,      // 마이크 안내. 둘 다 봄
     ModeSelect,   // 방장만 봄
     Waiting,      // 게스트만 봄
     None,         // 게임플레이 중 — UI 전부 꺼짐
@@ -152,6 +153,10 @@ public class GameFlow : MonoBehaviour
                 _gameplayStarted = false;
                 _loadedStage = 0;
                 Show(ScreenId.Lobby);
+                break;
+
+            case RoomPhase.NoMicInfo:
+                Show(ScreenId.MicInfo);
                 break;
 
             case RoomPhase.ModeSelect:
