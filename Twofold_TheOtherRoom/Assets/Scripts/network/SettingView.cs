@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// 타이틀에서 여는 설정 화면. 위젯은 SettingsPanel 담당
+/// 타이틀 버튼 또는 방 안 대기 화면에서 Esc로 여는 설정 화면. 위젯은 SettingsPanel 담당
+/// 닫으면 연 화면으로 돌아감 (GameFlow가 기억)
 /// </summary>
 public class SettingView : ScreenView
 {
@@ -31,6 +32,6 @@ public class SettingView : ScreenView
 
     void OnPanelClosed()
     {
-        GameFlow.Instance.Show(ScreenId.Title);
+        GameFlow.Instance.CloseSetting();
     }
 }

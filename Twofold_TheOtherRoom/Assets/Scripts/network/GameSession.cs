@@ -5,8 +5,9 @@ using UnityEngine;
 public enum RoomPhase
 {
     Lobby = 0,        // 대기방
-    ModeSelect = 1,   // 방장은 모드 선택, 게스트는 대기 화면
-    Playing = 2,      // 게임플레이 씬 로드됨
+    NoMicInfo = 1,      // 마이크 안내. 둘 다 같은 화면, 둘 다 "예"를 눌러야 넘어감
+    ModeSelect = 2,   // 방장은 모드 선택, 게스트는 대기 화면
+    Playing = 3,      // 게임플레이 씬 로드됨
 }
 
 /// <summary>인트로 진행 단계. 시계로만 판정.</summary>
@@ -31,6 +32,13 @@ public class GameSession : NetworkBehaviour
 
     /// 방 단계. 바뀌는 순간 양쪽 GameFlow가 화면을 바꿈
     [Networked] public RoomPhase Phase { get; set; }
+
+    // 마이크 안내 확인. 둘 다 눌러야 모드 선택으로 넘어감
+    [Networked] public bool P1MicConfirmed { get; set; }
+    [Networked] public bool P2MicConfirmed { get; set; }
+
+    /// 이 클라이언트가 이미 "예"를 눌렀는지
+    public bool HasConfirmedMic(bool isHost) => isHost ? P1MicConfirmed : P2MicConfirmed;
 
     // 타이머 - 기본
     [Networked] public bool P1Loaded { get; set; }
@@ -178,11 +186,13 @@ public class GameSession : NetworkBehaviour
     // ---------- 방장만 호출 ----------
     // 게스트가 불러도 아무 일 없음
 
-    /// 로비의 "게임 시작" — 방장은 모드 선택으로, 게스트는 대기 화면으로
-    public void RequestModeSelect()
+    /// 로비의 "게임 시작" — 둘 다 마이크 안내 화면으로
+    public void RequestMicInfo()
     {
-        if (Object.HasStateAuthority)
-            Phase = RoomPhase.ModeSelect;
+        if (!Object.HasStateAuthority) return;
+        P1MicConfirmed = false;
+        P2MicConfirmed = false;
+        Phase = RoomPhase.NoMicInfo;
     }
 
     /// 알림창에서 "예" — 모드를 확정하고 바로 게임 시작
@@ -200,6 +210,26 @@ public class GameSession : NetworkBehaviour
     {
         if (Object.HasStateAuthority)
             Phase = RoomPhase.Lobby;
+    }
+
+    // 마이크 안내 "예" RPC. 양쪽 다 들어와야 모드 선택으로 넘어감. 취소 없음
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcConfirmMic(bool isHost)
+    {
+        if (Phase != RoomPhase.NoMicInfo) return;   // 이미 넘어갔거나 로비로 돌아간 뒤 늦게 온 요청
+
+        if (isHost) P1MicConfirmed = true;
+        else P2MicConfirmed = true;
+
+        if (P1MicConfirmed && P2MicConfirmed) Phase = RoomPhase.ModeSelect;
+    }
+
+    // 마이크 안내 "뒤로가기" RPC. 누가 누르든 둘 다 로비로. 방은 그대로 유지
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcBackToLobby()
+    {
+        if (Phase != RoomPhase.NoMicInfo) return;
+        Phase = RoomPhase.Lobby;
     }
 
     // 씬 로드 완료 시 호출하는 RPC
