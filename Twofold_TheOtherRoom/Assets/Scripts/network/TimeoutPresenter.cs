@@ -105,6 +105,8 @@ public class TimeoutPresenter : MonoBehaviour
             if (go != null) go.SetActive(false);
 
         gameoverPanel.SetActive(true);
+        if (!fade)
+            StartCoroutine(PlayGameOverBGM());
         playerControlLock.Lock(this, inputToLock);
 
         var pause = FindAnyObjectByType<PauseController>();
@@ -120,6 +122,58 @@ public class TimeoutPresenter : MonoBehaviour
 
         endingFadeGroup.alpha = 1f;
         if (fading) StartCoroutine(FadeIn(endingFadeGroup, endingFadeSeconds));
+    }
+
+    private IEnumerator PlayGameOverBGM()
+    {
+        SoundManager sound = SoundManager.Instance;
+
+        if (sound == null)
+            yield break;
+
+        // 기존 BGM 정지
+        sound.StopBGM();
+
+        // SoundManager의 등록된 효과음 목록에서 길이 확인
+        float duration = 0f;
+
+        var field = typeof(SoundManager).GetField(
+            "sfxList",
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Instance
+        );
+
+        var sfxList = field?.GetValue(sound) as SoundManager.SFXData[];
+
+        if (sfxList != null)
+        {
+            foreach (var sfx in sfxList)
+            {
+                if (sfx != null &&
+                    sfx.type == SFXType.HospitalFlatline &&
+                    sfx.clip != null)
+                {
+                    duration = sfx.clip.length;
+                    break;
+                }
+            }
+        }
+
+        // HospitalFlatline 재생
+        if (duration > 0f)
+        {
+            sound.PlaySFX(SFXType.HospitalFlatline);
+
+            yield return new WaitForSecondsRealtime(duration);
+        }
+        else
+        {
+            Debug.LogWarning("HospitalFlatline 효과음이 등록되지 않았습니다.");
+        }
+
+        // 효과음 종료 후 GameOver BGM 재생
+        if (SoundManager.Instance != null)
+            sound.PlayBGM(BGMType.GameOver);
     }
 
     /// 패널 배경색 교체
