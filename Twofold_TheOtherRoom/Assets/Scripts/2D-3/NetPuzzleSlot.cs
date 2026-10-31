@@ -16,6 +16,9 @@ public class NetPuzzleSlot : MonoBehaviour, IDropHandler
         NetPuzzleDragItem dragItem = droppedObj.GetComponent<NetPuzzleDragItem>();
         if (dragItem != null)
         {
+            // 이미 문양이 있는 칸이면 드롭 거부 (원래 자리로 복귀)
+            if (GetComponentInChildren<NetPuzzleDragItem>() != null) return;
+
             // [핵심 해결] 드래그가 끝난 뒤 이 슬롯을 새 부모로 지정!
             dragItem.parentAfterDrag = transform;
 
