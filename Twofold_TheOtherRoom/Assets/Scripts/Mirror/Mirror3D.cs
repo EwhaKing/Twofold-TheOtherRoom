@@ -14,7 +14,8 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     [SerializeField] private Vector3 holdRotationOffset = new Vector3(0f, 90f, 0f);
 
     [Header("Correct Position")]
-    [SerializeField] private float snapDistance = 0.5f;
+    [Tooltip("카메라 정면 레이로 MirrorFrame 태그 프레임을 감지하는 거리")]
+    [SerializeField] private float frameDetectDistance = 2.5f;
 
     [Header("Placement Settings")]
     [SerializeField] private LayerMask groundLayer;
@@ -203,11 +204,26 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
             return false;
         }
 
-        Vector3 localPosition = transform.localPosition;
+        Camera cam = Camera.main;
 
-        return Mathf.Abs(localPosition.x) <= snapDistance &&
-               Mathf.Abs(localPosition.y) <= snapDistance &&
-               Mathf.Abs(localPosition.z) <= snapDistance;
+        if (cam == null)
+        {
+            return false;
+        }
+
+        if (!Physics.Raycast(
+                cam.transform.position,
+                cam.transform.forward,
+                out RaycastHit hit,
+                frameDetectDistance,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Collide))
+        {
+            return false;
+        }
+
+        // MirrorFrame 닿았는지
+        return hit.collider.CompareTag("MirrorFrame");
     }
 
     private void PlaceMirror()
