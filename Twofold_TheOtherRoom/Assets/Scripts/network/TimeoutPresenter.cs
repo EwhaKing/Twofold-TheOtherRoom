@@ -105,8 +105,16 @@ public class TimeoutPresenter : MonoBehaviour
             if (go != null) go.SetActive(false);
 
         gameoverPanel.SetActive(true);
+
         if (!fade)
+        {
             StartCoroutine(PlayGameOverBGM());
+        }
+        else
+        {
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlayBGM(BGMType.DemoPlayEnd);
+        }
         playerControlLock.Lock(this, inputToLock);
 
         var pause = FindAnyObjectByType<PauseController>();

@@ -8,7 +8,8 @@ public enum BGMType
     StartBGM,
     WhiteNoise,
     BasementBG,
-    GameOver
+    GameOver,
+    DemoPlayEnd
 }
 public enum SFXType
 {
