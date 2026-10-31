@@ -7,7 +7,9 @@ public enum BGMType
 {
     StartBGM,
     WhiteNoise,
-    BasementBG
+    BasementBG,
+    GameOver,
+    DemoPlayEnd
 }
 public enum SFXType
 {
@@ -47,7 +49,12 @@ public enum SFXType
     AlphaL,
     AlphaF,
     GlassBallDrop,
-    WaterDrop
+    WaterDrop,
+    LadderSound,
+    DownstairDoor,
+    DownstairDoorClose,
+    HospitalFlatline
+
 }
 
 /// <summary>
