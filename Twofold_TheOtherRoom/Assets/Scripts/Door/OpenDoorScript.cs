@@ -39,6 +39,9 @@ public class OpenDoorScript : MonoBehaviour, IInteractable
 
         isOpen = false;
 
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlaySFX(SFXType.DownstairDoorClose);
+
         if (openRoutine != null)
             StopCoroutine(openRoutine);
 

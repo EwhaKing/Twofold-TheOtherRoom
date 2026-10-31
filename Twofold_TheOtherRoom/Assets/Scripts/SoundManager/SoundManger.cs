@@ -49,7 +49,8 @@ public enum SFXType
     GlassBallDrop,
     WaterDrop,
     LadderSound,
-    DownstairDoor
+    DownstairDoor,
+    DownstairDoorClose
 }
 
 /// <summary>
