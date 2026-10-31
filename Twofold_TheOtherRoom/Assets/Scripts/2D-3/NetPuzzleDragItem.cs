@@ -11,6 +11,7 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     [HideInInspector] public Vector2 startAnchoredPos;
 
     private Vector2 positionBeforeDrag;
+    private Vector3 dragOffset;
 
     private CanvasGroup canvasGroup;
     private RectTransform rectTransform;
@@ -44,12 +45,20 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     transform.SetParent(startParent, true);
     transform.SetAsLastSibling();
 
+    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector3 pointerPos))
+    {
+        dragOffset = rectTransform.position - pointerPos;
+    }
+
     canvasGroup.blocksRaycasts = false;
 }
 
     public void OnDrag(PointerEventData eventData)
 {
-    rectTransform.anchoredPosition += eventData.delta;
+    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector3 pointerPos))
+    {
+        rectTransform.position = pointerPos + dragOffset;
+    }
 }
 
     public void OnEndDrag(PointerEventData eventData)
