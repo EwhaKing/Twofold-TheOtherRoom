@@ -4,53 +4,71 @@ using System.Collections;
 using System.Linq;
 
 public class GameManager2D10 : MonoBehaviour
-{    
+{
     public Tube2D10[] tube;
-    
+
     public Tube2D10 currentTube;
     public Tube2D10 nextTube;
     public Ball2D10 currentball;
     public Ball2D10 beforeball;
-    
+
     private Image LightImage;
-    
+
     public bool isSelected;
     public bool isAnimating;
 
     [SerializeField] private float liftHeight = 400f;
     [SerializeField] private float ballMoveSpeed = 1900f;
+
+    // 리셋 버튼과 클리어 여부
+    [SerializeField] private GameObject resetButton;
+    private bool isSolved = false;
+
     private Vector2 targetPos;
+
     void Start()
     {
-        isSelected=false;
-        isAnimating=false;
+        isSelected = false;
+        isAnimating = false;
     }
 
     public void CheckAnswer()
     {
-
         if (tube[0].solve == true &&
             tube[1].solve == true &&
-            tube[2].solve == true){
+            tube[2].solve == true)
+        {
+            isSolved = true;
+
+            if (resetButton != null)
+            {
+                resetButton.SetActive(false);
+            }
+
             if (SoundManager.Instance != null)
             {
                 SoundManager.Instance.PlaySFX(SFXType.CompleteCorrectBtn);
             }
+
             PuzzleManager.Instance.ReportSolved(
                 "2D-10",
                 PuzzleDimension.TwoD
             );
         }
     }
+
     public IEnumerator GoUp()
     {
         isAnimating = true;
         targetPos = currentTube.GetPositionForBall(currentball);
         targetPos.y += liftHeight;
+
         yield return StartCoroutine(MoveBall(currentball, targetPos));
+
         currentTube.Pop();
         isAnimating = false;
     }
+
     public IEnumerator GoMove()
     {
         isAnimating = true;
@@ -68,12 +86,13 @@ public class GameManager2D10 : MonoBehaviour
         }
 
         nextTube.Push(currentball);
-        currentTube=null;
+        currentTube = null;
         nextTube.Answer(nextTube.GetColor());
-        nextTube=null;
-        currentball=null;
-        beforeball=null;
+        nextTube = null;
+        currentball = null;
+        beforeball = null;
         isAnimating = false;
+
         CheckAnswer();
     }
 
@@ -86,7 +105,8 @@ public class GameManager2D10 : MonoBehaviour
             ballRect.anchoredPosition = Vector2.MoveTowards(
                 ballRect.anchoredPosition,
                 targetPos,
-                ballMoveSpeed * Time.deltaTime);
+                ballMoveSpeed * Time.deltaTime
+            );
 
             yield return null;
         }
@@ -96,13 +116,13 @@ public class GameManager2D10 : MonoBehaviour
 
     public bool CanMove()
     {
-        if(beforeball==null)
+        if (beforeball == null)
         {
             return true;
-        } 
+        }
         // else if(beforeball.GetColor()!=currentball.GetColor() || nextTube.ball[3]!=null)
-        else if(nextTube.ball[3]!=null)
-        {   
+        else if (nextTube.ball[3] != null)
+        {
             return false;
         }
         else
@@ -110,9 +130,11 @@ public class GameManager2D10 : MonoBehaviour
             return true;
         }
     }
+
     public void RestartGame()
     {
-        if (isAnimating)
+        // 애니메이션 중이거나 이미 풀었으면 초기화하지 않음
+        if (isAnimating || isSolved)
         {
             return;
         }
@@ -129,7 +151,7 @@ public class GameManager2D10 : MonoBehaviour
 
         currentTube = null;
         nextTube = null;
-        currentball=null;
+        currentball = null;
         beforeball = null;
 
         isSelected = false;
