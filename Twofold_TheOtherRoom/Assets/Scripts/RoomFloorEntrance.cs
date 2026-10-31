@@ -26,6 +26,8 @@ public class RoomFloorEntrance : MonoBehaviour, IPointerClickHandler
             return;
         }
 
+        SoundManager.Instance.PlaySFX(SFXType.LadderSound);
+
         navigator.SetFloor(targetLowerFloor);
     }
 }

@@ -47,7 +47,8 @@ public enum SFXType
     AlphaL,
     AlphaF,
     GlassBallDrop,
-    WaterDrop
+    WaterDrop,
+    LadderSound
 }
 
 /// <summary>
