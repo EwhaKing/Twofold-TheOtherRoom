@@ -53,7 +53,9 @@ public enum SFXType
     LadderSound,
     DownstairDoor,
     DownstairDoorClose,
-    HospitalFlatline
+    HospitalFlatline,
+
+    GlassBreaking
 
 }
 
