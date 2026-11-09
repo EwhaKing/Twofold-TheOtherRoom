@@ -31,6 +31,10 @@ public class CutCake_Mouse : MonoBehaviour
 
         if (cake == null)
             Debug.LogWarning("[CutCake_Mouse] Cake가 연결되지 않았습니다.", this);
+
+        // Transparent 머티리얼은 기본이 ZWrite Off라 보는 방향에 따라 크림/케이크가 서로 덮어씀.
+        // 불투명 상태(alpha 1)에서는 ZWrite를 켜서 깊이로 정렬되게 한다.
+        SetCakeAlpha(1f);
     }
 
     public void CakePiece(KnifeClick_Mouse knife)
@@ -87,6 +91,11 @@ public class CutCake_Mouse : MonoBehaviour
                 if (material == null)
                     continue;
 
+                // Section(빨강)·접시처럼 Opaque 머티리얼은 건드리지 않음.
+                // (ZWrite를 끄면 나중에 그려지는 접시 등이 Section을 덮어버림)
+                if (material.renderQueue < (int)UnityEngine.Rendering.RenderQueue.Transparent)
+                    continue;
+
                 Color color = material.HasProperty("_BaseColor")
                     ? material.GetColor("_BaseColor")
                     : material.color;
@@ -98,6 +107,10 @@ public class CutCake_Mouse : MonoBehaviour
 
                 if (material.HasProperty("_Color"))
                     material.SetColor("_Color", color);
+
+                // 반투명일 때만 ZWrite Off (안쪽 Section이 비쳐 보이도록)
+                if (material.HasProperty("_ZWrite"))
+                    material.SetFloat("_ZWrite", alpha >= 1f ? 1f : 0f);
             }
         }
     }
