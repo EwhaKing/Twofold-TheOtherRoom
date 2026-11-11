@@ -48,6 +48,9 @@ public class GameFlow : MonoBehaviour
     // 지금 올라가 있는 씬의 스테이지. 0이면 아직 없음
     int _loadedStage;
 
+    // 게임플레이 종료 횟수. 로드 도중 종료 판정용
+    int _exitCount;
+
     // View의 ScreenId 넣음
     ScreenView[] _screens;
 
@@ -174,6 +177,8 @@ public class GameFlow : MonoBehaviour
 
         if (!wasPlaying) return;
 
+        _exitCount++;
+
         string scene = _loadedGamePlayScene;
         _loadedGamePlayScene = null;
 
@@ -267,7 +272,7 @@ public class GameFlow : MonoBehaviour
                   $"mode: {mode}, host: {room.IsHost}, stage: {stage}, " +
                   $"scene: {(previous != null ? previous + " → " : "")}{_loadedGamePlayScene}");
 
-        StartCoroutine(LoadAndReport(room.IsHost, previous));
+        StartCoroutine(LoadAndReport(room.IsHost, _loadedGamePlayScene, previous));
     }
 
     /// 이 클라이언트가 이번 스테이지에 받을 씬 이름.
@@ -287,33 +292,50 @@ public class GameFlow : MonoBehaviour
 
     // 씬 로딩 후 보고하기 위한 코루틴.
     // previousScene 은 반드시 로드보다 먼저 내릴 것 — 나중에 내리면 블링크가 안 보임
-    IEnumerator LoadAndReport(bool isHost, string previousScene)
+    // 도중에 게임플레이가 끝나면 올라온 씬을 내리고 중단
+    IEnumerator LoadAndReport(bool isHost, string scene, string previousScene)
     {
+        int exitCount = _exitCount;
+
         if (!string.IsNullOrEmpty(previousScene) &&
             SceneManager.GetSceneByName(previousScene).isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(previousScene);
         }
 
+        if (exitCount != _exitCount)
+        {
+            ReleaseCursor();
+            yield break;
+        }
+
         // 로드 전에 떼야 함 — 로드된 씬의 Awake 가 그 시점에 이미 Camera.main 을 캐시함
         ReleaseLobbyCameraTag();
 
-        var op = SceneManager.LoadSceneAsync(_loadedGamePlayScene, LoadSceneMode.Additive);
+        var op = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
         yield return op;
 
+        var loaded = SceneManager.GetSceneByName(scene);
+
+        if (exitCount != _exitCount)
+        {
+            if (loaded.isLoaded) yield return SceneManager.UnloadSceneAsync(loaded);
+            ReleaseCursor();
+            yield break;
+        }
+
         // Additive 로드는 Active Scene 이 로비로 남음 — 조명(Ambient · Skybox · 반사)은 Active Scene 것만 쓰이므로 게임 씬으로 넘김
-        var loaded = SceneManager.GetSceneByName(_loadedGamePlayScene);
         if (loaded.isLoaded) SceneManager.SetActiveScene(loaded);
 
-        // 로드 도중에 방을 나갔으면 이미 로비로 돌아간 상태
-        if (_gameplayStarted) DisableLobbyCamera();
-
+        DisableLobbyCamera();
         ReleaseCursor();
 
         // 첫 프레임 스톨을 보고 전에 흡수. StartedTick 이 양쪽 보고 뒤에 잡히므로
         // 여기서 멈추는 만큼은 인트로 연출에서 안 깎임
         for (int i = 0; i < WarmupFrames; i++)
             yield return null;
+
+        if (exitCount != _exitCount) yield break;
 
         Debug.Log($"[Flow] 로드 완료 보고 | host:{isHost}");
         GameSession.Instance?.RpcReportLoaded(isHost);
