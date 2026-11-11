@@ -168,6 +168,20 @@ public class GameFlow : MonoBehaviour
 
     // ---------- 게임플레이 종료 ----------
 
+    /// 종료 패널의 로비 버튼. 내 화면만 먼저 복귀
+    public void ReturnToLobby()
+    {
+        var room = RoomService.Instance;
+        var gs = GameSession.Instance;
+        if (room == null || !room.IsInRoom || gs == null) return;
+        if (!_gameplayStarted) return;   // 이미 돌아옴
+
+        gs.RpcReportReturnLobby(room.IsHost);
+
+        ExitGameplay();
+        Show(ScreenId.Lobby);
+    }
+
     /// 게임플레이 씬 언로드 + 로비 상태 복구
     void ExitGameplay()
     {
@@ -211,8 +225,7 @@ public class GameFlow : MonoBehaviour
         switch (phase)
         {
             case RoomPhase.Lobby:
-                _gameplayStarted = false;
-                _loadedStage = 0;
+                ExitGameplay();   // 안전장치
                 Show(ScreenId.Lobby);
                 break;
 

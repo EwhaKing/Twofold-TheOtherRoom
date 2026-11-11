@@ -112,6 +112,11 @@ public class GameSession : NetworkBehaviour
     public bool BothStageReady => P1StageReady && P2StageReady;
     public bool HasRequestedStageChange(bool isHost) => isHost ? P1StageReady : P2StageReady;
 
+    // 스테이지 관리 - 종료 후 로비 복귀
+    [Networked] public bool P1ReturnLobby { get; set; }
+    [Networked] public bool P2ReturnLobby { get; set; }
+    public bool HasReturnedLobby(bool isHost) => isHost ? P1ReturnLobby : P2ReturnLobby;
+
     // 스테이지 관리 - 3D 지하실
     [Networked] public bool BasementOpen { get; set; }
 
@@ -278,6 +283,8 @@ public class GameSession : NetworkBehaviour
         P2StageReady = false;
         P1StageDone = false;
         P2StageDone = false;
+        P1ReturnLobby = false;
+        P2ReturnLobby = false;
         ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
@@ -339,6 +346,27 @@ public class GameSession : NetworkBehaviour
     {
         ResetStageState();
         Stage++;
+    }
+
+    // 로비 복귀 보고 RPC. 둘 다 복귀하거나 혼자 남으면 Lobby
+    // 리셋 · Stage 는 다음 ConfirmMode 담당
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportReturnLobby(bool isHost)
+    {
+        if (Phase != RoomPhase.Playing) return;   // 이미 넘어간 뒤 늦게 온 보고
+
+        if (isHost) P1ReturnLobby = true;
+        else P2ReturnLobby = true;
+
+        if ((P1ReturnLobby && P2ReturnLobby) || ActivePlayerCount() < 2) Phase = RoomPhase.Lobby;
+    }
+
+    private int ActivePlayerCount()
+    {
+        int count = 0;
+        foreach (var _ in Runner.ActivePlayers)
+            count++;
+        return count;
     }
 
     // 3d 지하실 열림 보고 RPC
