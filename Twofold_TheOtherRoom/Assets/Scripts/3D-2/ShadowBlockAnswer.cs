@@ -34,7 +34,8 @@ public class ShadowBlockAnswer : MonoBehaviour
 
     public void CheckClear()
     {
-        if (isCleared) return;
+        if (isCleared) 
+            return;
 
         if (blocks == null || blocks.Length != answer.Length)
         {
@@ -59,6 +60,11 @@ public class ShadowBlockAnswer : MonoBehaviour
             SoundManager.Instance.PlaySFX(SFXType.SteppingCorrect);
         }
         StartCoroutine(GatherLightAndReportSolved());
+    }
+
+    public bool GetCleared()
+    {
+        return isCleared;
     }
 
     private IEnumerator GatherLightAndReportSolved()
