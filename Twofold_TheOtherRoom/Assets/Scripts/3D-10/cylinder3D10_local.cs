@@ -10,14 +10,25 @@ public class cylinder3D10_local : MonoBehaviour, IInteractable
     private bool isRotating;
     private float currentZ;
 
+    private Collider objectCollider;
+
     private void Start()
     {
         currentZ = transform.localEulerAngles.z;
+        objectCollider = GetComponent<Collider>();
+    }
+
+    private void Update()
+    {
+        if (controller != null && controller.GetSolve())
+        {
+            objectCollider.enabled = false;
+        }
     }
 
     public void Interact()
     {
-        if (isRotating || (controller != null && controller.GetSolve()))
+        if (isRotating || (controller != null && controller.GetSolve()))  
             return;
 
         if (SoundManager.Instance != null)
