@@ -156,27 +156,42 @@ public class GameFlow : MonoBehaviour
     void OnRoomLeft()
     {
         bool wasPlaying = _gameplayStarted;
-        _gameplayStarted = false;
-        _loadedStage = 0;
-
-        if(wasPlaying && _loadedGamePlayScene != null)
-        {
-            // 전환 도중이면 아직 안 올라온 씬 이름일 수 있음
-            if (SceneManager.GetSceneByName(_loadedGamePlayScene).isLoaded)
-                SceneManager.UnloadSceneAsync(_loadedGamePlayScene);
-
-            _loadedGamePlayScene = null;
-        }
-        if (wasPlaying)
-        {
-            RestoreLobbyCamera();
-            SoundManager.Instance?.PlayBGM(BGMType.StartBGM);
-        }
+        ExitGameplay();
 
         Show(wasPlaying ? ScreenId.Title : ScreenId.Menu);
     }
 
     #endregion
+
+    // ---------- 게임플레이 종료 ----------
+
+    /// 게임플레이 씬 언로드 + 로비 상태 복구
+    void ExitGameplay()
+    {
+        bool wasPlaying = _gameplayStarted;
+        _gameplayStarted = false;
+        _loadedStage = 0;
+
+        if (!wasPlaying) return;
+
+        string scene = _loadedGamePlayScene;
+        _loadedGamePlayScene = null;
+
+        StartCoroutine(UnloadGameplay(scene));
+        RestoreLobbyCamera();
+        SoundManager.Instance?.PlayBGM(BGMType.StartBGM);
+        Time.timeScale = 1f;   // 일시정지 · 퍼즐 정지 해제
+    }
+
+    /// 언로드 완료 후 커서 해제. 언로드 중 3D 씬의 커서 재잠금 대비
+    IEnumerator UnloadGameplay(string scene)
+    {
+        // 전환 도중이면 아직 안 올라온 씬 이름일 수 있음
+        if (!string.IsNullOrEmpty(scene) && SceneManager.GetSceneByName(scene).isLoaded)
+            yield return SceneManager.UnloadSceneAsync(scene);
+
+        ReleaseCursor();
+    }
 
     // ---------- Phase ----------
 
