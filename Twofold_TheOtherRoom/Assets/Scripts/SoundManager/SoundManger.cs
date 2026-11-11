@@ -55,7 +55,9 @@ public enum SFXType
     DownstairDoorClose,
     HospitalFlatline,
 
-    GlassBreaking
+    GlassBreaking,
+    LockButton,     
+    PlugInsert
 
 }
 
