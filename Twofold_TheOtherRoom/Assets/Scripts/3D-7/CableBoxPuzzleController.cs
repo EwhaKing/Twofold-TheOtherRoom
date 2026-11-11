@@ -197,6 +197,19 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         EnforceSingleDock(changed);
         UpdateAlignView(changed);
+        if (changed.State == PlugController.PlugState.Inserted)
+        {
+            foreach (var a in answers)
+            {
+                if (a.plug == changed && a.outlet == changed.CurrentOutlet)
+                {
+                    if (SoundManager.Instance != null)
+                        SoundManager.Instance.PlaySFX(SFXType.PlugInsert);
+
+                    break;
+                }
+            }
+        }
         CheckAnswer();
     }
 
@@ -273,6 +286,9 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     private void OpenFrame()
     {
         progress = Progress.Opened;
+
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlaySFX(SFXType.CabinetOpen);
 
         StopFrameRoutine();
         frameRoutine = StartCoroutine(OpenFrameRoutine());
