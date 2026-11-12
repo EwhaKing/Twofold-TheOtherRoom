@@ -23,22 +23,26 @@ public class ReturnToLobbyButton : MonoBehaviour
         if (button != null) button.onClick.RemoveListener(OnClick);
     }
 
-    // 방장이 나가 혼자 남은 게스트. 로비를 이어갈 수 없어 나가기만 남김
+    // 로비를 이어갈 수 없어 비활성
     private void Update()
     {
-        var room = RoomService.Instance;
-        if (room == null || !room.IsInRoom || room.PlayerCount >= 2) return;
-        if (OwnsSession(GameSession.Instance)) return;
-
-        if (button.gameObject.activeSelf) button.gameObject.SetActive(false);
+        if (IsAloneGuest() && button.interactable) button.interactable = false;
     }
 
     private void OnClick()
     {
+        if (IsAloneGuest()) return;   // 비활성 직전 프레임의 클릭
+
         if (GameFlow.Instance != null) GameFlow.Instance.ReturnToLobby();
     }
 
-    // IsHost 는 방장 퇴장 시 게스트로 넘어가므로 권한으로 판정
-    private static bool OwnsSession(GameSession session)
-        => session != null && session.Object != null && session.Object.HasStateAuthority;
+    // 방장이 나가 혼자 남은 게스트. IsHost 는 방장 퇴장 시 게스트로 넘어가므로 권한으로 판정
+    private static bool IsAloneGuest()
+    {
+        var room = RoomService.Instance;
+        if (room == null || !room.IsInRoom || room.PlayerCount >= 2) return false;
+
+        var session = GameSession.Instance;
+        return session == null || session.Object == null || !session.Object.HasStateAuthority;
+    }
 }
