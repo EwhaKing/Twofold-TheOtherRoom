@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 /*
    케이블 박스 퍼즐 (3D-7)
@@ -22,7 +23,7 @@ using UnityEngine;
    회전할 액자 메시
 */
 
-public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInspection
+public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInspection, IInspectionDescription
 {
     [Header("Puzzle ID")]
     [SerializeField] string puzzleId = "3D-7";
@@ -38,6 +39,12 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     [Header("Guide UI")]
     [Tooltip("드래그/클릭 조작 안내. 액자가 열려 plug를 만질 수 있는 동안만 켜짐")]
     [SerializeField] GameObject guideUI;
+
+    [Header("Description")]
+    [Tooltip("액자 닫힘 동안 설명")]
+    [SerializeField] PuzzleDescriptionImages.DescriptionImage[] closedDescriptions;
+    [Tooltip("액자 열림 이후 설명")]
+    [SerializeField] PuzzleDescriptionImages.DescriptionImage[] openedDescriptions;
 
     [Header("Frame")]
     [Tooltip("Frame Mesh")]
@@ -73,6 +80,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     [SerializeField] Behaviour[] behavioursToDisable;
 
     readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    readonly PlayerModelHider playerModelHider = new PlayerModelHider();
 
     bool isEntered;
 
@@ -141,6 +149,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         // 커서 상태 저장·해제까지 Lock이 담당
         playerControlLock.Lock(this, behavioursToDisable);
+        playerModelHider.Hide();
 
         if (playerCamera != null)
             playerCamera.enabled = false;
@@ -177,6 +186,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
             playerCamera.enabled = true;
 
         playerControlLock.Unlock();
+        playerModelHider.Restore();
 
         isEntered = false;
         SetInteractable();
@@ -190,6 +200,10 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         Exit();
     }
+
+    /// CommonCanvas 설명 패널이 부름
+    public IEnumerable<PuzzleDescriptionImages.DescriptionImage> GetDescriptions()
+        => progress == Progress.Closed ? closedDescriptions : openedDescriptions;
     #endregion
 
     #region Plug State
@@ -280,6 +294,9 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     void OnMouseDown()
     {
         if (!isEntered || progress != Progress.Closed) return;
+        // UI 위 클릭 무시. OnMouseDown은 UI에 안 막힘
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
         OpenFrame();
     }
 
@@ -309,6 +326,9 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         // 액자가 다 열리고 나서 케이블 클릭/드래그를 허용
         SetInteractable();
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
     }
 
     private void StopFrameRoutine()

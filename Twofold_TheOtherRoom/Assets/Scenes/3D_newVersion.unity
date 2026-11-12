@@ -474,7 +474,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OpenDoorScript
   doorPivot: {fileID: 0}
-  openLocalEulerAngles: {x: 0, y: 90, z: 0}
+  openLocalEulerAngles: {x: 0, y: -90, z: 0}
   openDuration: 1
 --- !u!4 &19071692 stripped
 Transform:
@@ -4309,9 +4309,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1486424476}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2804271348679175212, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 248169491}
     - targetCorrespondingSourceObject: {fileID: 188063290057796997, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
       insertIndex: -1
       addedObject: {fileID: 248169493}
@@ -4319,35 +4316,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 248169492}
   m_SourcePrefab: {fileID: 100100000, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
---- !u!1 &248169489 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2804271348679175212, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
-  m_PrefabInstance: {fileID: 248169488}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &248169490 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 188063290057796997, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
   m_PrefabInstance: {fileID: 248169488}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &248169491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248169489}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3eed6a6a69aec844db838b15e1212a1b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDescriptionImages
-  imageIndexes:
-  - imageIndex: 2
-    text: "- \uD50C\uB7EC\uADF8 \uC774\uB3D9"
-  - imageIndex: 0
-    text: "- \uBF51\uAE30, \uAF42\uAE30"
-  - imageIndex: 1
-    text: "- \uD68C\uC804"
 --- !u!64 &248169492
 MeshCollider:
   m_ObjectHideFlags: 0
