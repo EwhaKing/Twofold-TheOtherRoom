@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class ThreeDCommunicationDescriptionImages : MonoBehaviour
+public sealed class ThreeDCommunicationDescriptionImages : MonoBehaviour, IInspectionDescription
 {
     [SerializeField] private int imageIndex = 0;
     [SerializeField] private string text = "-리셋 버튼";
 
-    public IEnumerable<PuzzleDescriptionImages.DescriptionImage> GetAdditionalDescriptionImages()
+    public IEnumerable<PuzzleDescriptionImages.DescriptionImage> GetDescriptions()
     {
         ThreeDCommunicationPuzzle puzzle = GetComponent<ThreeDCommunicationPuzzle>();
         if (puzzle != null && puzzle.HasStartedStages)
