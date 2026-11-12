@@ -79,6 +79,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     [SerializeField] Behaviour[] behavioursToDisable;
 
     readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    readonly PlayerModelHider playerModelHider = new PlayerModelHider();
 
     bool isEntered;
 
@@ -147,6 +148,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     {
         // 커서 상태 저장·해제까지 Lock이 담당
         playerControlLock.Lock(this, behavioursToDisable);
+        playerModelHider.Hide();
 
         if (playerCamera != null)
             playerCamera.enabled = false;
@@ -183,6 +185,7 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
             playerCamera.enabled = true;
 
         playerControlLock.Unlock();
+        playerModelHider.Restore();
 
         isEntered = false;
         SetInteractable();
