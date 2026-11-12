@@ -7,11 +7,18 @@ using UnityEngine.EventSystems;
 /// 2D는 합본 Image 에 직접 붙일 것 — UGUI 는 가장 가까운 핸들러 하나에만 이벤트를 주므로
 /// 여기서 막지 않으면 부모 display_mirror 의 DetailView 가 확대본을 다시 연다.
 /// </summary>
-public class MirrorInspect : MonoBehaviour, IPointerClickHandler, IInteractable
+public class MirrorInspect : MonoBehaviour, IPointerClickHandler, IInteractable, IInteractPromptColor
 {
     [SerializeField] private MirrorCompletionPresenter presenter;
+    [SerializeField] private Color bothDonePromptColor = Color.black;   // 양쪽 완성 뒤 E 프롬프트 색
 
     public void OnPointerClick(PointerEventData eventData) => presenter?.RequestInspect();
 
     public void Interact() => presenter?.RequestInspect();
+
+    public bool TryGetPromptColor(out Color color)
+    {
+        color = bothDonePromptColor;
+        return presenter != null && presenter.BothDone;
+    }
 }
