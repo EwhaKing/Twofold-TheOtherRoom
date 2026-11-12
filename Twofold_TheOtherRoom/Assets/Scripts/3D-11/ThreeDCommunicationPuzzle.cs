@@ -417,6 +417,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 **/
         phase = Phase.Cleared;
 
+        // 클리어 후에는 기본 설명(입력/결정)을 끄고,
+        // ThreeDCommunicationDescriptionImages의 Cleared Descriptions만 보이게 함
+        PuzzleDescriptionImages baseDescriptions = GetComponent<PuzzleDescriptionImages>();
+        if (baseDescriptions != null)
+            baseDescriptions.enabled = false;
+
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.RefreshDescriptionImages(this);
     }

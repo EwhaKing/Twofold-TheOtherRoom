@@ -4,10 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Shared UI shown while a player is inspecting an object or puzzle.
-/// Only the current owner can show or hide the UI.
-/// </summary>
+
 public sealed class InspectionUIController : MonoBehaviour
 {
     public static InspectionUIController Instance { get; private set; }
@@ -199,18 +196,9 @@ public sealed class InspectionUIController : MonoBehaviour
         PuzzleDescriptionImages request =
             inspectionComponent.GetComponent<PuzzleDescriptionImages>();
 
-        var provider = inspectionComponent.GetComponent<ThreeDCommunicationDescriptionImages>();
-        bool hasProvider = provider != null && provider.isActiveAndEnabled;
-
-        // 3D-11 클리어 후: 기존 설명을 덧붙이지 않고 클리어용 설명으로 통째로 교체
-        if (hasProvider && provider.TryGetReplacementDescriptionImages(out var replacement))
-        {
-            ShowDescriptions(replacement, request);
-            return;
-        }
-
         var descriptions = new List<PuzzleDescriptionImages.DescriptionImage>();
-        if (request != null && request.ImageIndexes != null)
+        // 꺼져 있는(enabled = false) PuzzleDescriptionImages는 표시하지 않음
+        if (request != null && request.enabled && request.ImageIndexes != null)
             descriptions.AddRange(request.ImageIndexes);
 
         var stateDescription = inspectionComponent.GetComponent<IInspectionDescription>();
