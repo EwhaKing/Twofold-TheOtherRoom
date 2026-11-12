@@ -238,7 +238,10 @@ public class GameFlow : MonoBehaviour
                 break;
 
             case RoomPhase.Playing:
-                BeginGameplay(GameSession.Instance != null ? GameSession.Instance.Mode : 0);
+                var gs = GameSession.Instance;
+                if (gs != null && gs.HasReturnedLobby(room.IsHost)) break;   // 게임 중에 들어온 게스트
+
+                BeginGameplay(gs != null ? gs.Mode : 0);
                 break;
         }
     }

@@ -81,7 +81,7 @@ public class LobbyView : ScreenView
         // 상대 칸만 상태 표시. 내 칸은 복제 지연으로 제외
         bool waitingPeer = gs != null && gs.Phase == RoomPhase.Playing;
         SetStatus(hostStatusLabel,  waitingPeer && !isHost && !gs.HasReturnedLobby(true));
-        SetStatus(guestStatusLabel, waitingPeer && isHost && guestHere && !gs.HasReturnedLobby(false));
+        SetStatus(guestStatusLabel, waitingPeer && isHost && !gs.HasReturnedLobby(false));
 
         // 시작 버튼은 방장에게만, 그것도 둘이 다 로비에 모였을 때만
         btnStart.gameObject.SetActive(isHost);
