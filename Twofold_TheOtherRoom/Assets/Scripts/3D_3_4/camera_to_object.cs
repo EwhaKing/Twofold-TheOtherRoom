@@ -16,6 +16,8 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     [Header("Rotation")]
     [SerializeField, Min(1f)] private float rotationSpeed;
     [SerializeField] private float verticalRotationLimit = 180f;
+    [Tooltip("켜면 Transform pivot 대신 자식 Renderer들의 시각적 중심을 기준으로 회전합니다. 모델이 pivot에서 떨어져 있을 때 사용하세요.")]
+    [SerializeField] private bool rotateAroundVisualCenter = false;
 
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
@@ -36,6 +38,11 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     private float inspectionPitch;
     private Quaternion objectRotationInCameraSpace;
 
+    // inspectionPoint   : 살펴보기 중 물체가 놓일 화면상의 목표 지점 (월드 좌표)
+    // visualCenterLocal : 모델의 실제 가운데 점을 이 오브젝트 기준(로컬) 좌표로 저장한 값
+
+    private Vector3 inspectionPoint;
+    private Vector3 visualCenterLocal;
 
     private float dragStartPitch;
     private float dragPitchDelta;
@@ -90,6 +97,44 @@ inspectionYaw += mouseX * amount;
         inspectionCamera.transform.rotation
         * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
         * objectRotationInCameraSpace;
+
+    // 회전 후 위치 보정 (rotateAroundVisualCenter가 켜져 있을 때만 의미 있음)
+    ApplyInspectionPosition();
+    }
+
+
+    /// 살펴보기 중 물체의 위치를 맞춥니다.
+    /// - 옵션 OFF: 기존처럼 pivot(transform.position)을 화면 목표 지점에 둡니다.
+    /// - 옵션 ON : 모델의 시각적 중심이 화면 목표 지점에 오도록 pivot 위치를 역으로 계산합니다.
+
+    private void ApplyInspectionPosition()
+    {
+        if (!rotateAroundVisualCenter)
+        {
+            transform.position = inspectionPoint;
+            return;
+        }
+
+        // 현재 회전 상태에서 "pivot → 시각적 중심" 방향/거리
+        Vector3 centerOffset = transform.TransformPoint(visualCenterLocal) - transform.position;
+
+        // 시각적 중심 = inspectionPoint 가 되도록 pivot을 그만큼 반대로 이동
+        transform.position = inspectionPoint - centerOffset;
+    }
+
+    //중심 계산 
+    private Vector3 CalculateVisualCenterLocal()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+            return Vector3.zero;
+
+        // Renderer.bounds는 월드 기준 박스이므로 모두 합친 뒤 중심만 로컬로 변환합니다.
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+
+        return transform.InverseTransformPoint(bounds.center);
     }
 
     public void Interact()
@@ -122,12 +167,17 @@ inspectionYaw += mouseX * amount;
         playerControlLock.Lock(this, behavioursToDisable);
 
         Transform cameraTransform = inspectionCamera.transform;
-        // 카메라는 변경하지 않고 물체만 현재 카메라 정면으로 이동합니다.
-        transform.position =
+        //pivot 중심 계산 
+        if (rotateAroundVisualCenter)
+            visualCenterLocal = CalculateVisualCenterLocal();
+
+        // 물체가 놓일 화면상의 목표 지점 (카메라 정면 + Screen Offset)
+        inspectionPoint =
             cameraTransform.position
             + cameraTransform.right * screenOffset.x
             + cameraTransform.up * screenOffset.y
             + cameraTransform.forward * (distanceFromCamera + screenOffset.z);
+        ApplyInspectionPosition();
 
         inspectionYaw = 0f;
         inspectionPitch = 0f;
@@ -164,6 +214,8 @@ inspectionYaw += mouseX * amount;
 
     // E를 누르기 전의 원래 회전으로 복원
     transform.rotation = originalRotation;
+    // 회전을 되돌렸으니 시각적 중심이 다시 화면 가운데에 오도록 위치도 맞춥니다.
+    ApplyInspectionPosition();
 
     // 마우스 회전 누적값 초기화
     inspectionYaw = 0f;
