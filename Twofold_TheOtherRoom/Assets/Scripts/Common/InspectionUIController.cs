@@ -207,11 +207,11 @@ public sealed class InspectionUIController : MonoBehaviour
         if (request != null && request.ImageIndexes != null)
             descriptions.AddRange(request.ImageIndexes);
 
-        var provider = inspectionComponent.GetComponent<ThreeDCommunicationDescriptionImages>();
+        var stateDescription = inspectionComponent.GetComponent<IInspectionDescription>();
 
-        if (provider != null && provider.isActiveAndEnabled)
+        if (stateDescription is Behaviour behaviour && behaviour.isActiveAndEnabled)
         {
-            descriptions.AddRange(provider.GetAdditionalDescriptionImages());
+            descriptions.AddRange(stateDescription.GetDescriptions());
         }
 
         ShowDescriptions(descriptions, request);
