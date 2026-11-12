@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 /*
    케이블 박스 퍼즐 (3D-7)
@@ -293,6 +294,9 @@ public class CableBoxPuzzleController : MonoBehaviour, IInteractable, ICloseInsp
     void OnMouseDown()
     {
         if (!isEntered || progress != Progress.Closed) return;
+        // UI 위 클릭 무시. OnMouseDown은 UI에 안 막힘
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
         OpenFrame();
     }
 
