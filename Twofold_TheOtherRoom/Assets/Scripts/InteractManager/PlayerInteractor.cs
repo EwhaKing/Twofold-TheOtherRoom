@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInteractor : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class PlayerInteractor : MonoBehaviour
     private IInteractable currentInteractable;
     private IMouseHoldable mouseholdInteractable;
     private Mirror3D heldMirror;   // 마지막으로 집은 거울
+    private Graphic[] promptGraphics;       // interactText와 자식 그래픽
+    private Color[] defaultPromptColors;    // 각 그래픽 원래 색
 
     public static PlayerInteractor Instance { get; private set; }
 
@@ -47,7 +50,22 @@ public class PlayerInteractor : MonoBehaviour
         if (playerCamera == null)
             playerCamera = Camera.main;
 
-         interactText.gameObject.SetActive(false);
+        promptGraphics = interactText.GetComponentsInChildren<Graphic>(true);
+        defaultPromptColors = new Color[promptGraphics.Length];
+        for (int i = 0; i < promptGraphics.Length; i++)
+            defaultPromptColors[i] = promptGraphics[i].color;
+
+        interactText.gameObject.SetActive(false);
+    }
+
+    /// 대상 지정색, 없으면 각자 원래 색
+    private void ApplyPromptColor(IInteractPromptColor source)
+    {
+        Color c = default;
+        bool overridden = source != null && source.TryGetPromptColor(out c);
+
+        for (int i = 0; i < promptGraphics.Length; i++)
+            promptGraphics[i].color = overridden ? c : defaultPromptColors[i];
     }
 
     private void OnDisable()
@@ -149,6 +167,8 @@ public class PlayerInteractor : MonoBehaviour
 
                 if (interactText != null)
                 {
+                    ApplyPromptColor(hit.collider.GetComponentInParent<IInteractPromptColor>());
+
                     interactText.transform.position = screenPosition;
                     interactText.gameObject.SetActive(true);
                 }
