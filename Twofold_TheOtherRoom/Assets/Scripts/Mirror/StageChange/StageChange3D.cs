@@ -130,7 +130,7 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void Update()
     {
-        if (debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
+       // if (debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
     }
 #endif
 
