@@ -112,6 +112,11 @@ public class GameSession : NetworkBehaviour
     public bool BothStageReady => P1StageReady && P2StageReady;
     public bool HasRequestedStageChange(bool isHost) => isHost ? P1StageReady : P2StageReady;
 
+    // 스테이지 관리 - 종료 후 로비 복귀
+    [Networked] public bool P1ReturnLobby { get; set; }
+    [Networked] public bool P2ReturnLobby { get; set; }
+    public bool HasReturnedLobby(bool isHost) => isHost ? P1ReturnLobby : P2ReturnLobby;
+
     // 스테이지 관리 - 3D 지하실
     [Networked] public bool BasementOpen { get; set; }
 
@@ -206,10 +211,19 @@ public class GameSession : NetworkBehaviour
     }
 
     /// 게스트가 나갔을 때. 모드 선택 중이었다면 방장을 로비로 되돌림
+    /// 게임 중이면 빈자리를 로비 복귀로 처리. 새 게스트가 이어받음
     public void HandleGuestLeft()
     {
-        if (Object.HasStateAuthority)
-            Phase = RoomPhase.Lobby;
+        if (!Object.HasStateAuthority) return;
+
+        if (Phase == RoomPhase.Playing)
+        {
+            P2ReturnLobby = true;
+            if (P1ReturnLobby) Phase = RoomPhase.Lobby;
+            return;
+        }
+
+        Phase = RoomPhase.Lobby;
     }
 
     // 마이크 안내 "예" RPC. 양쪽 다 들어와야 모드 선택으로 넘어감. 취소 없음
@@ -278,6 +292,8 @@ public class GameSession : NetworkBehaviour
         P2StageReady = false;
         P1StageDone = false;
         P2StageDone = false;
+        P1ReturnLobby = false;
+        P2ReturnLobby = false;
         ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
@@ -339,6 +355,19 @@ public class GameSession : NetworkBehaviour
     {
         ResetStageState();
         Stage++;
+    }
+
+    // 로비 복귀 보고 RPC. 둘 다 복귀하면 Lobby. 나간 게스트 자리는 HandleGuestLeft 가 채움
+    // 리셋 · Stage 는 다음 ConfirmMode 담당
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportReturnLobby(bool isHost)
+    {
+        if (Phase != RoomPhase.Playing) return;   // 이미 넘어간 뒤 늦게 온 보고
+
+        if (isHost) P1ReturnLobby = true;
+        else P2ReturnLobby = true;
+
+        if (P1ReturnLobby && P2ReturnLobby) Phase = RoomPhase.Lobby;
     }
 
     // 3d 지하실 열림 보고 RPC

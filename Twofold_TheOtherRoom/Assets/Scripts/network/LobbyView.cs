@@ -18,6 +18,10 @@ public class LobbyView : ScreenView
     [SerializeField] TMP_Text textGuestName;
     [Tooltip("\"다른 플레이어를 기다리는 중...\" 게스트가 들어오면 꺼짐.")]
     [SerializeField] GameObject waitingLabel;
+    [Tooltip("1번 칸 옆 상태 표시. 꺼둔 채로 저장")]
+    [SerializeField] GameObject hostStatusLabel;
+    [Tooltip("2번 칸 옆 상태 표시. 꺼둔 채로 저장")]
+    [SerializeField] GameObject guestStatusLabel;
     [Tooltip("\"1/2\" 인원 표시")]
     [SerializeField] TMP_Text textPlayerCount;
     [Tooltip("방장에게만 보임")]
@@ -74,9 +78,19 @@ public class LobbyView : ScreenView
         if (waitingLabel != null)
             waitingLabel.SetActive(!guestHere);
 
-        // 시작 버튼은 방장에게만, 그것도 둘이 다 모였을 때만
+        // 상대 칸만 상태 표시. 내 칸은 복제 지연으로 제외
+        bool waitingPeer = gs != null && gs.Phase == RoomPhase.Playing;
+        SetStatus(hostStatusLabel,  waitingPeer && !isHost && !gs.HasReturnedLobby(true));
+        SetStatus(guestStatusLabel, waitingPeer && isHost && !gs.HasReturnedLobby(false));
+
+        // 시작 버튼은 방장에게만, 그것도 둘이 다 로비에 모였을 때만
         btnStart.gameObject.SetActive(isHost);
-        btnStart.interactable = isHost && gs != null && guestHere;
+        btnStart.interactable = isHost && gs != null && guestHere && gs.Phase == RoomPhase.Lobby;
+    }
+
+    static void SetStatus(GameObject label, bool on)
+    {
+        if (label != null && label.activeSelf != on) label.SetActive(on);
     }
 
     // ---------- 로그 ----------

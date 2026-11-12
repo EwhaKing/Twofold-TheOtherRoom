@@ -16,6 +16,9 @@ public class TimeoutPresenter : MonoBehaviour
     [Tooltip("나가기 버튼. 일시정지의 나가기와 같은 경로")]
     [SerializeField] Button exitButton;
 
+    [Tooltip("로비 복귀 버튼. 비워두면 나가기만")]
+    [SerializeField] GameObject lobbyButton;
+
     [Tooltip("시간 종료 문구. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] GameObject timeoutText;
 
@@ -124,7 +127,7 @@ public class TimeoutPresenter : MonoBehaviour
 
         // 엔딩은 글씨가 다 뜬 뒤 버튼
         bool fading = fade && endingFadeGroup != null;
-        exitButton.gameObject.SetActive(!fading);
+        SetButtonsVisible(!fading);
 
         if (endingFadeGroup == null) return;
 
@@ -207,7 +210,14 @@ public class TimeoutPresenter : MonoBehaviour
         }
 
         group.alpha = 1f;
-        exitButton.gameObject.SetActive(true);
+        SetButtonsVisible(true);
+    }
+
+    /// 나가기 · 로비 복귀 버튼 표시
+    void SetButtonsVisible(bool on)
+    {
+        exitButton.gameObject.SetActive(on);
+        if (lobbyButton != null) lobbyButton.SetActive(on);
     }
 
     /// 클리어 타임 채우기. 시간 종료거나 값을 못 잡았으면 칸을 끔
