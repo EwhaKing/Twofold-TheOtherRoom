@@ -66,7 +66,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
   
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
-    private readonly Dictionary<Renderer, bool> playerRendererStates = new Dictionary<Renderer, bool>();
+    private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
     private bool isInspecting;
     private Phase phase = Phase.Closed;
     private int currentStageIndex = -1;
@@ -151,7 +151,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         }
 
         isInspecting = true;
-        HidePlayerRenderers();
+        playerModelHider.Hide();
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
@@ -275,7 +275,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
                 originalCameraPosition,
                 originalCameraRotation);
 
-        RestorePlayerRenderers();
+        playerModelHider.Restore();
         isInspecting = false;
          //playerControlunLock
         playerControlLock.Unlock();
@@ -287,32 +287,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
 
         phase = solved ? Phase.Cleared : Phase.Closed;
-    }
-
-    private void HidePlayerRenderers()
-    {
-        foreach (GameObject player in GameObject.FindGameObjectsWithTag("Player"))
-        {
-            foreach (Renderer playerRenderer in player.GetComponentsInChildren<Renderer>(true))
-            {
-                // 부모와 자식 모두 Player 태그여도 원래 상태는 한 번만 저장한다.
-                if (playerRendererStates.ContainsKey(playerRenderer))
-                    continue;
-
-                playerRendererStates.Add(playerRenderer, playerRenderer.enabled);
-                playerRenderer.enabled = false;
-            }
-        }
-    }
-
-    private void RestorePlayerRenderers()
-    {
-        foreach (KeyValuePair<Renderer, bool> state in playerRendererStates)
-        {
-            if (state.Key != null)
-                state.Key.enabled = state.Value;
-        }
-        playerRendererStates.Clear();
     }
 
     private void OnDisable()

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class InspectionCameraRig : MonoBehaviour
@@ -19,10 +18,6 @@ public class InspectionCameraRig : MonoBehaviour
     [Tooltip("비워 두면 PlayerControlLock이 플레이어 이동과 상호작용을 자동으로 잠금.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
 
-    [Header("Player Model")]
-    [Tooltip("보기 중 숨길 캐릭터 모델. 비우면 Player 태그 오브젝트")]
-    [SerializeField] private GameObject playerModel;
-
     [Header("Camera Transition")]
     [SerializeField] private float transitionDuration = 0.5f;
 
@@ -35,7 +30,7 @@ public class InspectionCameraRig : MonoBehaviour
     public Camera ViewCamera => viewCamera;
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
-    private readonly Dictionary<Renderer, bool> hiddenRenderers = new Dictionary<Renderer, bool>();
+    private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
 
     private bool isViewing = false;
     private bool isMoving = false;
@@ -92,7 +87,7 @@ public class InspectionCameraRig : MonoBehaviour
         currentCameraIndex = 0;
 
         playerControlLock.Lock(this, behavioursToDisable, alwaysDisablePlayerInteractor: true);
-        HidePlayerModel();
+        playerModelHider.Hide();
 
         if (playerCamera != null) playerCamera.gameObject.SetActive(false);
         viewCamera.gameObject.SetActive(true);
@@ -117,7 +112,7 @@ public class InspectionCameraRig : MonoBehaviour
         cameraUI.SetActive(false);
 
         playerControlLock.Unlock();
-        RestorePlayerModel();
+        playerModelHider.Restore();
 
         Debug.Log($"[{nameof(InspectionCameraRig)}] 카메라 보기 종료");
     }
@@ -180,36 +175,5 @@ public class InspectionCameraRig : MonoBehaviour
         {
             if (cam != null) cam.gameObject.SetActive(active);
         }
-    }
-
-    private void HidePlayerModel()
-    {
-        RestorePlayerModel();
-
-        GameObject target = playerModel != null
-            ? playerModel
-            : GameObject.FindGameObjectWithTag("Player");
-
-        if (target == null)
-        {
-            Debug.LogWarning($"[{nameof(InspectionCameraRig)}] 숨길 플레이어 모델 없음");
-            return;
-        }
-
-        foreach (Renderer targetRenderer in target.GetComponentsInChildren<Renderer>(true))
-        {
-            hiddenRenderers.Add(targetRenderer, targetRenderer.enabled);
-            targetRenderer.enabled = false;
-        }
-    }
-
-    private void RestorePlayerModel()
-    {
-        foreach (KeyValuePair<Renderer, bool> state in hiddenRenderers)
-        {
-            if (state.Key != null) state.Key.enabled = state.Value;
-        }
-
-        hiddenRenderers.Clear();
     }
 }
