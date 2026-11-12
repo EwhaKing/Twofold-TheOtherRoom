@@ -19,6 +19,12 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     [Tooltip("켜면 Transform pivot 대신 자식 Renderer들의 시각적 중심을 기준으로 회전합니다. 모델이 pivot에서 떨어져 있을 때 사용하세요.")]
     [SerializeField] private bool rotateAroundVisualCenter = false;
 
+    [Header("Overlay Rendering (책상/벽 뚫림 방지)")]
+    [Tooltip("살펴보는 동안 물체와 자식들을 잠시 바꿔 둘 레이어 이름. 메인 카메라에서는 빼고 오버레이 카메라만 그리도록 설정된 레이어여야 합니다. 비워 두거나 없는 이름이면 레이어를 바꾸지 않습니다.")]
+    [SerializeField] private string inspectionLayerName = "InspectionCamera";
+    [Tooltip("Main Camera의 Stack에 등록한 Overlay 카메라. FOV를 메인 카메라와 맞추는 데 사용합니다. 비워 두면 FOV 동기화만 생략됩니다.")]
+    [SerializeField] private Camera overlayCamera;
+
     [Header("Player Lock")]
     [Tooltip("비워 두면 PlayerController, PlayerLocomotionInput, PlayerInteractor를 자동으로 찾습니다.")]
     [SerializeField] private Behaviour[] behavioursToDisable;
@@ -46,6 +52,10 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
 
     private float dragStartPitch;
     private float dragPitchDelta;
+
+    // 레이어 교체용: 살펴보기 시작 시 자신+자식들의 Transform과 원래 레이어를 저장해 두고, 끝날 때 그대로 되돌립니다.
+    private Transform[] layerTargets;
+    private int[] originalLayers;
 
     private void Awake()
     {
@@ -100,6 +110,53 @@ inspectionYaw += mouseX * amount;
 
     // 회전 후 위치 보정 (rotateAroundVisualCenter가 켜져 있을 때만 의미 있음)
     ApplyInspectionPosition();
+    }
+
+
+
+
+    /// 물체와 모든 자식의 레이어를 Inspection 레이어로 바꿉니다.
+    /// 메인 카메라는 이 레이어를 그리지 않고 오버레이 카메라만 배경 위에 덧그리므로,
+    /// 물체가 실제로 책상/벽 안에 들어가 있어도 화면에서는 잘리지 않습니다.
+
+    private void SwitchToInspectionLayer()
+    {
+        layerTargets = null;
+        if (string.IsNullOrEmpty(inspectionLayerName))
+            return;
+
+        int inspectionLayer = LayerMask.NameToLayer(inspectionLayerName);
+        if (inspectionLayer < 0)
+        {
+            Debug.LogWarning($"[camera_to_object] '{inspectionLayerName}' 레이어가 없습니다. Tags and Layers에서 추가하세요.", this);
+            return;
+        }
+
+        // 원래 레이어(Interactable 등)를 자식별로 기억해 둡니다.
+        layerTargets = GetComponentsInChildren<Transform>(true);
+        originalLayers = new int[layerTargets.Length];
+        for (int i = 0; i < layerTargets.Length; i++)
+        {
+            originalLayers[i] = layerTargets[i].gameObject.layer;
+            layerTargets[i].gameObject.layer = inspectionLayer;
+        }
+    }
+
+
+    /// SwitchToInspectionLayer에서 저장해 둔 원래 레이어로 되돌립니다.
+
+    private void RestoreOriginalLayers()
+    {
+        if (layerTargets == null)
+            return;
+
+        for (int i = 0; i < layerTargets.Length; i++)
+        {
+            if (layerTargets[i] != null)
+                layerTargets[i].gameObject.layer = originalLayers[i];
+        }
+
+        layerTargets = null;
     }
 
 
@@ -163,6 +220,8 @@ inspectionYaw += mouseX * amount;
         }
 
         SaveObjectState();
+        // 오버레이 카메라만 그리도록 레이어 교체 (책상/벽 뚫림 방지)
+        SwitchToInspectionLayer();
         //playercontrollock
         playerControlLock.Lock(this, behavioursToDisable);
 
@@ -198,6 +257,8 @@ inspectionYaw += mouseX * amount;
 
         transform.SetPositionAndRotation(originalPosition, originalRotation);
         RestoreObjectState();
+        // 원래 레이어(Interactable 등)로 복구
+        RestoreOriginalLayers();
         //playerControlunLock
         playerControlLock.Unlock();
         if (InspectionUIController.Instance != null)
