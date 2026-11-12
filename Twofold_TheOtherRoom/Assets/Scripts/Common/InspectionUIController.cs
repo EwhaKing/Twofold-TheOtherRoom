@@ -117,10 +117,6 @@ public sealed class InspectionUIController : MonoBehaviour
             resettableInspection.ResetInspection();
     }
 
-    /// <summary>
-    /// 조작법 안내. 설명 패널만 holdSeconds 동안 띄운 뒤 fadeSeconds 에 걸쳐 사라짐.
-    /// 조사 중이면 무시하고, 안내 도중 조사가 시작되면 안내를 끊고 평소 화면으로 넘어감
-    /// </summary>
     public void PlayGuide(IEnumerable<PuzzleDescriptionImages.DescriptionImage> descriptions,
                           float holdSeconds, float fadeSeconds)
     {
@@ -203,13 +199,21 @@ public sealed class InspectionUIController : MonoBehaviour
         PuzzleDescriptionImages request =
             inspectionComponent.GetComponent<PuzzleDescriptionImages>();
 
+        var provider = inspectionComponent.GetComponent<ThreeDCommunicationDescriptionImages>();
+        bool hasProvider = provider != null && provider.isActiveAndEnabled;
+
+        // 3D-11 클리어 후: 기존 설명을 덧붙이지 않고 클리어용 설명으로 통째로 교체
+        if (hasProvider && provider.TryGetReplacementDescriptionImages(out var replacement))
+        {
+            ShowDescriptions(replacement, request);
+            return;
+        }
+
         var descriptions = new List<PuzzleDescriptionImages.DescriptionImage>();
         if (request != null && request.ImageIndexes != null)
             descriptions.AddRange(request.ImageIndexes);
 
-        var provider = inspectionComponent.GetComponent<ThreeDCommunicationDescriptionImages>();
-
-        if (provider != null && provider.isActiveAndEnabled)
+        if (hasProvider)
         {
             descriptions.AddRange(provider.GetAdditionalDescriptionImages());
         }

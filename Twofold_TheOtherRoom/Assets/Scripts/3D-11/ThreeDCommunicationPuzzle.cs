@@ -78,6 +78,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     public bool HasStartedStages => solved || currentStageIndex >= 0;
 
+    // 퍼즐 클리어(MirrorPanel 표시) 여부. 설명 이미지 교체 판단에 사용
+    public bool IsSolved => solved;
+
     private void Awake()
     {
         if (GetComponent<ThreeDCommunicationDescriptionImages>() == null)
