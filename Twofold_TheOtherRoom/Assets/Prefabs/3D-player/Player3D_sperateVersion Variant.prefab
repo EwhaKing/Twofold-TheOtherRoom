@@ -31,7 +31,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 130334214737968049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8629850625588376308
+--- !u!1 &4779765854606553782
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39,9 +39,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8024485818342511065}
-  - component: {fileID: 9206466941164428025}
-  - component: {fileID: 4194902544786747109}
+  - component: {fileID: 6531733062063050062}
+  - component: {fileID: 7553352876358164741}
+  - component: {fileID: 238926350789009497}
   m_Layer: 0
   m_Name: InspectionCamera
   m_TagString: Untagged
@@ -49,13 +49,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8024485818342511065
+--- !u!4 &6531733062063050062
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8629850625588376308}
+  m_GameObject: {fileID: 4779765854606553782}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -64,13 +64,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4370878050913729791}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!20 &9206466941164428025
+--- !u!20 &7553352876358164741
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8629850625588376308}
+  m_GameObject: {fileID: 4779765854606553782}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 4
@@ -115,13 +115,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &4194902544786747109
+--- !u!114 &238926350789009497
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8629850625588376308}
+  m_GameObject: {fileID: 4779765854606553782}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
@@ -332,7 +332,7 @@ PrefabInstance:
     - target: {fileID: 7438408415600372174, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: 'm_Cameras.Array.data[0]'
       value: 
-      objectReference: {fileID: 9206466941164428025}
+      objectReference: {fileID: 7553352876358164741}
     - target: {fileID: 8047031042955916099, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -354,7 +354,7 @@ PrefabInstance:
       addedObject: {fileID: 2321767725705812186}
     - targetCorrespondingSourceObject: {fileID: 6226292183529318564, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8024485818342511065}
+      addedObject: {fileID: 6531733062063050062}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 251a7b1885c56574cac7f38be162269c, type: 3}
 --- !u!4 &4370878050913729791 stripped
