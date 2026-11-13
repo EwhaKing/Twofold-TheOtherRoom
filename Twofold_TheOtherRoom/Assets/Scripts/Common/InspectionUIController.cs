@@ -4,10 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Shared UI shown while a player is inspecting an object or puzzle.
-/// Only the current owner can show or hide the UI.
-/// </summary>
+
 public sealed class InspectionUIController : MonoBehaviour
 {
     public static InspectionUIController Instance { get; private set; }
@@ -117,10 +114,6 @@ public sealed class InspectionUIController : MonoBehaviour
             resettableInspection.ResetInspection();
     }
 
-    /// <summary>
-    /// 조작법 안내. 설명 패널만 holdSeconds 동안 띄운 뒤 fadeSeconds 에 걸쳐 사라짐.
-    /// 조사 중이면 무시하고, 안내 도중 조사가 시작되면 안내를 끊고 평소 화면으로 넘어감
-    /// </summary>
     public void PlayGuide(IEnumerable<PuzzleDescriptionImages.DescriptionImage> descriptions,
                           float holdSeconds, float fadeSeconds)
     {
@@ -204,7 +197,8 @@ public sealed class InspectionUIController : MonoBehaviour
             inspectionComponent.GetComponent<PuzzleDescriptionImages>();
 
         var descriptions = new List<PuzzleDescriptionImages.DescriptionImage>();
-        if (request != null && request.ImageIndexes != null)
+        // 꺼져 있는(enabled = false) PuzzleDescriptionImages는 표시하지 않음
+        if (request != null && request.enabled && request.ImageIndexes != null)
             descriptions.AddRange(request.ImageIndexes);
 
         var stateDescription = inspectionComponent.GetComponent<IInspectionDescription>();

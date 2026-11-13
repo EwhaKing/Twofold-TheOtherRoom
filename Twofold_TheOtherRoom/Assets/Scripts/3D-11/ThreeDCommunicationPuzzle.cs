@@ -78,6 +78,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     public bool HasStartedStages => solved || currentStageIndex >= 0;
 
+    // 퍼즐 클리어(MirrorPanel 표시) 여부. 설명 이미지 교체 판단에 사용
+    public bool IsSolved => solved;
+
     private void Awake()
     {
         if (GetComponent<ThreeDCommunicationDescriptionImages>() == null)
@@ -413,6 +416,12 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 **/
         phase = Phase.Cleared;
+
+        // 클리어 후에는 기본 설명(입력/결정)을 끄고,
+        // ThreeDCommunicationDescriptionImages의 Cleared Descriptions만 보이게 함
+        PuzzleDescriptionImages baseDescriptions = GetComponent<PuzzleDescriptionImages>();
+        if (baseDescriptions != null)
+            baseDescriptions.enabled = false;
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.RefreshDescriptionImages(this);

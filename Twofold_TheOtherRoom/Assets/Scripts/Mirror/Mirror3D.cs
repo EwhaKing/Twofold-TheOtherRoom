@@ -24,8 +24,15 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
     //[SerializeField] private float groundCheckHeight = 1f;
     [SerializeField] private float groundCheckDistance = 6f;
 
+    [Tooltip("플레이어 쪽(뒤)으로 당겨 보는 횟수")]
     [SerializeField] private int searchIterations = 20;
+    [Tooltip("뒤로 한 번 당길 때 이동 거리")]
     [SerializeField] private float searchStep = 0.1f;
+
+    [Tooltip("좁은 복도 대응: 각 거리마다 좌우로 옮겨 보는 최대 횟수 (한쪽 기준). 0이면 좌우 탐색 안 함")]
+    [SerializeField] private int lateralSearchCount = 10;
+    [Tooltip("좌우로 한 번 옮길 때 이동 거리")]
+    [SerializeField] private float lateralSearchStep = 0.1f;
 
     [Tooltip("벽/문에서 이만큼 떨어진 곳까지만 거울을 들 수 있음")]
     [SerializeField] private float wallMargin = 0.1f;
@@ -280,13 +287,27 @@ public class Mirror3D : MonoBehaviour, IMouseHoldable
         Quaternion placeRotation = Quaternion.Euler(0f, cam.transform.eulerAngles.z, 270f);
         Vector3 originalPosition = transform.TransformPoint(boxCollider.center);
 
-        // 현재 위치부터 플레이어 방향으로 조금씩 당겨오면서
-        // 안전한 위치를 찾음
-        for (int i = 0; i < searchIterations; i++)
+        // 수평 방향만 사용 (아래를 보고 있어도 후보가 위로 뜨지 않게)
+        Vector3 flatForward = Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized;
+        Vector3 flatRight = Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized;
+
+        // 현재 위치부터 플레이어 방향으로 조금씩 당겨오면서,
+        // 각 거리마다 좌우로도 옮겨 보며 안전한 위치를 찾음
+        // (좁은 복도에서 한쪽 벽에 붙어 있어도 가운데 쪽 빈 공간을 찾을 수 있음)
+        //
+        //   뒤로 i칸 × 좌우 j칸 순서: (0,0) (0,-1) (0,+1) (0,-2) (0,+2) ... (1,0) (1,-1) ...
+        //   → 원래 위치에서 가까운 곳부터 우선
+        int lateralTries = 1 + Mathf.Max(0, lateralSearchCount) * 2;
+        for (int n = 0; n < searchIterations * lateralTries; n++)
         {
+            int i = n / lateralTries;           // 뒤로 몇 칸
+            int k = n % lateralTries;           // 0, 1, 2, 3, 4 ...
+            int j = (k + 1) / 2 * (k % 2 == 1 ? -1 : 1); // 0, -1, +1, -2, +2 ... (왼쪽 먼저)
+
             Vector3 candidatePosition =
                 originalPosition
-                - cam.transform.forward * (searchStep * i);
+                - flatForward * (searchStep * i)
+                + flatRight * (lateralSearchStep * j);
 
             // 후보 위치 아래에 Ground가 있는지 검사
             if (!TryGetGroundPosition(

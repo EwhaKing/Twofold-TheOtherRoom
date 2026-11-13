@@ -77,7 +77,10 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
     [Tooltip("눈 확대 앞부분. 천천히 다가감")]
     [SerializeField] private float slowZoomSeconds = 4f;
 
-    [Tooltip("눈 확대 뒷부분. 확 다가감")]
+    [Tooltip("천천히 다가가던 속도가 0 까지 서서히 줄어드는 시간. 이게 끝나면 확 다가감")]
+    [SerializeField] private float zoomPauseSeconds = 0.6f;
+
+    [Tooltip("눈 확대 뒷부분. 확 다가감. 짧을수록 빠름")]
     [SerializeField] private float fastZoomSeconds = 1f;
 
     [Tooltip("천천히 구간이 끝날 때 얼마나 다가가 있을지(0~1). 작을수록 마지막 1초가 더 확 들어감")]
@@ -101,6 +104,7 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
     [Header("Debug")]
     [Tooltip("연출 확인용. 릴리즈 빌드에는 안 들어감, 개발 빌드에서도 막고 싶다면 None 설정")]
     [SerializeField] private KeyCode debugKey = KeyCode.None;
+    [SerializeField] private bool debugCheckBox;
 #endif
 
     /// 컷신 vcam 우선순위. CM2 는 vcam 채널이 없어 3D-6 퍼즐 vcam(10)보다 위여야 함
@@ -130,7 +134,7 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void Update()
     {
-        if (debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
+        if (debugCheckBox && debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
     }
 #endif
 
@@ -198,8 +202,8 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
         // 5. 거울 앞에 멈춰 섬
         yield return new WaitForSeconds(holdSeconds);
 
-        // 6. 눈 확대. 천천히 → 확. 실제 카메라 움직임은 Brain 의 블렌드가 만듦
-        float zoomSeconds = slowZoomSeconds + fastZoomSeconds;
+        // 6. 눈 확대. 천천히 → 감속해 멈춤 → 확. 실제 카메라 움직임은 Brain 의 블렌드가 만듦
+        float zoomSeconds = slowZoomSeconds + zoomPauseSeconds + fastZoomSeconds;
         ApplyZoomBlend(zoomSeconds);
         if (vcamEyeCloseUp != null) vcamEyeCloseUp.Priority = EyeShotPriority;
 
@@ -303,7 +307,7 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
         if (cutsceneListener != null) cutsceneListener.enabled = true;
     }
 
-    /// 눈 확대를 Brain 의 Default Blend 로 설정. 길이와 커브(천천히 → 확)를 여기서 덮어씀
+    /// 눈 확대를 Brain 의 Default Blend 로 설정. 길이와 커브(천천히 → 감속 → 확)를 여기서 덮어씀
     private void ApplyZoomBlend(float zoomSeconds)
     {
         CinemachineBrain brain = cutsceneCamera != null
@@ -312,16 +316,28 @@ public class StageChange3D : MonoBehaviour, IStageCutscene
 
         if (brain == null || zoomSeconds <= 0f) return;
 
-        // 천천히 구간이 끝나는 시점(0~1)과 그때의 진행도
+        // 천천히 구간 끝 · 감속 구간 끝 시점(0~1)
         float slowEnd = slowZoomSeconds / zoomSeconds;
-        float slowSpeed = slowEnd > 0f ? slowZoomProgress / slowEnd : 0f;
-        float fastSpeed = slowEnd < 1f ? (1f - slowZoomProgress) / (1f - slowEnd) : 0f;
+        float pauseEnd = (slowZoomSeconds + zoomPauseSeconds) / zoomSeconds;
+        float pauseSpan = pauseEnd - slowEnd;
 
-        // 구간마다 일정한 속도. 경계에서 속도가 확 바뀜
-        AnimationCurve curve = new AnimationCurve(
-            new Keyframe(0f, 0f, slowSpeed, slowSpeed),
-            new Keyframe(slowEnd, slowZoomProgress, slowSpeed, fastSpeed),
-            new Keyframe(1f, 1f, fastSpeed, fastSpeed));
+        // 감속 구간은 속도가 일정하게 줄어 평균이 절반. 감속 끝에서 slowZoomProgress 에 닿도록 역산
+        float slowReach = slowEnd + pauseSpan * 0.5f;
+        float slowSpeed = slowReach > 0f ? slowZoomProgress / slowReach : 0f;
+        float fastSpeed = pauseEnd < 1f ? (1f - slowZoomProgress) / (1f - pauseEnd) : 0f;
+
+        // 일정 속도 → 0 까지 감속 → 일정한 빠른 속도
+        // 감속이 0 이면 같은 시점에 키가 둘 생기므로 하나로 합침
+        AnimationCurve curve = zoomPauseSeconds > 0f
+            ? new AnimationCurve(
+                new Keyframe(0f, 0f, slowSpeed, slowSpeed),
+                new Keyframe(slowEnd, slowSpeed * slowEnd, slowSpeed, slowSpeed),
+                new Keyframe(pauseEnd, slowZoomProgress, 0f, fastSpeed),
+                new Keyframe(1f, 1f, fastSpeed, fastSpeed))
+            : new AnimationCurve(
+                new Keyframe(0f, 0f, slowSpeed, slowSpeed),
+                new Keyframe(slowEnd, slowZoomProgress, slowSpeed, fastSpeed),
+                new Keyframe(1f, 1f, fastSpeed, fastSpeed));
 
         CinemachineBlendDefinition blend = brain.m_DefaultBlend;
         blend.m_Style = CinemachineBlendDefinition.Style.Custom;

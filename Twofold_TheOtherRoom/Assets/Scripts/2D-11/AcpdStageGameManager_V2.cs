@@ -31,6 +31,9 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     private bool isCleared = false;
     private bool isFinalClearing = false;
 
+    // 다 푼 뒤 리셋 버튼으로 다시 푸는 중. 이 동안은 클리어 상태로 되돌리지 않음
+    private bool isReplaying = false;
+
     private List<int> playerSequence = new List<int>();
     private Coroutine activeTimerCoroutine;
 
@@ -55,7 +58,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         if (resetButton != null)
         {
             resetButton.onClick.RemoveAllListeners();
-            resetButton.onClick.AddListener(ResetToFirstStep);
+            resetButton.onClick.AddListener(ResetTBtnTemporary); // 임시로 바꿈 (다 풀어도 일단 reset 이 되어야함)
         }
 
         SetupExactPhotoPatterns();
@@ -85,10 +88,17 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         activeTimerCoroutine = null;
         isShowingWrongFeedback = false;
         isFinalClearing = false;
+        isReplaying = false;
     }
 
     private bool HasBeenSolved()
     {
+        // 다시 푸는 중엔 풀린 기록이 있어도 진행시킴
+        if (isReplaying)
+        {
+            return false;
+        }
+
         if (isCleared)
         {
             return true;
@@ -130,6 +140,8 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         }
     }
 
+
+
     private void SetupExactPhotoPatterns()
     {
         patternSteps.Clear();
@@ -166,6 +178,27 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         {
             RestoreClearedState();
             return;
+        }
+
+        StopAllCoroutines();
+        activeTimerCoroutine = null;
+        isShowingWrongFeedback = false;
+        isFinalClearing = false;
+
+        currentStepIndex = 0;
+        playerSequence.Clear();
+
+        StartStepSequence();
+    }
+
+
+    public void ResetTBtnTemporary()
+    {
+        // 이미 푼 퍼즐이면 다시 풀기 모드로. 처음(A C P)부터 다시 진행
+        if (HasBeenSolved())
+        {
+            isReplaying = true;
+            isCleared = false;
         }
 
         StopAllCoroutines();
@@ -440,6 +473,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
         isCleared = true;
         isFinalClearing = false;
+        isReplaying = false;
 
         displayAlphabetText.text = ClearMessage;
 
