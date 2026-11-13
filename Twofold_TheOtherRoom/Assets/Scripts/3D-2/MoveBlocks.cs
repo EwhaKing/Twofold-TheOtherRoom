@@ -22,27 +22,28 @@ public class MoveBlocks : MonoBehaviour , IInteractable
     private float startZ;
     private bool movingForward = true;
     private bool isMoving = false;
-    private Collider objectCollider;
+    //private Collider objectCollider;
 
 
     private void Start()
     {
         startZ = transform.position.z;
-        objectCollider = GetComponent<Collider>();
+        //objectCollider = GetComponent<Collider>();
         currentZone = 1;
     }
 
     private void Update()
     {
-        if (shadowblockanswer != null && shadowblockanswer.GetCleared())
-        {
-            objectCollider.enabled = false;
-        }
+        // if (shadowblockanswer != null && shadowblockanswer.GetCleared())
+        // {
+        //     objectCollider.enabled = false;
+        // }
     }
 
     public void Interact()
     {
         if (isMoving) return;
+        if (shadowblockanswer != null && shadowblockanswer.GetCleared()) return;
 
         MoveOneStep();
 
