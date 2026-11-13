@@ -14,7 +14,7 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     public Vector3 screenOffset;
 
     [Header("Rotation")]
-    [SerializeField, Min(1f)] private float rotationSpeed;
+    [SerializeField, Min(0.01f)] private float rotationSpeed;
     [SerializeField] private float verticalRotationLimit = 180f;
     [Tooltip("켜면 Transform pivot 대신 자식 Renderer들의 시각적 중심을 기준으로 회전합니다. 모델이 pivot에서 떨어져 있을 때 사용하세요.")]
     [SerializeField] private bool rotateAroundVisualCenter = false;
@@ -91,7 +91,8 @@ if (!Input.GetMouseButton(0))
 
 float mouseX = Input.GetAxis("Mouse X") * -1f;
 float mouseY = Input.GetAxis("Mouse Y");
-float amount = rotationSpeed * Time.unscaledDeltaTime;
+// 마우스 축 값은 이미 프레임당 이동량이라 deltaTime 을 곱하지 않음 (곱하면 FPS 따라 속도가 달라짐)
+float amount = rotationSpeed;
 
 inspectionYaw += mouseX * amount;
 
