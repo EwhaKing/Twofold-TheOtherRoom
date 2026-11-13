@@ -3303,7 +3303,7 @@ PrefabInstance:
       objectReference: {fileID: 1979651703}
     - target: {fileID: 3903172596818154193, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
       propertyPath: m_VersionIndex
-      value: 827
+      value: 830
       objectReference: {fileID: 0}
     - target: {fileID: 4086777543471138904, guid: fa36dc6353eb158439105525f3cf7996, type: 3}
       propertyPath: m_Positions.Array.data[0].x
@@ -7947,7 +7947,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5502114216818031269, guid: 9f27cb5f1797fd4459b418fc84d75de1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1760741270}
   m_SourcePrefab: {fileID: 100100000, guid: 9f27cb5f1797fd4459b418fc84d75de1, type: 3}
 --- !u!4 &879923154 stripped
 Transform:
@@ -14634,6 +14637,32 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &1760741266 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5502114216818031269, guid: 9f27cb5f1797fd4459b418fc84d75de1, type: 3}
+  m_PrefabInstance: {fileID: 879923153}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1760741270
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1760741266}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.552309, y: 0.7, z: 0.3116191}
+  m_Center: {x: -0.27615544, y: 0.34, z: -0.15581003}
 --- !u!1 &1800049347
 GameObject:
   m_ObjectHideFlags: 0
@@ -17862,6 +17891,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 342302630}
     m_Modifications:
+    - target: {fileID: 2475183626981848533, guid: 630f6b84cb3b9f54198a9993988abe56, type: 3}
+      propertyPath: m_Size.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475183626981848533, guid: 630f6b84cb3b9f54198a9993988abe56, type: 3}
+      propertyPath: m_Center.y
+      value: 0.24
+      objectReference: {fileID: 0}
     - target: {fileID: 8634626796933579075, guid: 630f6b84cb3b9f54198a9993988abe56, type: 3}
       propertyPath: m_LocalScale.x
       value: 2.5
