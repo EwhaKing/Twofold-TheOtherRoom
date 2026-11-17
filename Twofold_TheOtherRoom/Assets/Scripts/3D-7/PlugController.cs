@@ -13,12 +13,15 @@ public class PlugController : MonoBehaviour
     public event Action<PlugController> OnPlugStateChanged;
 
     [SerializeField] float rejectDuration = 0.16f; // 걸렸다가 되돌아오는 데 걸리는 전체 시간
+    [SerializeField] float rotateDuration = 0.15f; // 한 번 회전 시간
+    [SerializeField] AnimationCurve rotateEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     int rotationIndex;
     DragAndDrop3D currentDrag;
     PlugOutlet currentOutlet;
     Rigidbody plugRigid;
     Coroutine rejectRoutine;
+    Coroutine rotateRoutine;
 
     void Awake()
     {
@@ -97,8 +100,31 @@ public class PlugController : MonoBehaviour
     {
         if (State != PlugState.Docked || currentOutlet == null) return;
 
+        // 연타 시 직전 목표로 정렬 후 한 번에 90도만 보간
+        StopRotateRoutine();
         rotationIndex = (rotationIndex + 1) % 4;
-        ApplyDockRotation();
+        rotateRoutine = StartCoroutine(RotateRoutine());
+    }
+
+    private IEnumerator RotateRoutine()
+    {
+        Quaternion from = transform.rotation;
+        Quaternion to = DockRotationOf(rotationIndex);
+
+        yield return Animate(rotateDuration, rotateEase,
+            t => transform.rotation = Quaternion.Slerp(from, to, t));
+
+        rotateRoutine = null;
+    }
+
+    // 회전 연출 중단. 각도는 목표로 정렬
+    private void StopRotateRoutine()
+    {
+        if (rotateRoutine == null) return;
+        StopCoroutine(rotateRoutine);
+        rotateRoutine = null;
+
+        if (currentOutlet != null) ApplyDockRotation();
     }
 
     // plug 직접 클릭 / 확대뷰 클릭 공용
@@ -163,7 +189,27 @@ public class PlugController : MonoBehaviour
     // 회전은 항상 outlet 기준으로 새로 계산
     private void ApplyDockRotation()
     {
-        transform.rotation = currentOutlet.DockRotation * Quaternion.Euler(0, 90 * rotationIndex, 0);
+        transform.rotation = DockRotationOf(rotationIndex);
+    }
+
+    private Quaternion DockRotationOf(int index)
+    {
+        return currentOutlet.DockRotation * Quaternion.Euler(0, 90 * index, 0);
+    }
+    #endregion
+
+    #region Animation
+    // 회전 보간
+    private IEnumerator Animate(float duration, AnimationCurve ease, Action<float> apply)
+    {
+        for (float elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+        {
+            apply(ease.Evaluate(elapsed / duration));
+            yield return null;
+        }
+
+        // 커브 끝값과 무관하게 목표 각도로 정확히 정렬
+        apply(1f);
     }
     #endregion
 
@@ -171,6 +217,7 @@ public class PlugController : MonoBehaviour
     private void SetState(PlugState next)
     {
         StopRejectRoutine();
+        StopRotateRoutine();
         State = next;
 
         switch (next)

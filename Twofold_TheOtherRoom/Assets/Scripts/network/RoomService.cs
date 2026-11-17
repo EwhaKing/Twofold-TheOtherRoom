@@ -318,14 +318,11 @@ public class RoomService : MonoBehaviour, INetworkRunnerCallbacks
             return;
         }
 
-        // 게스트가 나감 → 방장은 로비로 돌아감
+        // 게스트가 나감 → 방장은 로비로 돌아감. 게임 중이면 빈자리만 표시
         LogLine?.Invoke($"{PlayerNames.Guest}님이 나갔습니다.");
-        if (isPlaying) // 플레이 중 나간 경우
-        {
-            PeerLeftDuringGamePlay?.Invoke(PlayerNames.Guest);
-            return;
-        }
         GameSession.Instance?.HandleGuestLeft();
+        if (isPlaying) // 플레이 중 나간 경우
+            PeerLeftDuringGamePlay?.Invoke(PlayerNames.Guest);
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)

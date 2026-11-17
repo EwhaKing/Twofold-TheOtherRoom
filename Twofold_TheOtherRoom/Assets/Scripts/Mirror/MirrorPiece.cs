@@ -9,6 +9,8 @@ public class MirrorPiece : MonoBehaviour, IPointerClickHandler
 
     private int lastClickFrame = -1;
 
+    public string PuzzleId => puzzleId;
+
     private void Start()
     {
         if (MirrorManager.Instance != null &&

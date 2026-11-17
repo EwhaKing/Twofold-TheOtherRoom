@@ -25,15 +25,17 @@ public class PauseController : MonoBehaviour
     [Header("Notice Panel")]
     [SerializeField] GameObject noticePanel;
     [SerializeField] TMP_Text noticeText;
+    [SerializeField] Button exitNowButton;
 
     /// 일시정지 차단. Esc · 일시정지 버튼 둘 다 잠김. TimeoutPresenter 가 켬
     public bool BlockPause { get; set; }
 
     bool _lastPause;
     bool _lastBlockPause;
+    Coroutine _leaveNotice;
 
-    /// 양쪽 클리어 여부. 엔딩을 각자 보고 나가므로 남은 사람을 끌어내지 않음
-    bool _cleared;
+    /// 3D 커서 잠금 해제. 퇴장 안내 나가기 버튼 클릭 위함.
+    readonly PlayerControlLock playerControlLock = new PlayerControlLock();
 
     void Start()
     {
@@ -44,6 +46,7 @@ public class PauseController : MonoBehaviour
         exitButton.onClick.AddListener(OpenExitConfirm);
         exitConfirmYes.onClick.AddListener(OnExit);
         exitConfirmNo.onClick.AddListener(CloseExitConfirm);
+        exitNowButton.onClick.AddListener(OnExitNow);
 
         // 이벤트 구독
         RoomService.Instance.PeerLeftDuringGamePlay += OnPeerLeft;
@@ -54,9 +57,6 @@ public class PauseController : MonoBehaviour
     {
         var gs = GameSession.Instance;
         bool pause = gs != null && gs.IsPaused;
-
-        // 방장이 나가서 GameSession 사라지는 경우를 위해 저장
-        if (gs != null && gs.BothCleared) _cleared = true;
 
         ApplyBlockPause();
         HandleEscape(pause);
@@ -168,20 +168,34 @@ public class PauseController : MonoBehaviour
     void OnPeerLeft(string nickname)
     {
         if (BlockPause) return;   // 시간 종료 중. 이미 종료 패널이 떠 있음
-        if (_cleared) return;     // 엔딩. 남은 사람은 거울을 보고 스스로 나감
 
-        StartCoroutine(LeaveNoticeRoutine(nickname));
+        // 방장이 나가면 GameSession이 사라져 일시정지 풀리므로 게스트 나간 경우도 동일하게 처리.
+        pausePanel.SetActive(false);
+        CloseSetting();
+        CloseExitConfirm();
+        Time.timeScale = 1f;
+
+        _leaveNotice = StartCoroutine(LeaveNoticeRoutine(nickname));
     }
 
     IEnumerator LeaveNoticeRoutine(string nickname)
     {
         noticeText.text = $"{nickname}님이 나갔습니다.\n 5초 뒤 타이틀 화면으로 돌아갑니다.";
         noticePanel.SetActive(true);
+        playerControlLock.Lock(this, null);
 
         yield return new WaitForSecondsRealtime(5f);
 
-        Time.timeScale = 1f;
-        RoomService.Instance.Leave();
+        OnExit();
+    }
+
+    /// 대기 없이 즉시 퇴장. 자동 퇴장 코루틴 중단
+    void OnExitNow()
+    {
+        if (_leaveNotice != null) StopCoroutine(_leaveNotice);
+        exitNowButton.interactable = false;
+
+        OnExit();
     }
     #endregion
 }

@@ -31,12 +31,21 @@ public class IntroSequencer : MonoBehaviour
         "비워두면 PlayerController · PlayerLocomotionInput · PlayerInteractor 를 자동으로 찾음")]
     [SerializeField] private Behaviour[] inputToLock;
 
+    [Tooltip("인트로가 끝나면 설명 패널에 띄울 조작법. 비우면 같은 오브젝트에서 찾음 — 없으면 안내 생략")]
+    [SerializeField] private PuzzleDescriptionImages controlGuide;
+
     [Header("Timing")]
     [Tooltip("눈 깜빡임 구간 길이(초). GameSession.IntroSeconds 예산 안에 들어가야 함")]
     [SerializeField] private float blinkSeconds = 7f;
 
     [Tooltip("나레이션 시작 시각(초). 인트로 시작 기준. 블링크와 겹치려면 blinkSeconds 보다 작게")]
     [SerializeField] private float narrationStartSeconds = 7f;
+
+    [Tooltip("조작법 안내를 그대로 띄워두는 시간(초)")]
+    [SerializeField] private float guideHoldSeconds = 3f;
+
+    [Tooltip("조작법 안내가 사라지는 시간(초)")]
+    [SerializeField] private float guideFadeSeconds = 1.5f;
 
     [Header("Debug")]
     [Tooltip("네트워크 없이 단독 실행할 때도 연출 재생. 미리보기용이므로 씬에는 꺼둔 채로 저장할 것")]
@@ -79,8 +88,13 @@ public class IntroSequencer : MonoBehaviour
             return;
         }
 
-        if (PlaybackSeconds > GameSession.IntroSeconds)
-            Debug.LogError($"[Intro] 연출 {PlaybackSeconds}초가 인트로 예산 {GameSession.IntroSeconds}초를 넘음 " +
+        // 디버그 옵션으로 씬을 단독 실행 시 GameSession 이 없어 Stage를 못 읽음
+        float budget = GameSession.Instance != null
+            ? GameSession.Instance.IntroSeconds
+            : GameSession.Stage1IntroSeconds;
+
+        if (PlaybackSeconds > budget)
+            Debug.LogError($"[Intro] 연출 {PlaybackSeconds}초가 인트로 예산 {budget}초를 넘음 " +
                            "— 연출이 끝나기 전에 타이머가 시작됨", this);
 
         Apply(Phase);
@@ -205,11 +219,21 @@ public class IntroSequencer : MonoBehaviour
                     narration.Finish();
 
                 SetIntroActive(false);
+                PlayControlGuide();
 
                 // TickTok 재생 후 WhiteNoise 시작
                 StartCoroutine(StartGameAudio());
                 break;
         }
+    }
+
+    /// 인트로가 끝난 직후 조작법을 공용 설명 패널에 잠깐 띄움
+    private void PlayControlGuide()
+    {
+        if (controlGuide == null) controlGuide = GetComponent<PuzzleDescriptionImages>();
+        if (controlGuide == null || InspectionUIController.Instance == null) return;
+
+        InspectionUIController.Instance.PlayGuide(controlGuide.ImageIndexes, guideHoldSeconds, guideFadeSeconds);
     }
 
     private IEnumerator StartGameAudio()

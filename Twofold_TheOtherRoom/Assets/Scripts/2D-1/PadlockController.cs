@@ -31,6 +31,9 @@ public class PadlockController : MonoBehaviour
     {
         if (isUnlocked || currentInputs.Count >= 3) return;
 
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlaySFX(SFXType.LockButton);
+
         currentInputs.Add(digit);
 
         // 버튼 1이 클릭되었을 때 리스트 0번 인덱스(Element 0)에 접근하도록 (digit - 1) 처리

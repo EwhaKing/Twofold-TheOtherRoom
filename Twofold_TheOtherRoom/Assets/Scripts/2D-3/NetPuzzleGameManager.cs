@@ -69,6 +69,10 @@ public class NetPuzzleGameManager : MonoBehaviour
             else
             {
                 Debug.Log("❌ 틀린 위치가 있습니다! 0.3초 뒤 원위치로 리셋됩니다.");
+
+                if (SoundManager.Instance != null)
+                    SoundManager.Instance.PlaySFX(SFXType.WrongBtn);
+
                 StartCoroutine(ResetPuzzleWithDelay(0.3f));
             }
         }

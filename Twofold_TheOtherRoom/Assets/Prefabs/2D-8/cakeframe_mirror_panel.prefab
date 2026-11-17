@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 739141534872531660}
   - component: {fileID: 4434982351780642691}
   - component: {fileID: 1453684325139551739}
+  - component: {fileID: 328843948645183202}
   m_Layer: 5
   m_Name: mirror_piece
   m_TagString: Untagged
@@ -165,6 +166,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MirrorPiece
   puzzleId: 2D-8
   objectToHide: {fileID: 0}
+--- !u!114 &328843948645183202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3160258614726720902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46dfcba55270ff4a8623b67030d632b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorObtainNoticeTrigger
+  noticeText: "\uAC70\uC6B8\uC744 \uC5BB\uC5C8\uB2E4. \uAC70\uC6B8 \uD504\uB808\uC784\uC5D0
+    \uB9DE\uCDB0\uBCF4\uC790"
 --- !u!1 &8209050401750871163
 GameObject:
   m_ObjectHideFlags: 0
@@ -247,7 +262,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 144, y: 27}
-  m_SizeDelta: {x: 1000, y: 1100}
+  m_SizeDelta: {x: 850, y: 940}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2813512917248218181
 CanvasRenderer:
@@ -277,7 +292,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -648740515, guid: 2f3fdbed5fd4ddb458033f5c699f7441, type: 3}
+  m_Sprite: {fileID: 369741430, guid: a6dc75f686bfdb940bbb4d67928d77e4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

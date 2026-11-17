@@ -10,6 +10,9 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     [HideInInspector] public Transform startParent;
     [HideInInspector] public Vector2 startAnchoredPos;
 
+    private Vector2 positionBeforeDrag;
+    private Vector3 dragOffset;
+
     private CanvasGroup canvasGroup;
     private RectTransform rectTransform;
     private Canvas mainCanvas;
@@ -34,27 +37,45 @@ public class NetPuzzleDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public void OnBeginDrag(PointerEventData eventData)
 {
-    // 드롭 실패 시 돌아갈 현재 부모
+    // 드롭 실패 시 돌아갈 현재 부모와 위치
     parentAfterDrag = transform.parent;
+    positionBeforeDrag = rectTransform.anchoredPosition;
 
     // 드래그하는 동안 Puzzle_Net 바로 아래로 꺼내기
     transform.SetParent(startParent, true);
     transform.SetAsLastSibling();
+
+    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector3 pointerPos))
+    {
+        dragOffset = rectTransform.position - pointerPos;
+    }
 
     canvasGroup.blocksRaycasts = false;
 }
 
     public void OnDrag(PointerEventData eventData)
 {
-    rectTransform.anchoredPosition += eventData.delta;
+    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector3 pointerPos))
+    {
+        rectTransform.position = pointerPos + dragOffset;
+    }
 }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         // 손을 뗐을 때 지정된 슬롯/부모로 이동
         transform.SetParent(parentAfterDrag);
-        rectTransform.anchoredPosition = Vector2.zero; // 슬롯 중앙 정렬
-        
+
+        if (parentAfterDrag.GetComponent<NetPuzzleSlot>() != null)
+        {
+            rectTransform.anchoredPosition = Vector2.zero; // 슬롯 중앙 정렬
+        }
+        else
+        {
+            // 슬롯이 아닌 곳(Puzzle_Net)으로 돌아갈 때는 원래 있던 위치로 복귀
+            rectTransform.anchoredPosition = positionBeforeDrag;
+        }
+
         canvasGroup.blocksRaycasts = true;
     }
 

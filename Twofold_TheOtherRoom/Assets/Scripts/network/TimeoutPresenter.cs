@@ -1,10 +1,11 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 종료 패널. 제한시간 종료는 스스로 판정하고, 거울 완성 엔딩은 ShowEnding 을 불러 같은 패널을 쓴다.
-/// 게임플레이 씬마다 하나. 패널이 아니라 항상 켜져 있는 오브젝트에 붙일 것 — 꺼진 패널 위에서는 Update 가 안 돈다.
+/// 종료 패널. 제한시간 종료는 스스로 판정하고, 데모 엔딩은 ShowEnding 으로 같은 패널을 씀.
+/// 게임플레이 씬마다 하나. 패널이 아니라 항상 켜져 있는 오브젝트에 붙일 것 — 꺼진 패널 위에서는 Update 안됨.
 /// </summary>
 public class TimeoutPresenter : MonoBehaviour
 {
@@ -15,11 +16,26 @@ public class TimeoutPresenter : MonoBehaviour
     [Tooltip("나가기 버튼. 일시정지의 나가기와 같은 경로")]
     [SerializeField] Button exitButton;
 
+    [Tooltip("로비 복귀 버튼. 비워두면 나가기만")]
+    [SerializeField] GameObject lobbyButton;
+
     [Tooltip("시간 종료 문구. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] GameObject timeoutText;
 
-    [Tooltip("거울 완성 엔딩 문구. 씬에는 꺼둔 채로 저장할 것")]
+    [Tooltip("데모 엔딩 문구. 씬에는 꺼둔 채로 저장할 것")]
     [SerializeField] GameObject endingText;
+
+    [Tooltip("엔딩 때 서서히 띄울 그룹. 비워두면 바로 뜸")]
+    [SerializeField] CanvasGroup endingFadeGroup;
+
+    [Tooltip("엔딩 페이드인 시간(초)")]
+    [SerializeField] float endingFadeSeconds = 2f;
+
+    [Tooltip("엔딩 때 색을 바꿀 패널 배경. 비워두면 TimeoutPresenter의 gameoverPanel")]
+    [SerializeField] Graphic panelBackground;
+
+    [Tooltip("엔딩 때 패널 배경색 설정")]
+    [SerializeField] Color endingPanelColor = Color.black;
 
     [Tooltip("클리어 타임이 들어갈 칸. 00:00 형식으로 채움. 비워두면 표시 안 함")]
     [SerializeField] TMP_Text clearTimeText;
@@ -61,7 +77,7 @@ public class TimeoutPresenter : MonoBehaviour
         if (gs == null) return;             // 단독 실행
         if (gs.StartedTick == 0) return;    // 상대 로드 대기
 
-        // 클리어. 시계는 여기서 멈춰 있고, 그 값이 곧 클리어 타임
+        // 양쪽 클리어 뒤에는 시계가 멈춰 있음. 전환 연출 중에 시간 종료가 뜨면 안 됨
         if (gs.ClearedTick != 0)
         {
             if (_clearSeconds < 0f) _clearSeconds = gs.ElapsedSeconds;
@@ -70,14 +86,14 @@ public class TimeoutPresenter : MonoBehaviour
 
         if (GameSession.TotalSeconds - gs.ElapsedSeconds > 0f) return;
 
-        Show(timeoutText);
+        Show(timeoutText, false);
     }
 
-    /// <summary>거울 완성 엔딩. 시간 종료와 같은 패널, 문구만 다름</summary>
-    public void ShowEnding() => Show(endingText);
+    /// <summary>데모 엔딩. 시간 종료와 같은 패널</summary>
+    public void ShowEnding() => Show(endingText, true);
 
-    /// 패널을 띄우고 조작을 잠근다. 먼저 뜬 쪽이 이기고 이후 호출은 무시
-    void Show(GameObject text)
+    /// 패널을 띄우고 조작 잠금. 먼저 뜬 쪽만 적용, 이후 호출은 무시
+    void Show(GameObject text, bool fade)
     {
         if (_fired || gameoverPanel == null) return;
         _fired = true;
@@ -92,10 +108,116 @@ public class TimeoutPresenter : MonoBehaviour
             if (go != null) go.SetActive(false);
 
         gameoverPanel.SetActive(true);
+
+        if (!fade)
+        {
+            StartCoroutine(PlayGameOverBGM());
+        }
+        else
+        {
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlayBGM(BGMType.DemoPlayEnd);
+        }
         playerControlLock.Lock(this, inputToLock);
 
         var pause = FindAnyObjectByType<PauseController>();
         if (pause != null) pause.BlockPause = true;
+
+        if (fade) TintBackground();
+
+        // 엔딩은 글씨가 다 뜬 뒤 버튼
+        bool fading = fade && endingFadeGroup != null;
+        SetButtonsVisible(!fading);
+
+        if (endingFadeGroup == null) return;
+
+        endingFadeGroup.alpha = 1f;
+        if (fading) StartCoroutine(FadeIn(endingFadeGroup, endingFadeSeconds));
+    }
+
+    private IEnumerator PlayGameOverBGM()
+    {
+        SoundManager sound = SoundManager.Instance;
+
+        if (sound == null)
+            yield break;
+
+        // 기존 BGM 정지
+        sound.StopBGM();
+
+        // SoundManager의 등록된 효과음 목록에서 길이 확인
+        float duration = 0f;
+
+        var field = typeof(SoundManager).GetField(
+            "sfxList",
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Instance
+        );
+
+        var sfxList = field?.GetValue(sound) as SoundManager.SFXData[];
+
+        if (sfxList != null)
+        {
+            foreach (var sfx in sfxList)
+            {
+                if (sfx != null &&
+                    sfx.type == SFXType.HospitalFlatline &&
+                    sfx.clip != null)
+                {
+                    duration = sfx.clip.length;
+                    break;
+                }
+            }
+        }
+
+        // HospitalFlatline 재생
+        if (duration > 0f)
+        {
+            sound.PlaySFX(SFXType.HospitalFlatline);
+
+            yield return new WaitForSecondsRealtime(duration);
+        }
+        else
+        {
+            Debug.LogWarning("HospitalFlatline 효과음이 등록되지 않았습니다.");
+        }
+
+        // 효과음 종료 후 GameOver BGM 재생
+        if (SoundManager.Instance != null)
+            sound.PlayBGM(BGMType.GameOver);
+    }
+
+    /// 패널 배경색 교체
+    void TintBackground()
+    {
+        if (panelBackground == null) panelBackground = gameoverPanel.GetComponent<Graphic>();
+        if (panelBackground == null) return;
+
+        Color c = endingPanelColor;
+        c.a = panelBackground.color.a;
+        panelBackground.color = c;
+    }
+
+    /// 알파 0 → 1, 끝나면 나가기 버튼
+    IEnumerator FadeIn(CanvasGroup group, float seconds)
+    {
+        float elapsed = 0f;
+        while (elapsed < seconds)
+        {
+            group.alpha = elapsed / seconds;
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        group.alpha = 1f;
+        SetButtonsVisible(true);
+    }
+
+    /// 나가기 · 로비 복귀 버튼 표시
+    void SetButtonsVisible(bool on)
+    {
+        exitButton.gameObject.SetActive(on);
+        if (lobbyButton != null) lobbyButton.SetActive(on);
     }
 
     /// 클리어 타임 채우기. 시간 종료거나 값을 못 잡았으면 칸을 끔

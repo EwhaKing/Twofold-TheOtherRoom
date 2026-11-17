@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MapDotController : MonoBehaviour
 {
@@ -10,9 +11,20 @@ public class MapDotController : MonoBehaviour
     [SerializeField] private float moveDuration = 0.25f;
     [SerializeField] private int startIndex = 2;
 
+    [Header("이동 버튼")]
+    [SerializeField] private Button leftButton;
+    [SerializeField] private Button rightButton;
+
+    [Header("정답")]
+    [SerializeField] int answerIndex = 4;
+
     private RectTransform playerDot;
     private int currentIndex;
     private bool isMoving;
+
+    private Puzzle13 puzzle;
+    private bool lastReported;
+    private bool cleared;
 
     public int CurrentIndex => currentIndex;
 
@@ -54,45 +66,67 @@ public class MapDotController : MonoBehaviour
         );
 
         MoveImmediately(currentIndex);
+        RefreshButtons();
     }
 
     private void Update()
     {
-        if (isMoving)
+        if (cleared) return;
+
+        Puzzle13 found = ResolvePuzzle();
+        if (found == null) return;
+
+        ReportPosition(found);
+
+        if (!found.Solved) return;
+
+        CompletePuzzle();
+    }
+
+    private void CompletePuzzle()
+    {
+        cleared = true;
+        RefreshButtons();
+
+        if (PuzzleManager.Instance != null)
         {
-            return;
+            PuzzleManager.Instance.ReportSolved(Puzzle13.Id2D, PuzzleDimension.TwoD);
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            MoveLeft();
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            MoveRight();
-        }
+        Debug.Log($"[{nameof(MapDotController)}] 좌표 일치. 2D-13 클리어");
     }
 
     public void MoveLeft()
     {
-        if (isMoving || currentIndex <= 0)
+        if (cleared || isMoving || currentIndex <= 0)
         {
             return;
         }
 
         currentIndex--;
+        RefreshButtons();
         StartCoroutine(MoveSmoothly(currentIndex));
     }
 
     public void MoveRight()
     {
-        if (isMoving || currentIndex >= stopPoints.Length - 1)
+        if (cleared || isMoving || currentIndex >= stopPoints.Length - 1)
         {
             return;
         }
 
         currentIndex++;
+        RefreshButtons();
         StartCoroutine(MoveSmoothly(currentIndex));
+    }
+
+    private void RefreshButtons()
+    {
+        if (leftButton != null)
+            leftButton.interactable = !cleared && currentIndex > 0;
+
+        if (rightButton != null)
+            rightButton.interactable = !cleared && currentIndex < stopPoints.Length - 1;
     }
 
     private IEnumerator MoveSmoothly(int targetIndex)
@@ -143,4 +177,25 @@ public class MapDotController : MonoBehaviour
 
         playerDot.anchoredPosition = position;
     }
+
+    #region 연동 퍼즐 보고
+
+    private void ReportPosition(Puzzle13 found)
+    {
+        bool match = currentIndex == answerIndex;
+        if (match == lastReported) return;
+
+        lastReported = match;
+        found.ReportMatch(PuzzleDimension.TwoD, match);
+    }
+
+    private Puzzle13 ResolvePuzzle()
+    {
+        if (puzzle == null)
+            puzzle = CoopPuzzle.Find<Puzzle13>(Puzzle13.Key);
+
+        return puzzle;
+    }
+
+    #endregion
 }

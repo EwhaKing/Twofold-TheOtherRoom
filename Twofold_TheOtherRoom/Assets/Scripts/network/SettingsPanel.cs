@@ -19,6 +19,9 @@ public class SettingsPanel : MonoBehaviour
     [SerializeField] Slider sliderBgm;
     [SerializeField] Slider sliderSfx;
 
+    [Header("Control")]
+    [SerializeField] Slider sliderLook;
+
     [Header("Language")]
     [Tooltip("언어 섹션이 없는 설정창은 비워둘 것")]
     [SerializeField] Button btnLanguagePrev;
@@ -46,6 +49,8 @@ public class SettingsPanel : MonoBehaviour
         sliderMaster.onValueChanged.AddListener(value => { _draft.master = value; PreviewSound(); });
         sliderBgm.onValueChanged.AddListener(value => { _draft.bgm = value; PreviewSound(); });
         sliderSfx.onValueChanged.AddListener(value => { _draft.sfx = value; PreviewSound(); });
+
+        sliderLook.onValueChanged.AddListener(value => _draft.look = value);
 
         if (btnLanguagePrev != null) btnLanguagePrev.onClick.AddListener(() => ShiftLanguage(-1));
         if (btnLanguageNext != null) btnLanguageNext.onClick.AddListener(() => ShiftLanguage(1));
@@ -101,6 +106,8 @@ public class SettingsPanel : MonoBehaviour
         sliderMaster.SetValueWithoutNotify(_draft.master);
         sliderBgm.SetValueWithoutNotify(_draft.bgm);
         sliderSfx.SetValueWithoutNotify(_draft.sfx);
+
+        sliderLook.SetValueWithoutNotify(_draft.look);
 
         SyncLanguageLabel();
     }

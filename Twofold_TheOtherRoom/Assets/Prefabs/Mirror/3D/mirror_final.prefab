@@ -584,6 +584,7 @@ GameObject:
   - component: {fileID: 7755128772146980823}
   - component: {fileID: 2420864644116023932}
   - component: {fileID: 6690343784638914986}
+  - component: {fileID: 4230440522408116871}
   m_Layer: 3
   m_Name: MirrorAll.001
   m_TagString: Untagged
@@ -715,6 +716,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.00010000139, y: 0.008499999, z: 0.009999998}
   m_Center: {x: -0.000076098884, y: -0.0000000055879354, z: 0}
+--- !u!114 &4230440522408116871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3408554603243758357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aee0a8b6e72b54a4c94bd8a45b7a503a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorReflection
+  reflectMaterial: {fileID: 2100000, guid: 1e6d4b920c7f42a3ba815d0e93c4f8a6, type: 2}
+  reflectionCullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  textureWidth: 2048
+  planeNormalLocal: {x: 1, y: 0, z: 0}
+  clipPlaneOffset: 1
+  showReflectionCamera: 0
 --- !u!1 &4348044957228429116
 GameObject:
   m_ObjectHideFlags: 0

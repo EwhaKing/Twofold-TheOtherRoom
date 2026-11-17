@@ -1,0 +1,427 @@
+using System;
+using System.Collections;
+using Cinemachine;
+using UnityEngine;
+
+/// <summary>
+/// 3D 스테이지 전환 컷신. 연출만 담당하고 진행 판정은 밖에서 결정.
+///
+/// glow 끄기 → 컷신 카메라와 액터로 전환 → 반사가 선명해지며 액터가 거울 앞으로 걸어옴
+/// → 반사된 얼굴의 눈으로 확대 → 암전 → Finished.
+/// </summary>
+public class StageChange3D : MonoBehaviour, IStageCutscene
+{
+    [Header("Mirror")]
+    [Tooltip("완성 거울의 발광. 연출 시작과 함께 끔")]
+    [SerializeField] private MirrorGlow glow;
+
+    [SerializeField] private MirrorReflection mirrorReflection;
+
+    [Header("Player (연출 동안 끔)")]
+    [SerializeField] private Camera playerCamera;
+    [SerializeField] private AudioListener playerListener;
+
+    [Tooltip("연출 동안 끌 입력 컴포넌트. 씬에는 켜둔 채로 저장할 것.\n" +
+             "비워두면 PlayerController · PlayerLocomotionInput · PlayerInteractor 를 자동으로 찾음")]
+    [SerializeField] private Behaviour[] inputToLock;
+
+    [Header("Cutscene Rig (씬에는 꺼둔 채로 저장할 것)")]
+    [SerializeField] private GameObject cutsceneRig;
+    [SerializeField] private Camera cutsceneCamera;
+    [SerializeField] private AudioListener cutsceneListener;
+
+    [Tooltip("액터 뒤에서 거울을 보는 샷")]
+    [SerializeField] private CinemachineVirtualCamera vcamMirror;
+
+    [Tooltip("거울 면 코앞, 반사된 얼굴의 눈 높이")]
+    [SerializeField] private CinemachineVirtualCamera vcamEyeCloseUp;
+
+    [Header("Actor")]
+    [Tooltip("실제 플레이어를 그대로 써도 됨. PlayerAnimation 은 연출 동안 자동으로 꺼짐")]
+    [SerializeField] private Transform actor;
+
+    [SerializeField] private Animator actorAnimator;
+    [SerializeField] private Transform actorStart;
+    [SerializeField] private Transform actorMirrorFront;
+
+    [Header("UI")]
+    [Tooltip("암전용 풀스크린 검정. 씬에는 alpha 0 으로 저장할 것")]
+    [SerializeField] private CanvasGroup blackout;
+
+    [Tooltip("연출 동안 끌 것. 타이머 UI, 거울 완성 이펙트 등.\n" +
+             "런타임에 켜진 것도 넣을 수 있음 — 시작 시점 상태로 되돌림")]
+    [SerializeField] private GameObject[] hideDuringCutscene;
+
+    [Header("Timing")]
+    [SerializeField] private float glowFadeSeconds = 0.6f;
+
+    [Tooltip("컷 전환 후 숨 고르는 시간")]
+    [SerializeField] private float settleSeconds = 0.5f;
+
+    [SerializeField] private float reflectionFadeSeconds = 2.5f;
+    [SerializeField] private float walkSeconds = 3f;
+
+    [Tooltip("걸음을 멈춤 자세로 되돌리는 시간")]
+    [SerializeField] private float walkStopSeconds = 0.35f;
+
+    [Tooltip("멈춘 뒤 Animator 정지. idle 흔들림까지 없애 굳은 채로 서 있음")]
+    [SerializeField] private bool freezeAfterWalk = true;
+
+    [Tooltip("얼어붙을 애니메이션 프레임(0~1). 자세가 어색하면 조금씩 옮겨 찾을 것")]
+    [Range(0f, 1f)]
+    [SerializeField] private float freezeNormalizedTime = 0f;
+
+    [Tooltip("거울 앞에 멈춰 선 채로 있는 시간. 이게 끝나야 확대 시작")]
+    [SerializeField] private float holdSeconds = 2f;
+
+    [Tooltip("눈 확대 앞부분. 천천히 다가감")]
+    [SerializeField] private float slowZoomSeconds = 4f;
+
+    [Tooltip("천천히 다가가던 속도가 0 까지 서서히 줄어드는 시간. 이게 끝나면 확 다가감")]
+    [SerializeField] private float zoomPauseSeconds = 0.6f;
+
+    [Tooltip("눈 확대 뒷부분. 확 다가감. 짧을수록 빠름")]
+    [SerializeField] private float fastZoomSeconds = 1f;
+
+    [Tooltip("천천히 구간이 끝날 때 얼마나 다가가 있을지(0~1). 작을수록 마지막 1초가 더 확 들어감")]
+    [Range(0f, 1f)]
+    [SerializeField] private float slowZoomProgress = 0.3f;
+
+    [Tooltip("암전 길이. 눈 확대 끝에 맞물리도록 뒤에서부터 겹쳐 시작")]
+    [SerializeField] private float blackoutSeconds = 0.4f;
+
+    [SerializeField] private float holdBlackSeconds = 1f;
+
+    [Header("Look")]
+    [Tooltip("연출 시작 시점의 반사 세기. 0 이면 첫 순간에 아무것도 안 비침")]
+    [Range(0f, 1f)]
+    [SerializeField] private float startReflectivity = 0.12f;
+
+    [SerializeField] private AnimationCurve reflectionEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private AnimationCurve walkEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    [Header("Debug")]
+    [Tooltip("연출 확인용. 릴리즈 빌드에는 안 들어감, 개발 빌드에서도 막고 싶다면 None 설정")]
+    [SerializeField] private KeyCode debugKey = KeyCode.None;
+    [SerializeField] private bool debugCheckBox;
+#endif
+
+    /// 컷신 vcam 우선순위. CM2 는 vcam 채널이 없어 3D-6 퍼즐 vcam(10)보다 위여야 함
+    private const int MirrorShotPriority = 100;
+    private const int EyeShotPriority    = 110;
+
+    private static readonly int InputYHash = Animator.StringToHash("InputY");
+
+    private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+
+    private Coroutine routine;
+
+    /// 연출 동안 끈 PlayerAnimation. 액터가 실제 플레이어일 때만 잡힘
+    private PlayerAnimation suppressedAnimation;
+
+    /// hideDuringCutscene 의 연출 직전 활성 상태. null 이면 아직 숨긴 적 없음
+    private bool[] hiddenPriorState;
+
+    /// Animator 를 얼리기 전 speed. null 이면 안 얼림
+    private float? frozenAnimatorSpeed;
+
+    /// <summary>연출이 끝난 시점. Stage 증가 · 씬 로드가 물릴 자리</summary>
+    public event Action Finished;
+
+    public bool IsPlaying => routine != null;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void Update()
+    {
+        if (debugCheckBox && debugKey != KeyCode.None && Input.GetKeyDown(debugKey)) Play();
+    }
+#endif
+
+    private void OnDisable()
+    {
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        Restore();
+    }
+
+    // ---------- 외부 구동 ----------
+
+    /// <summary>연출 재생. 재생 중에 다시 불러도 무시.</summary>
+    [ContextMenu("TEST - Play")]
+    public void Play()
+    {
+        if (IsPlaying) return;
+
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[StageChange3D] 플레이 모드에서만 동작", this);
+            return;
+        }
+
+        routine = StartCoroutine(Sequence());
+    }
+
+    // ---------- 연출 ----------
+
+    private IEnumerator Sequence()
+    {
+        BeginCutscene();
+
+        // 1. glow 끄기
+        if (glow != null) glow.FadeOut(glowFadeSeconds);
+        yield return new WaitForSeconds(glowFadeSeconds);
+
+        // 2. 카메라 · 액터 배치 전환
+        SwitchToCutsceneView();
+        yield return new WaitForSeconds(settleSeconds);
+
+        // 3. 반사 켜기
+        if (mirrorReflection != null)
+        {
+            mirrorReflection.SetSourceCamera(cutsceneCamera);
+            mirrorReflection.Enable(true);
+            mirrorReflection.Reflectivity = startReflectivity;
+        }
+
+        // 4. 반사가 선명해지는 동안 액터가 거울 앞으로 걸어옴
+        Coroutine walk = StartCoroutine(WalkRoutine());
+
+        if (mirrorReflection != null)
+        {
+            yield return Animate(reflectionFadeSeconds, reflectionEase,
+                t => mirrorReflection.Reflectivity = Mathf.Lerp(startReflectivity, 1f, t));
+        }
+
+        yield return walk;
+
+        // 5. 거울 앞에 멈춰 섬
+        yield return new WaitForSeconds(holdSeconds);
+
+        // 6. 눈 확대. 천천히 → 감속해 멈춤 → 확. 실제 카메라 움직임은 Brain 의 블렌드가 만듦
+        float zoomSeconds = slowZoomSeconds + zoomPauseSeconds + fastZoomSeconds;
+        ApplyZoomBlend(zoomSeconds);
+        if (vcamEyeCloseUp != null) vcamEyeCloseUp.Priority = EyeShotPriority;
+
+        yield return new WaitForSeconds(Mathf.Max(0f, zoomSeconds - blackoutSeconds));
+
+        // 7. 암전. 눈동자가 화면을 채우는 순간과 맞물림
+        if (blackout != null)
+        {
+            blackout.gameObject.SetActive(true);
+            yield return Animate(blackoutSeconds, AnimationCurve.Linear(0f, 0f, 1f, 1f),
+                t => blackout.alpha = t);
+        }
+
+        yield return new WaitForSeconds(holdBlackSeconds);
+
+        routine = null;
+        Finished?.Invoke();
+    }
+
+    /// 시작 지점에서 거울 앞까지 걷고 멈춤
+    private IEnumerator WalkRoutine()
+    {
+        if (actor == null || actorStart == null || actorMirrorFront == null) yield break;
+
+        Vector3 fromPos = actorStart.position;
+        Vector3 toPos = actorMirrorFront.position;
+        Quaternion fromRot = actorStart.rotation;
+        Quaternion toRot = actorMirrorFront.rotation;
+
+        // PlayerAnimation 이 꺼진 상태라 블렌드 트리를 직접 몬다
+        if (actorAnimator != null) actorAnimator.SetFloat(InputYHash, 1f);
+
+        yield return Animate(walkSeconds, walkEase, t =>
+        {
+            actor.SetPositionAndRotation(
+                Vector3.Lerp(fromPos, toPos, t),
+                Quaternion.Slerp(fromRot, toRot, t));
+        });
+
+        if (actorAnimator == null) yield break;
+
+        // 걸음을 뚝 끊으면 발이 미끄러진 것처럼 보임
+        yield return Animate(walkStopSeconds, AnimationCurve.EaseInOut(0f, 0f, 1f, 1f),
+            t => actorAnimator.SetFloat(InputYHash, Mathf.Lerp(1f, 0f, t)));
+
+        if (!freezeAfterWalk) yield break;
+
+        // 지정 프레임으로 되감고 정지. 위상이 프레임률을 타서 눈 위치가 튀는 것 방지
+        AnimatorStateInfo state = actorAnimator.GetCurrentAnimatorStateInfo(0);
+        actorAnimator.Play(state.fullPathHash, 0, freezeNormalizedTime);
+        actorAnimator.Update(0f);
+
+        frozenAnimatorSpeed = actorAnimator.speed;
+        actorAnimator.speed = 0f;
+    }
+
+    /// 입력 · UI 를 연출 상태로
+    private void BeginCutscene()
+    {
+        playerControlLock.Lock(this, inputToLock);
+
+        // Lock 이 커서를 강제로 보이게 함. 복귀는 Unlock 담당
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        hiddenPriorState = new bool[hideDuringCutscene.Length];
+
+        for (int i = 0; i < hideDuringCutscene.Length; i++)
+        {
+            GameObject go = hideDuringCutscene[i];
+            if (go == null) continue;
+
+            hiddenPriorState[i] = go.activeSelf;
+            go.SetActive(false);
+        }
+
+        if (blackout != null)
+        {
+            blackout.alpha = 0f;
+            blackout.gameObject.SetActive(false);
+        }
+    }
+
+    /// 플레이어 시점에서 컷신 리그로
+    private void SwitchToCutsceneView()
+    {
+        if (playerCamera != null) playerCamera.enabled = false;
+        if (playerListener != null) playerListener.enabled = false;
+
+        SuppressPlayerAnimation();
+
+        // 리그를 켜기 전에 잡아둬야 첫 프레임부터 거울 샷
+        if (vcamMirror != null) vcamMirror.Priority = MirrorShotPriority;
+        if (vcamEyeCloseUp != null) vcamEyeCloseUp.Priority = 0;
+
+        if (actor != null && actorStart != null)
+            actor.SetPositionAndRotation(actorStart.position, actorStart.rotation);
+
+        if (cutsceneRig != null) cutsceneRig.SetActive(true);
+        if (cutsceneCamera != null) cutsceneCamera.enabled = true;
+        if (cutsceneListener != null) cutsceneListener.enabled = true;
+    }
+
+    /// 눈 확대를 Brain 의 Default Blend 로 설정. 길이와 커브(천천히 → 감속 → 확)를 여기서 덮어씀
+    private void ApplyZoomBlend(float zoomSeconds)
+    {
+        CinemachineBrain brain = cutsceneCamera != null
+            ? cutsceneCamera.GetComponent<CinemachineBrain>()
+            : null;
+
+        if (brain == null || zoomSeconds <= 0f) return;
+
+        // 천천히 구간 끝 · 감속 구간 끝 시점(0~1)
+        float slowEnd = slowZoomSeconds / zoomSeconds;
+        float pauseEnd = (slowZoomSeconds + zoomPauseSeconds) / zoomSeconds;
+        float pauseSpan = pauseEnd - slowEnd;
+
+        // 감속 구간은 속도가 일정하게 줄어 평균이 절반. 감속 끝에서 slowZoomProgress 에 닿도록 역산
+        float slowReach = slowEnd + pauseSpan * 0.5f;
+        float slowSpeed = slowReach > 0f ? slowZoomProgress / slowReach : 0f;
+        float fastSpeed = pauseEnd < 1f ? (1f - slowZoomProgress) / (1f - pauseEnd) : 0f;
+
+        // 일정 속도 → 0 까지 감속 → 일정한 빠른 속도
+        // 감속이 0 이면 같은 시점에 키가 둘 생기므로 하나로 합침
+        AnimationCurve curve = zoomPauseSeconds > 0f
+            ? new AnimationCurve(
+                new Keyframe(0f, 0f, slowSpeed, slowSpeed),
+                new Keyframe(slowEnd, slowSpeed * slowEnd, slowSpeed, slowSpeed),
+                new Keyframe(pauseEnd, slowZoomProgress, 0f, fastSpeed),
+                new Keyframe(1f, 1f, fastSpeed, fastSpeed))
+            : new AnimationCurve(
+                new Keyframe(0f, 0f, slowSpeed, slowSpeed),
+                new Keyframe(slowEnd, slowZoomProgress, slowSpeed, fastSpeed),
+                new Keyframe(1f, 1f, fastSpeed, fastSpeed));
+
+        CinemachineBlendDefinition blend = brain.m_DefaultBlend;
+        blend.m_Style = CinemachineBlendDefinition.Style.Custom;
+        blend.m_Time = zoomSeconds;
+        blend.m_CustomCurve = curve;
+        brain.m_DefaultBlend = blend;
+    }
+
+    /// 액터가 실제 플레이어일 때 InputY 를 매 프레임 덮어쓰는 PlayerAnimation 차단.
+    /// PlayerControlLock 은 입력 컴포넌트만 다룸
+    private void SuppressPlayerAnimation()
+    {
+        if (actorAnimator == null) return;
+
+        PlayerAnimation animation = actorAnimator.GetComponent<PlayerAnimation>();
+        if (animation == null || !animation.enabled) return;
+
+        animation.enabled = false;
+        suppressedAnimation = animation;
+    }
+
+    /// 연출 전 상태로. 중간에 꺼져도 씬이 잠기지 않도록
+    private void Restore()
+    {
+        if (frozenAnimatorSpeed.HasValue)
+        {
+            if (actorAnimator != null) actorAnimator.speed = frozenAnimatorSpeed.Value;
+            frozenAnimatorSpeed = null;
+        }
+
+        // 남겨두면 PlayerAnimation 이 켜질 때까지 걷는 자세로 서 있음
+        if (actorAnimator != null) actorAnimator.SetFloat(InputYHash, 0f);
+
+        if (suppressedAnimation != null)
+        {
+            suppressedAnimation.enabled = true;
+            suppressedAnimation = null;
+        }
+
+        if (mirrorReflection != null) mirrorReflection.Enable(false);
+
+        if (cutsceneListener != null) cutsceneListener.enabled = false;
+        if (cutsceneCamera != null) cutsceneCamera.enabled = false;
+        if (cutsceneRig != null) cutsceneRig.SetActive(false);
+
+        if (vcamMirror != null) vcamMirror.Priority = 0;
+        if (vcamEyeCloseUp != null) vcamEyeCloseUp.Priority = 0;
+
+        if (playerCamera != null) playerCamera.enabled = true;
+        if (playerListener != null) playerListener.enabled = true;
+
+        // 숨긴 적 없으면 건드리지 않음. 씬이 내려갈 때 엉뚱하게 켜지지 않도록
+        if (hiddenPriorState != null)
+        {
+            int count = Mathf.Min(hideDuringCutscene.Length, hiddenPriorState.Length);
+
+            for (int i = 0; i < count; i++)
+            {
+                GameObject go = hideDuringCutscene[i];
+                if (go != null) go.SetActive(hiddenPriorState[i]);
+            }
+
+            hiddenPriorState = null;
+        }
+
+        if (blackout != null)
+        {
+            blackout.alpha = 0f;
+            blackout.gameObject.SetActive(false);
+        }
+
+        playerControlLock.Unlock();
+    }
+
+    /// 이동 공용 보간
+    private IEnumerator Animate(float duration, AnimationCurve ease, Action<float> apply)
+    {
+        for (float elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+        {
+            apply(ease.Evaluate(elapsed / duration));
+            yield return null;
+        }
+
+        // 커브 끝값과 무관하게 목표 지점으로 정확히 스냅
+        apply(1f);
+    }
+}

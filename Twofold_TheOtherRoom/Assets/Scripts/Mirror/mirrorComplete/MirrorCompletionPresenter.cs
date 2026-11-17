@@ -1,5 +1,3 @@
-using System.Collections;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -8,11 +6,7 @@ using UnityEngine;
 /// 전이 이벤트가 아니라 상태 재적용이라 이미 완성된 채로 진입해도 스스로 맞춰짐.
 /// 조각 배치는 MirrorManager 담당이고, 여기는 "양쪽 다 완성했는가"만 본다.
 ///
-/// 종료 문구는 거울을 봤을 때만 뜬다. 먼저 끝낸 쪽은 상대에게 힌트를 주러 방을 돌아다니므로
-/// 양쪽 완성 순간에 거울 앞에 있으리라 기대할 수 없다. 대신 그 순간 알림 자막을 띄워 거울로 부른다.
-/// 두 사람이 동시에 볼 필요는 없다 — 서로 다른 방에서 각자 화면을 보고 있으므로.
-///
-/// 종료 패널은 시간 종료와 공용(TimeoutPresenter). 한 번 뜨면 조작이 잠기므로 다시 보기는 없다.
+/// 양쪽 완성 뒤 거울을 보면 스테이지 전환을 요청. 먼저 누른 쪽은 대기 자막.
 /// </summary>
 public class MirrorCompletionPresenter : MonoBehaviour
 {
@@ -27,12 +21,6 @@ public class MirrorCompletionPresenter : MonoBehaviour
     [SerializeField] private GameObject bothClearedEffect;
 
     [Header("Subtitle")]
-    [Tooltip("자막 루트. 배경과 텍스트를 자식으로 두면 같이 페이드됨. 씬에는 꺼둔 채로 저장할 것.\n" +
-             "공용 Canvas 루트를 물리면 안 됨 — 여기를 SetActive(false) 하므로 UI 전체가 꺼짐")]
-    [SerializeField] private CanvasGroup noticeRoot;
-
-    [SerializeField] private TMP_Text noticeText;
-
     [Tooltip("잠깐 뜨는 자막을 선명하게 유지하는 시간(초). 문구를 다 읽을 만큼")]
     [SerializeField] private float holdSeconds = 2.5f;
 
@@ -43,10 +31,14 @@ public class MirrorCompletionPresenter : MonoBehaviour
     [SerializeField]
     private string waitingMessage = "거울이 완성되었다. 상대도 완성했는지 확인해보자.";
 
-    // 거울이 화면 밖에 있어도 보이는 유일한 신호. 여기서 거울로 부르지 못하면 엔딩을 놓친다
+    // 거울이 화면 밖에 있어도 보이는 유일한 신호. 여기서 거울로 부르지 못하면 전환이 영영 안 시작된다
     [Tooltip("양쪽 완성 순간. 방 어디에 있든 뜸")]
     [SerializeField]
     private string bothClearedMessage = "상대도 거울을 완성했다. 거울을 확인해보자.";
+
+    [Tooltip("내가 먼저 거울을 본 뒤 상대를 기다리는 동안. 사라지지 않고 계속 떠 있음")]
+    [SerializeField]
+    private string peerWaitMessage = "상대가 거울을 확인하기를 기다리는 중…";
 
     [Header("Debug")]
     [Tooltip("네트워크 없이 단독 실행할 때 내 완성만으로 양쪽 완성 취급. 씬에는 꺼둔 채로 저장할 것")]
@@ -55,8 +47,8 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 직전에 적용한 상태. null 이면 아직 한 번도 적용 안 함
     private bool? applied;
 
-    /// 잠깐 떴다 사라지는 자막. 대기 안내와 양쪽 완성 알림이 같이 씀
-    private Coroutine transientRoutine;
+    /// 상대 대기 자막이 떠 있는지. 같은 UI 를 쓰므로 잠깐 자막보다 이쪽이 우선
+    private bool peerWaitShown;
 
     /// <summary>내 차원의 거울 조각이 전부 배치됐는지</summary>
     public bool MineDone =>
@@ -65,7 +57,10 @@ public class MirrorCompletionPresenter : MonoBehaviour
     /// 한 번 완성이면 계속 완성. 방장이 나가면 GameSession 이 사라져 값이 false 로 돌아감
     private bool cachedBothDone;
 
-    /// <summary>양쪽 다 완성했는지. GameSession 이 없으면(단독 실행) 디버그 옵션대로</summary>
+    /// GameSession이 한 번이라도 있었는지. 방장이 나가 사라진 경우를 단독 실행과 구분
+    private bool sawSession;
+
+    /// <summary>양쪽 다 완성했는지. GameSession이 처음부터 없으면(단독 실행) 디버그 옵션대로</summary>
     public bool BothDone
     {
         get
@@ -73,30 +68,27 @@ public class MirrorCompletionPresenter : MonoBehaviour
             if (cachedBothDone) return true;
 
             GameSession session = GameSession.Instance;
-            if (session == null) return treatMineAsBothLocally && MineDone;
+            if (session == null) return !sawSession && treatMineAsBothLocally && MineDone;
 
+            sawSession = true;
             cachedBothDone = session.BothCleared;
             return cachedBothDone;
         }
     }
 
-    private void Awake()
+    private void Update()
     {
-        if (noticeRoot == null) return;
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
+        Apply(BothDone);
+        ApplyPeerWait();
     }
-
-    private void Update() => Apply(BothDone);
 
     /// <summary>
     /// 완성 거울을 볼 때(2D 클릭 · 3D E키).
-    /// 상대가 아직이면 안내 문구, 양쪽 완성 뒤면 종료 문구.
+    /// 상대가 아직이면 안내 문구, 양쪽 완성 뒤면 스테이지 전환 요청.
     /// </summary>
     public void RequestInspect()
     {
-        if (!MineDone || noticeRoot == null) return;
+        if (!MineDone || NoticeSubtitle.Instance == null) return;
 
         if (!BothDone)
         {
@@ -104,12 +96,29 @@ public class MirrorCompletionPresenter : MonoBehaviour
             return;
         }
 
-        HideTransient();
+        // 단독 실행
+        if (GameSession.Instance == null || RoomService.Instance == null) return;
 
-        // 시간 종료와 같은 패널. 문구만 다름
-        TimeoutPresenter panel = FindAnyObjectByType<TimeoutPresenter>();
-        if (panel != null) panel.ShowEnding();
-        else Debug.LogWarning("[Mirror] 씬에 TimeoutPresenter 없음 — 종료 패널을 못 띄움", this);
+        // 전환 요청
+        GameSession.Instance.RpcRequestStageChange(RoomService.Instance.IsHost);
+    }
+
+    /// 내가 요청한 뒤 상대를 기다리는 동안 안내 UI.
+    private void ApplyPeerWait()
+    {
+        if (NoticeSubtitle.Instance == null) return;
+
+        GameSession session = GameSession.Instance;
+        bool waiting = session != null
+                       && RoomService.Instance != null
+                       && session.HasRequestedStageChange(RoomService.Instance.IsHost)
+                       && !session.BothStageReady;
+
+        if (waiting == peerWaitShown) return;
+        peerWaitShown = waiting;
+
+        // 양쪽 준비 시 없앰
+        NoticeSubtitle.Instance.Set(waiting ? peerWaitMessage : string.Empty);
     }
 
     private void Apply(bool bothDone)
@@ -126,45 +135,12 @@ public class MirrorCompletionPresenter : MonoBehaviour
         if (!first) ShowTransient(bothClearedMessage);
     }
 
-    /// <summary>잠깐 떴다 사라지는 자막.</summary>
+    /// <summary>잠깐 떴다 사라지는 자막. 상대 대기 자막이 떠 있으면 무시.</summary>
     private void ShowTransient(string message)
     {
-        if (transientRoutine != null) StopCoroutine(transientRoutine);
-        transientRoutine = StartCoroutine(TransientRoutine(message));
-    }
+        if (peerWaitShown) return;
+        if (NoticeSubtitle.Instance == null) return;
 
-    private IEnumerator TransientRoutine(string message)
-    {
-        if (noticeText != null) noticeText.text = message;
-
-        noticeRoot.gameObject.SetActive(true);
-        noticeRoot.alpha = 1f;
-
-        yield return new WaitForSeconds(holdSeconds);
-
-        float elapsed = 0f;
-        while (elapsed < fadeSeconds)
-        {
-            elapsed += Time.deltaTime;
-            noticeRoot.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeSeconds);
-            yield return null;
-        }
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
-        transientRoutine = null;
-    }
-
-    /// <summary>떠 있는 자막을 즉시 치움. 종료 패널 아래에 남지 않게</summary>
-    private void HideTransient()
-    {
-        if (transientRoutine != null)
-        {
-            StopCoroutine(transientRoutine);
-            transientRoutine = null;
-        }
-
-        noticeRoot.alpha = 0f;
-        noticeRoot.gameObject.SetActive(false);
+        NoticeSubtitle.Instance.Show(message, holdSeconds, fadeSeconds);
     }
 }

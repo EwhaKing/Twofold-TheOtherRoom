@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Collections;
 
@@ -21,36 +22,37 @@ public class LAY_Button : MonoBehaviour, IInteractable
     public float returnSpeed = 6f;
 
     private Vector3 originalPosition;
-    private bool isAnimating = false;
+
+    private static bool isAnimating = false;
+    private static LAY_Button currentButton;
 
     private void Start()
     {
         originalPosition = transform.localPosition;
     }
-
     public void Interact()
-    {    
+    {
         if (isAnimating)
-        {    
             return;
-        }
 
         if (SoundManager.Instance != null)
-        {
             SoundManager.Instance.PlaySFX(SFXType.ButtonPush);
-        }
 
         StartCoroutine(PressButton());
     }
-    
+
     private IEnumerator PressButton()
     {
         isAnimating = true;
-        //SoundManager.Instance.PlaySFX(SFXType.TestSe);
 
-        Vector3 pressedPosition = originalPosition + Vector3.down * pressDistance;
+        if (currentButton != null)
+            currentButton.TurnOffLamps();
 
-        // 아래로 누르기
+        currentButton = this;
+
+        Vector3 pressedPosition =
+            originalPosition + Vector3.down * pressDistance;
+
         while (Vector3.Distance(transform.localPosition, pressedPosition) > 0.001f)
         {
             transform.localPosition = Vector3.MoveTowards(
@@ -61,28 +63,29 @@ public class LAY_Button : MonoBehaviour, IInteractable
             yield return null;
         }
 
-        // 버튼 기능 실행
-        switch (buttonColor)
+        for (int i = 0; i < number && i < lamps.Length; i++)
         {
-            case ButtonColor.Red:
-                for (int i = 0; i < number; i++)
+            if (lamps[i] == null)
+                continue;
+
+            switch (buttonColor)
+            {
+                case ButtonColor.Red:
                     lamps[i].BlinkRed();
-                break;
+                    break;
 
-            case ButtonColor.Green:
-                for (int i = 0; i < number; i++)
+                case ButtonColor.Green:
                     lamps[i].BlinkGreen();
-                break;
+                    break;
 
-            case ButtonColor.Blue:
-                for (int i = 0; i < number; i++)
+                case ButtonColor.Blue:
                     lamps[i].BlinkBlue();
-                break;
+                    break;
+            }
         }
 
         yield return new WaitForSeconds(0.1f);
 
-        // 원래 위치로 복귀
         while (Vector3.Distance(transform.localPosition, originalPosition) > 0.001f)
         {
             transform.localPosition = Vector3.MoveTowards(
@@ -95,5 +98,17 @@ public class LAY_Button : MonoBehaviour, IInteractable
 
         transform.localPosition = originalPosition;
         isAnimating = false;
+    }
+
+    public void TurnOffLamps()
+    {
+        if (lamps == null)
+            return;
+
+        foreach (LAY_Lamp lamp in lamps)
+        {
+            if (lamp != null)
+                lamp.TurnOff();
+        }
     }
 }

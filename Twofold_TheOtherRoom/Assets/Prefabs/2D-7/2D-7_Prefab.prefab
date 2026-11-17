@@ -299,6 +299,7 @@ GameObject:
   - component: {fileID: 3275728894390168557}
   - component: {fileID: 1502576284595879495}
   - component: {fileID: 8892073892493370901}
+  - component: {fileID: 3323080899379230699}
   m_Layer: 5
   m_Name: WallClockImage
   m_TagString: Untagged
@@ -353,9 +354,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10244865, guid: b246d49ca6505c0409bfcd01e7ad870f, type: 3}
+  m_Sprite: {fileID: 1473459140, guid: 0e9016929923a4b4180fd2f08d3c563b, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -363,6 +364,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3323080899379230699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1800551882220405716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0274584cd8424d4d9b4d7ff41bea729, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StandaloneNoticeTrigger
+  noticeText: "\uBCF4\uB294 \uC6A9\uB3C4\uC778 \uAC83 \uAC19\uB2E4"
 --- !u!1 &4686897308146146666
 GameObject:
   m_ObjectHideFlags: 0

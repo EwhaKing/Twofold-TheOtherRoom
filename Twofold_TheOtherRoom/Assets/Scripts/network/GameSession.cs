@@ -5,8 +5,9 @@ using UnityEngine;
 public enum RoomPhase
 {
     Lobby = 0,        // 대기방
-    ModeSelect = 1,   // 방장은 모드 선택, 게스트는 대기 화면
-    Playing = 2,      // 게임플레이 씬 로드됨
+    NoMicInfo = 1,      // 마이크 안내. 둘 다 같은 화면, 둘 다 "예"를 눌러야 넘어감
+    ModeSelect = 2,   // 방장은 모드 선택, 게스트는 대기 화면
+    Playing = 3,      // 게임플레이 씬 로드됨
 }
 
 /// <summary>인트로 진행 단계. 시계로만 판정.</summary>
@@ -32,14 +33,25 @@ public class GameSession : NetworkBehaviour
     /// 방 단계. 바뀌는 순간 양쪽 GameFlow가 화면을 바꿈
     [Networked] public RoomPhase Phase { get; set; }
 
+    // 마이크 안내 확인. 둘 다 눌러야 모드 선택으로 넘어감
+    [Networked] public bool P1MicConfirmed { get; set; }
+    [Networked] public bool P2MicConfirmed { get; set; }
+
+    /// 이 클라이언트가 이미 "예"를 눌렀는지
+    public bool HasConfirmedMic(bool isHost) => isHost ? P1MicConfirmed : P2MicConfirmed;
+
     // 타이머 - 기본
     [Networked] public bool P1Loaded { get; set; }
     [Networked] public bool P2Loaded { get; set; }
     [Networked] public int StartedTick { get; set; }
     public const float TotalSeconds = 15f * 60f;
 
-    /// 인트로 길이. 실제 연출 소요와 무관한 고정 예산
-    public const float IntroSeconds = 44f;
+    // 인트로 길이. 실제 연출 소요와 무관한 고정 예산
+    public const float Stage1IntroSeconds = 40f;
+    public const float Stage2IntroSeconds = 12f;
+
+    /// 이번 스테이지의 인트로 예산
+    public float IntroSeconds => Stage >= 2 ? Stage2IntroSeconds : Stage1IntroSeconds;
 
     /// 로딩 완료 후 흐른 시간. 인트로 포함
     public float SinceStartSeconds // Timer가 부를 때마다 로컬마다 지난 시간 계산해서 보내줌
@@ -90,7 +102,45 @@ public class GameSession : NetworkBehaviour
 
     /// 양쪽 클리어 시각. 0이면 아직. 이 값이 잡히면 타이머가 여기서 멈춤
     [Networked] public int ClearedTick { get; set; }
+    
+    // 스테이지 관리 - 스테이지 이동
+    [Networked] public int Stage { get; set; }
+    [Networked] public bool P1StageReady { get; set; }
+    [Networked] public bool P2StageReady { get; set; }
+    [Networked] public bool P1StageDone { get; set; }
+    [Networked] public bool P2StageDone { get; set; }
+    public bool BothStageReady => P1StageReady && P2StageReady;
+    public bool HasRequestedStageChange(bool isHost) => isHost ? P1StageReady : P2StageReady;
 
+    // 스테이지 관리 - 종료 후 로비 복귀
+    [Networked] public bool P1ReturnLobby { get; set; }
+    [Networked] public bool P2ReturnLobby { get; set; }
+    public bool HasReturnedLobby(bool isHost) => isHost ? P1ReturnLobby : P2ReturnLobby;
+
+    // 스테이지 관리 - 3D 지하실
+    [Networked] public bool BasementOpen { get; set; }
+
+    // 스테이지 관리 - 지하실(개구멍) 확대창에 표시할 3D 퍼즐 클리어. 비트 n = "3D-n"
+    [Networked] public int BasementPuzzleMask { get; set; }
+
+    /// BasementPuzzleMask가 바뀔 때 호출. 나중에 생성되는 UI도 있으니 구독 시 Is3DSolved로 현재 상태를 먼저 맞출 것
+    public static event System.Action On3DSolvedChanged;
+
+    /// "3D-6" 같은 3D 퍼즐이 풀렸는지
+    public bool Is3DSolved(string puzzleId)
+        => TryGet3DNumber(puzzleId, out int n) && (BasementPuzzleMask & (1 << n)) != 0;
+
+    /// "3D-6" → 6. 비트 범위(0~31) 밖이거나 형식이 다르면 false
+    public static bool TryGet3DNumber(string puzzleId, out int number)
+    {
+        number = -1;
+        if (string.IsNullOrEmpty(puzzleId)) return false;
+
+        string id = puzzleId.Trim();
+        if (!id.StartsWith("3D-", System.StringComparison.OrdinalIgnoreCase)) return false;
+
+        return int.TryParse(id.Substring(3), out number) && number >= 0 && number < 32;
+    }
 
     ChangeDetector _changes;
 
@@ -122,6 +172,18 @@ public class GameSession : NetworkBehaviour
                 case nameof(Phase):
                     GameFlow.Instance?.ApplyPhase(Phase);
                     break;
+
+                case nameof(Stage):
+                    GameFlow.Instance?.BeginStage(Stage);
+                    break;
+
+                case nameof(BasementOpen):
+                    FloorHole2D.Instance?.SetOpen(BasementOpen);
+                    break;
+
+                case nameof(BasementPuzzleMask):
+                    On3DSolvedChanged?.Invoke();
+                    break;
             }
         }
     }
@@ -129,27 +191,59 @@ public class GameSession : NetworkBehaviour
     // ---------- 방장만 호출 ----------
     // 게스트가 불러도 아무 일 없음
 
-    /// 로비의 "게임 시작" — 방장은 모드 선택으로, 게스트는 대기 화면으로
-    public void RequestModeSelect()
+    /// 로비의 "게임 시작" — 둘 다 마이크 안내 화면으로
+    public void RequestMicInfo()
     {
-        if (Object.HasStateAuthority)
-            Phase = RoomPhase.ModeSelect;
+        if (!Object.HasStateAuthority) return;
+        P1MicConfirmed = false;
+        P2MicConfirmed = false;
+        Phase = RoomPhase.NoMicInfo;
     }
 
     /// 알림창에서 "예" — 모드를 확정하고 바로 게임 시작
     public void ConfirmMode(int mode)
     {
         if (!Object.HasStateAuthority) return;
-        ResetTimer();
+        ResetStageState();
+        Stage = 1;
         Mode  = mode;
         Phase = RoomPhase.Playing;
     }
 
     /// 게스트가 나갔을 때. 모드 선택 중이었다면 방장을 로비로 되돌림
+    /// 게임 중이면 빈자리를 로비 복귀로 처리. 새 게스트가 이어받음
     public void HandleGuestLeft()
     {
-        if (Object.HasStateAuthority)
-            Phase = RoomPhase.Lobby;
+        if (!Object.HasStateAuthority) return;
+
+        if (Phase == RoomPhase.Playing)
+        {
+            P2ReturnLobby = true;
+            if (P1ReturnLobby) Phase = RoomPhase.Lobby;
+            return;
+        }
+
+        Phase = RoomPhase.Lobby;
+    }
+
+    // 마이크 안내 "예" RPC. 양쪽 다 들어와야 모드 선택으로 넘어감. 취소 없음
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcConfirmMic(bool isHost)
+    {
+        if (Phase != RoomPhase.NoMicInfo) return;   // 이미 넘어갔거나 로비로 돌아간 뒤 늦게 온 요청
+
+        if (isHost) P1MicConfirmed = true;
+        else P2MicConfirmed = true;
+
+        if (P1MicConfirmed && P2MicConfirmed) Phase = RoomPhase.ModeSelect;
+    }
+
+    // 마이크 안내 "뒤로가기" RPC. 누가 누르든 둘 다 로비로. 방은 그대로 유지
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcBackToLobby()
+    {
+        if (Phase != RoomPhase.NoMicInfo) return;
+        Phase = RoomPhase.Lobby;
     }
 
     // 씬 로드 완료 시 호출하는 RPC
@@ -183,15 +277,23 @@ public class GameSession : NetworkBehaviour
         StartedTick = shifted != 0 ? shifted : -1;   // 0 은 "상대 로드 대기" 표식이라 피함
     }
 
-    // 타이머 초기화
-    private void ResetTimer()
+    // 초기화
+    private void ResetStageState()
     {
         P1Loaded = false;
         P2Loaded = false;
         P1SkipIntro = false;
         P2SkipIntro = false;
+        BasementOpen = false;
+        BasementPuzzleMask = 0;
         P1Cleared = false;
         P2Cleared = false;
+        P1StageReady = false;
+        P2StageReady = false;
+        P1StageDone = false;
+        P2StageDone = false;
+        P1ReturnLobby = false;
+        P2ReturnLobby = false;
         ClearedTick = 0;
         StartedTick = 0;
         IsPaused = false;
@@ -228,4 +330,60 @@ public class GameSession : NetworkBehaviour
 
         if (BothCleared && ClearedTick == 0) ClearedTick = Runner.Tick;
     }
+
+    // 스테이지 전환 연출 요청 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcRequestStageChange(bool isHost)
+    {
+        if(!BothCleared) return;
+        if(isHost) P1StageReady = true;
+        else P2StageReady = true;
+    }
+
+    // 스테이지 전환 연출 완료 보고 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportStageDone(bool isHost)
+    {
+        if(!BothStageReady) return;
+        if(isHost) P1StageDone = true;
+        else P2StageDone = true;
+
+        if(P1StageDone && P2StageDone) AdvanceStage();
+    }
+
+    private void AdvanceStage()
+    {
+        ResetStageState();
+        Stage++;
+    }
+
+    // 로비 복귀 보고 RPC. 둘 다 복귀하면 Lobby. 나간 게스트 자리는 HandleGuestLeft 가 채움
+    // 리셋 · Stage 는 다음 ConfirmMode 담당
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportReturnLobby(bool isHost)
+    {
+        if (Phase != RoomPhase.Playing) return;   // 이미 넘어간 뒤 늦게 온 보고
+
+        if (isHost) P1ReturnLobby = true;
+        else P2ReturnLobby = true;
+
+        if (P1ReturnLobby && P2ReturnLobby) Phase = RoomPhase.Lobby;
+    }
+
+    // 3d 지하실 열림 보고 RPC
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReportBasementOpen()
+    {
+        if (BasementOpen) return;
+        BasementOpen = true;
+    }
+
+    // 3D 퍼즐 클리어 보고 RPC. number는 "3D-n"의 n
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RpcReport3DSolved(int number)
+    {
+        if (number < 0 || number >= 32) return;
+        BasementPuzzleMask |= 1 << number;
+    }
+
 }

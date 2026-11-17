@@ -102,6 +102,7 @@ public class PuzzleUnlockDoor : MonoBehaviour
             return;
 
         isOpen = true;
+        GameSession.Instance?.RpcReportBasementOpen();
 
         // 문 열림 효과음
         if (SoundManager.Instance != null)

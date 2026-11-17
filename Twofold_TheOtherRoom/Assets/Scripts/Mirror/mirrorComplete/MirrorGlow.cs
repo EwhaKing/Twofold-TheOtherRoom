@@ -32,6 +32,13 @@ public class MirrorGlow : MonoBehaviour
     private int propertyId;
     private Coroutine routine;
 
+    /// 지금 얹어 놓은 세기. 페이드를 이어받을 때 시작값
+    private float current;
+
+    /// 인스턴스를 만든 시점의 원본 값. 세기 0 이 되돌아갈 자리
+    private Color baseColor;
+    private float baseValue;
+
     private void OnDestroy()
     {
         if (instance != null) Destroy(instance);
@@ -50,7 +57,24 @@ public class MirrorGlow : MonoBehaviour
             return;
         }
 
-        routine = StartCoroutine(GlowRoutine());
+        routine = StartCoroutine(FadeRoutine(0f, targetIntensity, duration));
+    }
+
+    /// <summary>발광 끄기. 지금 세기에서 원본 값까지 내림.</summary>
+    public void FadeOut(float seconds)
+    {
+        // 켜진 적 없으면 끌 것도 없음. 여기서 인스턴스를 만들면 멀쩡한 원본만 건드림
+        if (instance == null) return;
+
+        if (routine != null) StopCoroutine(routine);
+
+        if (seconds <= 0f)
+        {
+            SetIntensity(0f);
+            return;
+        }
+
+        routine = StartCoroutine(FadeRoutine(current, 0f, seconds));
     }
 
     private bool EnsureMaterial()
@@ -86,29 +110,37 @@ public class MirrorGlow : MonoBehaviour
         else targetRenderer.material = instance;
 
         propertyId = Shader.PropertyToID(property);
+
+        // 원본 값 기억. 거울은 어두운 청록 emission 을 깔고 있어 0 을 검정으로 밀면 색조가 사라짐
+        if (isColorProperty) baseColor = instance.GetColor(propertyId);
+        else baseValue = instance.GetFloat(propertyId);
+
         if (isColorProperty) instance.EnableKeyword("_EMISSION");
 
         return true;
     }
 
-    private IEnumerator GlowRoutine()
+    private IEnumerator FadeRoutine(float from, float to, float seconds)
     {
         float elapsed = 0f;
 
-        while (elapsed < duration)
+        while (elapsed < seconds)
         {
             elapsed += Time.deltaTime;
-            SetIntensity(Mathf.Lerp(0f, targetIntensity, elapsed / duration));
+            SetIntensity(Mathf.Lerp(from, to, elapsed / seconds));
             yield return null;
         }
 
-        SetIntensity(targetIntensity);
+        SetIntensity(to);
         routine = null;
     }
 
+    /// 원본 값 위에 발광을 얹는다. value 0 이면 원본 그대로
     private void SetIntensity(float value)
     {
-        if (isColorProperty) instance.SetColor(propertyId, glowColor * value);
-        else instance.SetFloat(propertyId, value);
+        current = value;
+
+        if (isColorProperty) instance.SetColor(propertyId, baseColor + glowColor * value);
+        else instance.SetFloat(propertyId, baseValue + value);
     }
 }

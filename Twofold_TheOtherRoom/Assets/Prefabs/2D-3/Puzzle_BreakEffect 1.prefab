@@ -370,6 +370,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5755502424340370764}
   - component: {fileID: 7661281882716687456}
+  - component: {fileID: 5997971397737149574}
   m_Layer: 5
   m_Name: 2D-3mirror
   m_TagString: Untagged
@@ -394,7 +395,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7661281882716687456
@@ -411,6 +412,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MirrorPiece
   puzzleId: 2D-3
   objectToHide: {fileID: 0}
+--- !u!114 &5997971397737149574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8278545823126732610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46dfcba55270ff4a8623b67030d632b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorObtainNoticeTrigger
+  noticeText: "\uAC70\uC6B8\uC744 \uC5BB\uC5C8\uB2E4. \uAC70\uC6B8 \uD504\uB808\uC784\uC5D0
+    \uB9DE\uCDB0\uBCF4\uC790"
 --- !u!1 &8659327354766024139
 GameObject:
   m_ObjectHideFlags: 0

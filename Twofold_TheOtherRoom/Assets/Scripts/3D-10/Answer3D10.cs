@@ -9,8 +9,6 @@ public class Answer3D10 : MonoBehaviour
 
     public void CheckAnswer()
     {
-        
-
         for (int i = 0; i < input.Length; i++)
         {
             // 미세하게 회전 각도가 달라서, 오차가 심하지 않으면 정답이게 수정
@@ -21,7 +19,12 @@ public class Answer3D10 : MonoBehaviour
         Debug.Log("퍼즐 성공!");
 
         _solved = true;
-        
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFXType.CorrectBtn);
+        }
+
         PuzzleManager.Instance.ReportSolved(
             "3D-10",
             PuzzleDimension.ThreeD

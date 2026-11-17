@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -65,6 +66,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
   
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
+    private bool isInspecting;
     private Phase phase = Phase.Closed;
     private int currentStageIndex = -1;
     private float revealTimeLeft;
@@ -73,8 +76,16 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     private Quaternion originalCameraRotation;
     private Coroutine beepRoutine;
 
+    public bool HasStartedStages => solved || currentStageIndex >= 0;
+
+    // 퍼즐 클리어(MirrorPanel 표시) 여부. 설명 이미지 교체 판단에 사용
+    public bool IsSolved => solved;
+
     private void Awake()
     {
+        if (GetComponent<ThreeDCommunicationDescriptionImages>() == null)
+            gameObject.AddComponent<ThreeDCommunicationDescriptionImages>();
+
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -115,14 +126,22 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     public void Interact()
     {
+        if (isInspecting)
+            return;
+
+        if (!BasicCameraControl())
+        {
+            return;
+        }
+
         if (phase == Phase.Closed && !solved)
             OpenPuzzle();
 
-        if (phase == Phase.Cleared && solved)
-            BasicCameraControl();
+        // if (phase == Phase.Cleared && solved)
+        //     BasicCameraControl();
     }
 
-    private void BasicCameraControl()
+    private bool BasicCameraControl()
     {
         
         if (playerCamera == null)
@@ -131,8 +150,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (playerCamera == null || cameraFocusPoint == null)
         {
             Debug.LogWarning("[ThreeDCommunicationPuzzle] Player Camera와 Camera Focus Point를 연결하세요.", this);
-            return;
+            return false;
         }
+
+        isInspecting = true;
+        playerModelHider.Hide();
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
@@ -145,6 +167,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
+
+        return true;
     }
 
     private void OpenPuzzle()
@@ -153,9 +177,6 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         {
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
-
-        BasicCameraControl();
-
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
     }
@@ -217,6 +238,17 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     //Reset Button의 OnClick에 연결합니다. 최초 알파벳 입력부터 다시 시작합니다.
     public void ResetPuzzle()
     {
+         if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+        }
+
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopSFX();
+
+
+
         if (phase != Phase.Closed && phase != Phase.Cleared)
             RestartFromBeginning();
     }
@@ -224,28 +256,45 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
     public void CloseInspection()
     {
-        if (phase == Phase.Closed)
+        if (!isInspecting)
             return;
+
+        // StopSFX는 공용 SFX 소스를 통째로 멈춰 문 열림 소리 등도 끊으므로
+        // 카운트다운 중일 때만 호출
+        if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.StopSFX();
+        }
 
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Hide(this);
 
-        playerCamera.transform.SetPositionAndRotation(
-            originalCameraPosition,
-            originalCameraRotation);
+        if (playerCamera != null)
+            playerCamera.transform.SetPositionAndRotation(
+                originalCameraPosition,
+                originalCameraRotation);
+
+        playerModelHider.Restore();
+        isInspecting = false;
          //playerControlunLock
         playerControlLock.Unlock();
 
-        if (instructionText != null) instructionText.gameObject.SetActive(true);
-        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
+        RestartFromBeginning();
+
+        //if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (stageText != null) stageText.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
-        if (timerSlider != null) timerSlider.gameObject.SetActive(false);
-        if (timerText != null) timerText.gameObject.SetActive(false);
-        if (resetButton != null) resetButton.SetActive(false);
-        HideAllShapeSlots();
 
         phase = solved ? Phase.Cleared : Phase.Closed;
+    }
+
+    private void OnDisable()
+    {
+        CloseInspection();
     }
 
     private void RestartFromBeginning()
@@ -253,6 +302,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         currentStageIndex = -1;
         revealTimeLeft = 0f;
         phase = Phase.AlphabetInput;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
 
         HideAllShapeSlots();
         if (timerSlider != null) timerSlider.gameObject.SetActive(false);
@@ -284,6 +336,9 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         currentStageIndex = stageIndex;
         phase = Phase.ShapeReveal;
         revealTimeLeft = 3f;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
 
         if (beepRoutine != null)
             StopCoroutine(beepRoutine);
@@ -343,6 +398,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         if (resetButton != null) resetButton.SetActive(false);
         if (instructionText != null) instructionText.gameObject.SetActive(false);
 
+         if (beepRoutine != null)
+        {
+            StopCoroutine(beepRoutine);
+            beepRoutine = null;
+        }
+
+
 
         if (MirrorPanel != null) MirrorPanel.gameObject.SetActive(true);
 
@@ -354,6 +416,15 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 **/
         phase = Phase.Cleared;
+
+        // 클리어 후에는 기본 설명(입력/결정)을 끄고,
+        // ThreeDCommunicationDescriptionImages의 Cleared Descriptions만 보이게 함
+        PuzzleDescriptionImages baseDescriptions = GetComponent<PuzzleDescriptionImages>();
+        if (baseDescriptions != null)
+            baseDescriptions.enabled = false;
+
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.RefreshDescriptionImages(this);
     }
 
     private string CurrentExpectedAlphabet()

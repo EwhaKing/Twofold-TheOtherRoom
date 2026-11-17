@@ -20,6 +20,9 @@ public struct SettingsData
     public float bgm;
     public float sfx;
 
+    /// 시점 감도 (0~1), 0.5: 기본 배율
+    public float look;
+
     public Language language;
 
     public Vector2Int Resolution
@@ -27,6 +30,12 @@ public struct SettingsData
         get => new Vector2Int(width, height);
         set { width = value.x; height = value.y; }
     }
+
+    // 양 끝 배율 2^±LookOctaves
+    const float LookOctaves = 2f;
+
+    /// 시점 회전 배율. 0.25x ~ 1x ~ 4x
+    public float LookMultiplier => Mathf.Pow(2f, (look - 0.5f) * 2f * LookOctaves);
 }
 
 /// <summary>
@@ -77,6 +86,7 @@ public static class GameSettings
         master     = 0.5f,
         bgm        = 1f,
         sfx        = 1f,
+        look       = 0.5f,
         language   = Language.Korean,
     };
 
@@ -237,6 +247,7 @@ public static class GameSettings
     const string KeyMaster     = "settings.master";
     const string KeyBgm        = "settings.bgm";
     const string KeySfx        = "settings.sfx";
+    const string KeyLook       = "settings.look";
     const string KeyLanguage   = "settings.language";
 
     static void Save(in SettingsData data)
@@ -247,6 +258,7 @@ public static class GameSettings
         PlayerPrefs.SetFloat(KeyMaster, data.master);
         PlayerPrefs.SetFloat(KeyBgm, data.bgm);
         PlayerPrefs.SetFloat(KeySfx, data.sfx);
+        PlayerPrefs.SetFloat(KeyLook, data.look);
         PlayerPrefs.SetInt(KeyLanguage, (int)data.language);
         PlayerPrefs.Save();
     }
@@ -262,6 +274,7 @@ public static class GameSettings
         data.master     = PlayerPrefs.GetFloat(KeyMaster, data.master);
         data.bgm        = PlayerPrefs.GetFloat(KeyBgm, data.bgm);
         data.sfx        = PlayerPrefs.GetFloat(KeySfx, data.sfx);
+        data.look       = PlayerPrefs.GetFloat(KeyLook, data.look);
         data.language   = (Language)PlayerPrefs.GetInt(KeyLanguage, (int)data.language);
 
         Sanitize(ref data);
@@ -274,6 +287,7 @@ public static class GameSettings
         data.master = Mathf.Clamp01(data.master);
         data.bgm    = Mathf.Clamp01(data.bgm);
         data.sfx    = Mathf.Clamp01(data.sfx);
+        data.look   = Mathf.Clamp01(data.look);
 
         if (data.width <= 0 || data.height <= 0)
             data.Resolution = Defaults.Resolution;

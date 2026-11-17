@@ -10,6 +10,7 @@ public enum ScreenId
     Menu,
     FindRoom,
     Lobby,
+    MicInfo,      // 마이크 안내. 둘 다 봄
     ModeSelect,   // 방장만 봄
     Waiting,      // 게스트만 봄
     None,         // 게임플레이 중 — UI 전부 꺼짐
@@ -23,13 +24,17 @@ public class GameFlow : MonoBehaviour
 {
     public static GameFlow Instance { get; private set; }
 
-    [Header("시작 씬 (모드)")]
+    [Header("스테이지 1 씬 (모드)")]
     [Tooltip("모드1-방장 / 모드2-일반 이 로드. Build Settings에 등록되어 있어야 함.")]
-   // [SerializeField] string sceneA = "ceb_2D";
     [SerializeField] string sceneA = "2D";
     [Tooltip("모드1-일반 / 모드2-방장 이 로드. Build Settings에 등록되어 있어야 함.")]
-    // [SerializeField] string sceneB = "ceb_3D";
     [SerializeField] string sceneB = "3D";
+
+    [Header("스테이지 2 씬")]
+    [Tooltip("스테이지 1에서 sceneA(2D)를 받은 사람이 로드.")]
+    [SerializeField] string stage2A = "3D_2stage";
+    [Tooltip("스테이지 1에서 sceneB(3D)를 받은 사람이 로드.")]
+    [SerializeField] string stage2B = "2D_2stage";
 
     [Header("로비 카메라")]
     [Tooltip("게임플레이 씬 로드 후 끌 카메라. 비우면 시작 시점의 Camera.main")]
@@ -40,6 +45,12 @@ public class GameFlow : MonoBehaviour
     // Phase가 여러 번 감지돼도 씬은 한 번만 로드
     bool _gameplayStarted;
 
+    // 지금 올라가 있는 씬의 스테이지. 0이면 아직 없음
+    int _loadedStage;
+
+    // 게임플레이 종료 횟수. 로드 도중 종료 판정용
+    int _exitCount;
+
     // View의 ScreenId 넣음
     ScreenView[] _screens;
 
@@ -47,6 +58,9 @@ public class GameFlow : MonoBehaviour
 
     // 로비 카메라의 원래 태그. 로비로 돌아올 때 되돌림
     string _lobbyCameraTag;
+
+    // 설정 화면을 닫을 때 돌아갈 화면
+    ScreenId _settingReturn = ScreenId.Title;
 
     void Awake()
     {
@@ -69,6 +83,19 @@ public class GameFlow : MonoBehaviour
         Show(ScreenId.Title);
     }
 
+    void Update()
+    {
+        if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+        // 접속 중엔 뒤로가기도 잠겨 있음. 실패 문구를 놓치지 않게 Esc도 무시
+        if (RoomService.Instance != null && RoomService.Instance.IsConnecting) return;
+
+        if (Current == ScreenId.Setting)
+            CloseSetting();
+        else if (CanOpenSettingByEscape(Current))
+            OpenSetting(Current);
+    }
+
     void OnDestroy()
     {
         if (RoomService.Instance == null) return;
@@ -86,6 +113,31 @@ public class GameFlow : MonoBehaviour
             screen.SetVisible(screen.Id == id);
     }
 
+    /// 설정 화면 열기. 닫으면 returnTo로 돌아감
+    /// 열려 있는 동안 Phase가 바뀌면 ApplyPhase의 Show가 설정 화면을 그대로 덮어 닫음
+    public void OpenSetting(ScreenId returnTo)
+    {
+        _settingReturn = returnTo;
+        Show(ScreenId.Setting);
+    }
+
+    public void CloseSetting()
+    {
+        if (Current == ScreenId.Setting)
+            Show(_settingReturn);
+    }
+
+    // 방 안 대기 화면에서만 Esc로 설정을 엶. 게임플레이 중 Esc는 PauseController 담당
+    static bool CanOpenSettingByEscape(ScreenId id)
+    {
+        return id == ScreenId.Lobby
+            || id == ScreenId.Menu
+            || id == ScreenId.FindRoom
+            || id == ScreenId.MicInfo
+            || id == ScreenId.ModeSelect
+            || id == ScreenId.Waiting;
+    }
+
     public void QuitGame()
     {
 #if UNITY_EDITOR
@@ -100,29 +152,65 @@ public class GameFlow : MonoBehaviour
     void OnRoomJoined()
     {
         _gameplayStarted = false;
+        _loadedStage = 0;
         Show(ScreenId.Lobby);
     }
 
     void OnRoomLeft()
     {
         bool wasPlaying = _gameplayStarted;
-        _gameplayStarted = false;
-
-        if(wasPlaying && _loadedGamePlayScene != null)
-        {
-            SceneManager.UnloadSceneAsync(_loadedGamePlayScene);
-            _loadedGamePlayScene = null;
-        }
-        if (wasPlaying)
-        {
-            RestoreLobbyCamera();
-            SoundManager.Instance?.PlayBGM(BGMType.StartBGM);
-        }
+        ExitGameplay();
 
         Show(wasPlaying ? ScreenId.Title : ScreenId.Menu);
     }
 
     #endregion
+
+    // ---------- 게임플레이 종료 ----------
+
+    /// 종료 패널의 로비 버튼. 내 화면만 먼저 복귀
+    public void ReturnToLobby()
+    {
+        var room = RoomService.Instance;
+        var gs = GameSession.Instance;
+        if (room == null || !room.IsInRoom || gs == null) return;
+        if (!_gameplayStarted) return;   // 이미 돌아옴
+
+        gs.RpcReportReturnLobby(room.IsHost);
+
+        ExitGameplay();
+        Show(ScreenId.Lobby);
+    }
+
+    /// 게임플레이 씬 언로드 + 로비 상태 복구
+    void ExitGameplay()
+    {
+        bool wasPlaying = _gameplayStarted;
+        _gameplayStarted = false;
+        _loadedStage = 0;
+
+        if (!wasPlaying) return;
+
+        _exitCount++;
+
+        string scene = _loadedGamePlayScene;
+        _loadedGamePlayScene = null;
+
+        StartCoroutine(UnloadGameplay(scene));
+        RestoreLobbyCamera();
+        SoundManager.Instance?.PlayBGM(BGMType.StartBGM);
+        Time.timeScale = 1f;   // 일시정지 · 퍼즐 정지 해제
+    }
+
+    /// 언로드 완료 후 커서 해제. 언로드 중 3D 씬의 커서 재잠금 대비
+    IEnumerator UnloadGameplay(string scene)
+    {
+        // 전환 도중이면 아직 안 올라온 씬 이름일 수 있음
+        if (!string.IsNullOrEmpty(scene) && SceneManager.GetSceneByName(scene).isLoaded)
+            yield return SceneManager.UnloadSceneAsync(scene);
+
+        ReleaseCursor();
+    }
 
     // ---------- Phase ----------
 
@@ -137,8 +225,12 @@ public class GameFlow : MonoBehaviour
         switch (phase)
         {
             case RoomPhase.Lobby:
-                _gameplayStarted = false;
+                ExitGameplay();   // 안전장치
                 Show(ScreenId.Lobby);
+                break;
+
+            case RoomPhase.NoMicInfo:
+                Show(ScreenId.MicInfo);
                 break;
 
             case RoomPhase.ModeSelect:
@@ -146,7 +238,10 @@ public class GameFlow : MonoBehaviour
                 break;
 
             case RoomPhase.Playing:
-                BeginGameplay(GameSession.Instance != null ? GameSession.Instance.Mode : 0);
+                var gs = GameSession.Instance;
+                if (gs != null && gs.HasReturnedLobby(room.IsHost)) break;   // 게임 중에 들어온 게스트
+
+                BeginGameplay(gs != null ? gs.Mode : 0);
                 break;
         }
     }
@@ -154,44 +249,120 @@ public class GameFlow : MonoBehaviour
     /// 이 클라이언트의 역할(방장/게스트) + 모드로 시작 씬을 정해 Additive 로드.
     void BeginGameplay(int mode)
     {
-        var room = RoomService.Instance;
-        if (room == null || !room.IsInRoom) return;
         if (_gameplayStarted) return;
         _gameplayStarted = true;
 
-        bool isHost  = room.IsHost;
-        bool isMode1 = mode == 0;
-        // 모드1-방장 sceneA 일반 sceneB. 모드2는 반대로
-        _loadedGamePlayScene = (isHost == isMode1) ? sceneA : sceneB;
-
-        Debug.Log($"[Flow] 게임 시작 — mode: {mode}, host: {isHost}, scene: {_loadedGamePlayScene}");
+        // Stage가 아직 0인 스냅샷으로 읽힐 수 있음
+        int stage = GameSession.Instance != null ? Mathf.Max(1, GameSession.Instance.Stage) : 1;
 
         Show(ScreenId.None);
-        StartCoroutine(LoadAndReport(isHost));
+        LoadStage(stage, mode, replaceCurrent: false);
+    }
+
+    // ---------- Stage ----------
+
+    /// <summary>GameSession의 Stage가 오르는 순간 호출. 지금 씬을 내리고 다음 스테이지 씬 올림.</summary>
+    public void BeginStage(int stage)
+    {
+        if (!_gameplayStarted) return;      // 첫 씬은 Phase 쪽이 올림
+        if (_loadedStage == stage) return;  // 같은 값이 다시 감지됨
+
+        int mode = GameSession.Instance != null ? GameSession.Instance.Mode : 0;
+
+        LoadStage(stage, mode, replaceCurrent: true);
+    }
+
+    /// 두 진입점이 공유하는 실제 로드. 언제 올릴지는 호출자가 정함
+    /// <param name="replaceCurrent">지금 올라가 있는 씬을 내리고 올릴지. 첫 로드면 false</param>
+    void LoadStage(int stage, int mode, bool replaceCurrent)
+    {
+        var room = RoomService.Instance;
+        if (room == null || !room.IsInRoom) return;
+
+        string previous = replaceCurrent ? _loadedGamePlayScene : null;
+
+        _loadedStage = stage;
+        _loadedGamePlayScene = SceneFor(stage, room.IsHost, mode);
+
+        Debug.Log($"[Flow] {(replaceCurrent ? "스테이지 전환" : "게임 시작")} — " +
+                  $"mode: {mode}, host: {room.IsHost}, stage: {stage}, " +
+                  $"scene: {(previous != null ? previous + " → " : "")}{_loadedGamePlayScene}");
+
+        StartCoroutine(LoadAndReport(room.IsHost, _loadedGamePlayScene, previous));
+    }
+
+    /// 이 클라이언트가 이번 스테이지에 받을 씬 이름.
+    string SceneFor(int stage, bool isHost, int mode)
+    {
+        bool isMode1 = mode == 0;
+
+        // 모드1-방장이 A, 일반이 B. 모드2는 반대로
+        bool takesA = isHost == isMode1;
+
+        if (stage >= 2) return takesA ? stage2A : stage2B;
+        return takesA ? sceneA : sceneB;
     }
 
     /// 로드 보고 전에 흘려보낼 프레임 수. 인트로 첫 렌더의 셰이더 · 렌더 그래프 컴파일용
     const int WarmupFrames = 3;
 
-    // 씬 로딩 후 보고하기 위한 코루틴
-    IEnumerator LoadAndReport(bool isHost)
+    // 씬 로딩 후 보고하기 위한 코루틴.
+    // previousScene 은 반드시 로드보다 먼저 내릴 것 — 나중에 내리면 블링크가 안 보임
+    // 도중에 게임플레이가 끝나면 올라온 씬을 내리고 중단
+    IEnumerator LoadAndReport(bool isHost, string scene, string previousScene)
     {
+        int exitCount = _exitCount;
+
+        if (!string.IsNullOrEmpty(previousScene) &&
+            SceneManager.GetSceneByName(previousScene).isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(previousScene);
+        }
+
+        if (exitCount != _exitCount)
+        {
+            ReleaseCursor();
+            yield break;
+        }
+
         // 로드 전에 떼야 함 — 로드된 씬의 Awake 가 그 시점에 이미 Camera.main 을 캐시함
         ReleaseLobbyCameraTag();
 
-        var op = SceneManager.LoadSceneAsync(_loadedGamePlayScene, LoadSceneMode.Additive);
+        var op = SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
         yield return op;
 
-        // 로드 도중에 방을 나갔으면 이미 로비로 돌아간 상태
-        if (_gameplayStarted) DisableLobbyCamera();
+        var loaded = SceneManager.GetSceneByName(scene);
+
+        if (exitCount != _exitCount)
+        {
+            if (loaded.isLoaded) yield return SceneManager.UnloadSceneAsync(loaded);
+            ReleaseCursor();
+            yield break;
+        }
+
+        // Additive 로드는 Active Scene 이 로비로 남음 — 조명(Ambient · Skybox · 반사)은 Active Scene 것만 쓰이므로 게임 씬으로 넘김
+        if (loaded.isLoaded) SceneManager.SetActiveScene(loaded);
+
+        DisableLobbyCamera();
+        ReleaseCursor();
 
         // 첫 프레임 스톨을 보고 전에 흡수. StartedTick 이 양쪽 보고 뒤에 잡히므로
         // 여기서 멈추는 만큼은 인트로 연출에서 안 깎임
         for (int i = 0; i < WarmupFrames; i++)
             yield return null;
 
+        if (exitCount != _exitCount) yield break;
+
         Debug.Log($"[Flow] 로드 완료 보고 | host:{isHost}");
         GameSession.Instance?.RpcReportLoaded(isHost);
+    }
+
+    /// 3D 씬은 커서가 잠긴 채로 내려감. 2D 로 넘어가면 풀어줄 주체가 없어 클릭이 죽음.
+    /// 새 씬이 3D 면 PlayerController 가 다음 프레임에 다시 잠금
+    static void ReleaseCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     /// 게임플레이 씬은 Additive 로드라 로비 씬이 그대로 남는다.

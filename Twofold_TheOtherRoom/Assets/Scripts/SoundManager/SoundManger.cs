@@ -7,7 +7,9 @@ public enum BGMType
 {
     StartBGM,
     WhiteNoise,
-    BasementBG
+    BasementBG,
+    GameOver,
+    DemoPlayEnd
 }
 public enum SFXType
 {
@@ -45,7 +47,18 @@ public enum SFXType
     AlphaS,
     AlphaE,
     AlphaL,
-    AlphaF
+    AlphaF,
+    GlassBallDrop,
+    WaterDrop,
+    LadderSound,
+    DownstairDoor,
+    DownstairDoorClose,
+    HospitalFlatline,
+
+    GlassBreaking,
+    LockButton,     
+    PlugInsert
+
 }
 
 /// <summary>
@@ -156,6 +169,12 @@ public class SoundManager : MonoBehaviour
                 sfxDictionary.Add(sound.type, sound.clip);
             }
         }
+    }
+
+    public void StopSFX()
+    {
+        if (sfxSource != null)
+            sfxSource.Stop();
     }
 
     public void PlaySFX(SFXType type)

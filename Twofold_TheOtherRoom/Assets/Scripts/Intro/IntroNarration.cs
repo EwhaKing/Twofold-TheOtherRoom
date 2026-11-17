@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -27,7 +26,8 @@ public class IntroNarration : MonoBehaviour
     [Tooltip("더빙 클립. Preload Audio Data 켤 것")]
     [SerializeField] private AudioClip clip;
 
-    [SerializeField] private TMP_Text subtitle;
+    /// 씬 공용 자막. Begin에서 연결
+    private NoticeSubtitle subtitle;
 
     [Header("Content")]
     // start 는 파형의 무음 구간을 재서 앞쪽 쉼 안에 들어가도록 잡음. 클립을 다시 뽑으면 다시 잴 것
@@ -35,14 +35,13 @@ public class IntroNarration : MonoBehaviour
     [SerializeField]
     private Line[] lines =
     {
-        new Line { start =  0.00f, text = "Twofold에 오신 것을 환영합니다." },
-        new Line { start =  2.90f, text = "두 사람은 서로 다른 차원에서 게임을 시작합니다." },
-        new Line { start =  6.70f, text = "2D에서는 마우스로 조작하고," },
-        new Line { start =  9.20f, text = "3D에서는 WASD로 이동하며 E키 또는 마우스로 상호작용합니다." },
-        new Line { start = 16.10f, text = "각 차원의 퍼즐을 풀고, 숨겨진 거울 조각을 찾아 각자의 거울을 완성해야 합니다." },
-        new Line { start = 22.70f, text = "퍼즐은 총 10개. 각 차원에는 5개의 거울 조각이 존재합니다." },
-        new Line { start = 28.60f, text = "제한 시간은 15분입니다." },
-        new Line { start = 31.30f, text = "두 차원의 협력만이 이곳을 탈출할 수 있는 유일한 방법입니다." },
+        new Line { start =  0.20f, text = "Twofold에 오신 것을 환영합니다." },
+        new Line { start =  3.45f, text = "지금, 두 사람은 서로 다른 차원에 존재하고 있습니다." },
+        new Line { start =  8.10f, text = "각자의 세계에 흩어진 거울 조각을 모아 거울을 완성해야 합니다." },
+        new Line { start =  14.15f, text = "하지만 조각을 찾을 단서는 언제나 다른 차원에 존재합니다." },
+        new Line { start = 19.58f, text = "주어진 시간은 단 15분." },
+        new Line { start = 23.35f, text = "기억하십시오. 두 개의 거울을 완성하는 열쇠는 서로 다른 두 차원의 협력입니다." },
+        new Line { start = 31.00f, text = "행운을 빕니다." },
     };
 
     /// 시계와 오디오가 이만큼 벌어지면 되감음. 매 프레임 맞추면 소리가 끊김
@@ -51,7 +50,9 @@ public class IntroNarration : MonoBehaviour
     /// 이 구간에 들어오면 다시 재생하지 않음. 시계가 조금 뒤처졌을 때 끝말이 두 번 나오는 것 방지
     private const float NoRestartTail = 1f;
 
-    private bool _ready;
+    private bool _hasSubtitle;
+
+    private bool _hasAudio;
 
     /// <summary>더빙 길이(초). 인트로 예산 검사용.</summary>
     public float Length => clip != null ? clip.length : 0f;
@@ -65,39 +66,42 @@ public class IntroNarration : MonoBehaviour
         {
             source = SoundManager.Instance.NarrationSource;
         }
-        // Awake 아님 — 자막이 인트로 전용이라 씬에 꺼진 채 저장돼 있을 수 있음
-        _ready = source != null && clip != null && subtitle != null;
-        if (!_ready)
+        subtitle     = NoticeSubtitle.Instance;
+        _hasSubtitle = subtitle != null;
+        _hasAudio    = source != null && clip != null;
+
+        if (!_hasSubtitle)
+            Debug.LogError("[Intro] 씬에 NoticeCanvas 없음 — 자막 없이 진행", this);
+
+        if (!_hasAudio)
+            Debug.LogWarning($"[Intro] 더빙 없이 자막만 재생 — " +
+                             $"SoundManager: {SoundManager.Instance != null}, clip: {clip != null}", this);
+
+        if (_hasAudio)
         {
-            Debug.LogError("[Intro] source / clip / subtitle 인스펙터 참조 연결할 것", this);
-            return;
+            source.clip         = clip;
+            source.playOnAwake  = false;
+            source.loop         = false;
+            source.spatialBlend = 0f;   // 나레이션은 위치 없음. 임포터의 3D 기본값 무시
+
+            source.Stop();
         }
 
-        source.clip         = clip;
-        source.playOnAwake  = false;
-        source.loop         = false;
-        source.spatialBlend = 0f;   // 나레이션은 위치 없음. 임포터의 3D 기본값 무시
-
-        source.Stop();
-        subtitle.text = string.Empty;
+        SetSubtitle(string.Empty);
     }
 
     /// <summary>나레이션 시작 기준 경과 시각을 넣으면 자막과 오디오에 반영. 음수면 아직 시작 전.</summary>
     public void ApplyTime(float seconds, bool paused)
     {
-        if (!_ready) return;
-
-        ApplySubtitle(seconds);
-        ApplyAudio(seconds, paused);
+        if (_hasSubtitle) ApplySubtitle(seconds);
+        if (_hasAudio) ApplyAudio(seconds, paused);
     }
 
     /// <summary>소리와 자막을 끔.</summary>
     public void Finish()
     {
-        if (!_ready) return;
-
-        source.Stop();
-        subtitle.text = string.Empty;
+        if (_hasAudio) source.Stop();
+        SetSubtitle(string.Empty);
     }
 
     // ---------- 내부 ----------
@@ -112,7 +116,14 @@ public class IntroNarration : MonoBehaviour
             text = line.text;
         }
 
-        if (subtitle.text != text) subtitle.text = text;   // 같은 값을 넣어도 TMP 가 매번 다시 그림
+        SetSubtitle(text);
+    }
+
+    private void SetSubtitle(string text)
+    {
+        if (!_hasSubtitle) return;
+
+        subtitle.Set(text);
     }
 
     private void ApplyAudio(float seconds, bool paused)

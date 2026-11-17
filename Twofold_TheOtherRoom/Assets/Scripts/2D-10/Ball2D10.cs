@@ -7,8 +7,8 @@ public class Ball2D10 : MonoBehaviour
 
     public enum BallColor
     {
-        Red,
-        Yellow,
+        Purple,
+        Orange,
         Green
     }
 
@@ -29,16 +29,16 @@ public class Ball2D10 : MonoBehaviour
 
         switch (color)
         {
-            case BallColor.Red:
-                ballImage.color = new Color32(255, 0, 0, 255);
+            case BallColor.Purple:
+                ballImage.color = new Color32(140, 0, 255, 255); // #8C00FF (purple)
                 break;
 
-            case BallColor.Yellow:
-                ballImage.color = new Color32(255, 255, 0, 255);
+            case BallColor.Orange:
+                ballImage.color = new Color32(251, 132, 40, 255); // #FB8428 (orange)
                 break;
 
             case BallColor.Green:
-                ballImage.color = new Color32(0, 255, 0, 255);
+                ballImage.color = new Color32(0, 112, 35, 255); // #007023 (green)
                 break;
         }
     }

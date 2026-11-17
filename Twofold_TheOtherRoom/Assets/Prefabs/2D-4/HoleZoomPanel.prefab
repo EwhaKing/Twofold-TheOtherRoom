@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 7804933853020815952}
   - component: {fileID: 856787323864421235}
   - component: {fileID: 3237433691033305432}
+  - component: {fileID: 5046746437976269750}
   m_Layer: 5
   m_Name: ZoomMirrorPiece
   m_TagString: Untagged
@@ -212,6 +213,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MirrorPiece
   puzzleId: 2D-4
   objectToHide: {fileID: 4039485942804452386}
+--- !u!114 &5046746437976269750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4039485942804452386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46dfcba55270ff4a8623b67030d632b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorObtainNoticeTrigger
+  noticeText: "\uAC70\uC6B8\uC744 \uC5BB\uC5C8\uB2E4. \uAC70\uC6B8 \uD504\uB808\uC784\uC5D0
+    \uB9DE\uCDB0\uBCF4\uC790"
 --- !u!1 &4597400475486104206
 GameObject:
   m_ObjectHideFlags: 0
