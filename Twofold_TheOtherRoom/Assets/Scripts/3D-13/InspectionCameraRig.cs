@@ -29,6 +29,9 @@ public class InspectionCameraRig : MonoBehaviour
     // 보기 중 화면을 그리는 카메라. 클릭 레이 원점
     public Camera ViewCamera => viewCamera;
 
+    // 시점 간 이동 중 여부
+    public bool IsMoving => isMoving;
+
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
 

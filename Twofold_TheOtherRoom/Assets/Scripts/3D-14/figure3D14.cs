@@ -28,12 +28,16 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     [Header("Drag Settings")]
     [SerializeField] private float snapDistance = 0.5f;
 
-    [Header("Inspection Camera")]
-    [SerializeField] private Camera inspectionCamera;
+    // 드래그 중 높이. 보드 로컬 z, 슬롯 높이 0 기준
+    [SerializeField] private float dragHeight = 0f;
+
+    // 드래그 허용 InspectionCameraRig 카메라 인덱스
+    [SerializeField] private int dragCameraIndex = 0;
 
     private bool isDragging = false;
 
     private Vector3 returnPosition;
+    private Vector3 grabStartPosition;
 
     private Plane dragPlane;
     private Vector3 dragOffset;
@@ -46,13 +50,11 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
     private void Update()
     {
-        if (board != null && board.IsSolved)
+        if (!CanDragNow())
         {
-            return;
-        }
+            if (isDragging)
+                CancelDrag();
 
-        if (!IsInspectionView())
-        {
             return;
         }
 
@@ -85,12 +87,16 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
         return InspectionCameraRig.Instance.ViewCamera;
     }
 
-    private bool IsInspectionView()
+    private bool CanDragNow()
     {
-        if (InspectionCameraRig.Instance == null)
+        InspectionCameraRig rig = InspectionCameraRig.Instance;
+
+        if (board != null && board.IsSolved)
+            return false;
+        if (rig == null || !rig.IsViewing || rig.IsMoving)
             return false;
 
-        return InspectionCameraRig.Instance.IsViewing;
+        return rig.currentCameraIndex == dragCameraIndex;
     }
 
     public FigurePositionName GetCurrentPositionName()
@@ -100,6 +106,8 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
     private void TryStartDrag()
     {
+        Camera inspectionCamera = GetInspectionCamera();
+
         if (inspectionCamera == null)
             return;
 
@@ -118,16 +126,21 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             return;
         }
 
-        StartDrag();
+        StartDrag(hit.point);
     }
 
-    private void StartDrag()
+    private void StartDrag(Vector3 grabPoint)
     {
         isDragging = true;
+        grabStartPosition = transform.localPosition;
+
+        Vector3 beforeLift = transform.position;
 
         Vector3 pos = transform.localPosition;
-        pos.z = 0f;
+        pos.z = dragHeight;
         transform.localPosition = pos;
+
+        Vector3 lift = transform.position - beforeLift;
 
         Vector3 normal =
             transform.parent != null
@@ -136,7 +149,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
         dragPlane = new Plane(
             normal,
-            transform.position
+            grabPoint + lift
         );
         Camera cam = GetInspectionCamera();
 
@@ -184,9 +197,15 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             transform.localPosition = new Vector3(
                 localPosition.x,
                 localPosition.y,
-                0f
+                dragHeight
             );
         }
+    }
+
+    private void CancelDrag()
+    {
+        isDragging = false;
+        transform.localPosition = grabStartPosition;
     }
 
     private void ReleaseFigure()
@@ -203,7 +222,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
         foreach (FigurePosition position in possiblePositions)
         {
-            float distance = Vector3.Distance(
+            float distance = Vector2.Distance(
                 transform.localPosition,
                 position.localPosition
             );
