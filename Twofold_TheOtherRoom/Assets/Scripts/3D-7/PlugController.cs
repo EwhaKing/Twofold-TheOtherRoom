@@ -12,6 +12,9 @@ public class PlugController : MonoBehaviour
     public PlugOutlet CurrentOutlet => currentOutlet;
     public event Action<PlugController> OnPlugStateChanged;
 
+    const int RotationSteps = 8;                   // 한 바퀴 회전 칸 수
+    const float StepAngle = 360f / RotationSteps;  // 한 칸 회전 각도
+
     [SerializeField] float rejectDuration = 0.16f; // 걸렸다가 되돌아오는 데 걸리는 전체 시간
     [SerializeField] float rotateDuration = 0.12f; // 한 번 회전 시간
     [SerializeField] AnimationCurve rotateEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -100,9 +103,9 @@ public class PlugController : MonoBehaviour
     {
         if (State != PlugState.Docked || currentOutlet == null) return;
 
-        // 연타 시 직전 목표로 정렬 후 한 번에 45도만 보간
+        // 연타 시 직전 목표로 정렬 후 한 번에 한 칸만 보간
         StopRotateRoutine();
-        rotationIndex = (rotationIndex + 1) % 8;
+        rotationIndex = (rotationIndex + 1) % RotationSteps;
         rotateRoutine = StartCoroutine(RotateRoutine());
     }
 
@@ -133,7 +136,7 @@ public class PlugController : MonoBehaviour
         if (State != PlugState.Docked || currentOutlet == null) return;
 
         // 방향이 안 맞으면 걸려서 도로 나옴. Docked 유지
-        if (rotationIndex % 4 != 0)
+        if (rotationIndex % (RotationSteps / currentOutlet.AnswerCount) != 0)
         {
             RejectInsert();
             return;
@@ -183,7 +186,7 @@ public class PlugController : MonoBehaviour
     private int IndexFromCurrentRotation()
     {
         Quaternion local = Quaternion.Inverse(currentOutlet.DockRotation) * transform.rotation;
-        return Mathf.RoundToInt(local.eulerAngles.y / 45f) % 8;
+        return Mathf.RoundToInt(local.eulerAngles.y / StepAngle) % RotationSteps;
     }
 
     // 회전은 항상 outlet 기준으로 새로 계산
@@ -194,7 +197,7 @@ public class PlugController : MonoBehaviour
 
     private Quaternion DockRotationOf(int index)
     {
-        return currentOutlet.DockRotation * Quaternion.Euler(0, 45 * index, 0);
+        return currentOutlet.DockRotation * Quaternion.Euler(0, StepAngle * index, 0);
     }
     #endregion
 
