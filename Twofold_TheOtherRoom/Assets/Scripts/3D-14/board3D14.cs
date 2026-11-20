@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class board3D14 : MonoBehaviour, IInteractable
+public class board3D14 : MonoBehaviour, IInteractable, ICloseInspection
 {
     [System.Serializable]
     public class FigureAnswer
@@ -23,6 +23,20 @@ public class board3D14 : MonoBehaviour, IInteractable
     private bool _isSolved = false;
     public bool IsSolved => _isSolved;
 
+    public void CloseInspection()
+    {
+        EndInspection();
+    }
+
+    public void EndInspection()
+    {
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Hide(this);
+
+        if (InspectionCameraRig.Instance != null)
+            InspectionCameraRig.Instance.ExitView();
+    }
+
     public void Interact()
     {
         if (InspectionCameraRig.Instance == null)
@@ -33,6 +47,9 @@ public class board3D14 : MonoBehaviour, IInteractable
 
             return;
         }
+        
+        if (InspectionUIController.Instance != null)
+            InspectionUIController.Instance.Show(this);
 
         InspectionCameraRig.Instance.StartView();
     }
