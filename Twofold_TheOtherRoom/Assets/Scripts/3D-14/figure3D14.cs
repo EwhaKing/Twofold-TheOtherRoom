@@ -183,7 +183,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
         if (nearestPosition == null || nearestDistance > snapDistance ||
             !board.CanMoveToPosition(this, nearestPosition.positionName))
         {
-            transform.localPosition = returnPosition;
+            transform.localPosition = grabStartPosition;
             return;
         }
 
