@@ -92,10 +92,28 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+        if (!RaycastIgnoringBoard(ray, out RaycastHit hit)) return;
         if (hit.transform != transform && !hit.transform.IsChildOf(transform)) return;
 
         StartDrag(hit.point);
+    }
+
+    // 보드 상호작용 콜라이더 제외 가장 가까운 충돌
+    private bool RaycastIgnoringBoard(Ray ray, out RaycastHit nearest)
+    {
+        nearest = default;
+        bool found = false;
+
+        foreach (RaycastHit hit in Physics.RaycastAll(ray))
+        {
+            if (board != null && hit.collider.gameObject == board.gameObject) continue;
+            if (found && hit.distance >= nearest.distance) continue;
+
+            nearest = hit;
+            found = true;
+        }
+
+        return found;
     }
 
     private void StartDrag(Vector3 grabPoint)
