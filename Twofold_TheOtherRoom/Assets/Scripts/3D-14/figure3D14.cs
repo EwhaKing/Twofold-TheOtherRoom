@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public enum FigurePositionName
@@ -11,7 +13,7 @@ public enum FigurePositionName
 
 public class figure3D14 : MonoBehaviour, IMouseHoldable
 {
-    [System.Serializable]
+    [Serializable]
     public class FigurePosition
     {
         public FigurePositionName positionName;
@@ -25,10 +27,18 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     [SerializeField] private float snapDistance = 0.5f;
 
     // 드래그 중 높이. 보드 로컬 z, 슬롯 높이 0 기준
-    [SerializeField] private float dragHeight = 0f;
+    [SerializeField] private float dragHeight = 0.1f;
 
     // 드래그 허용 InspectionCameraRig 카메라 인덱스
     [SerializeField] private int dragCameraIndex = 0;
+
+    [Header("Insert Animation")]
+    // 꽂기 시작 높이. 슬롯 기준 보드 로컬 z
+    [SerializeField] private float insertHeight = 0.1f;
+    // 꽂힌 뒤 슬롯보다 내려간 깊이
+    [SerializeField] private float insertDepth = 0.05f;
+    [SerializeField] private float insertDuration = 0.15f;
+    [SerializeField] private AnimationCurve insertEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private board3D14 board;
     private FigurePositionName currentPosition = FigurePositionName.None;
@@ -38,6 +48,8 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
     private Vector3 grabStartPosition;
     private Plane dragPlane;
     private Vector3 dragOffset;
+
+    private Coroutine insertRoutine;
 
     private void Awake()
     {
@@ -75,6 +87,7 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
         InspectionCameraRig rig = InspectionCameraRig.Instance;
 
         if (board != null && board.IsSolved) return false;
+        if (insertRoutine != null) return false;
         if (rig == null || !rig.IsViewing || rig.IsMoving) return false;
 
         return rig.currentCameraIndex == dragCameraIndex;
@@ -187,15 +200,43 @@ public class figure3D14 : MonoBehaviour, IMouseHoldable
             return;
         }
 
-        transform.localPosition = nearestPosition.localPosition;
         currentPosition = nearestPosition.positionName;
+        insertRoutine = StartCoroutine(InsertRoutine(nearestPosition.localPosition));
+    }
+
+    private IEnumerator InsertRoutine(Vector3 slot)
+    {
+        Vector3 from = slot + Vector3.forward * insertHeight;
+        Vector3 to = slot - Vector3.forward * insertDepth;
+
+        yield return Animate(insertDuration, insertEase,
+            t => transform.localPosition = Vector3.LerpUnclamped(from, to, t));
+
+        insertRoutine = null;
         board.CheckPuzzleSolved();
+    }
+
+    private IEnumerator Animate(float duration, AnimationCurve ease, Action<float> apply)
+    {
+        for (float elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+        {
+            apply(ease.Evaluate(elapsed / duration));
+            yield return null;
+        }
+
+        apply(1f);
     }
 
     public void MouseHoldInteract() { }
 
     public void ResetPos()
     {
+        if (insertRoutine != null)
+        {
+            StopCoroutine(insertRoutine);
+            insertRoutine = null;
+        }
+
         transform.localPosition = returnPosition;
         currentPosition = FigurePositionName.None;
     }
