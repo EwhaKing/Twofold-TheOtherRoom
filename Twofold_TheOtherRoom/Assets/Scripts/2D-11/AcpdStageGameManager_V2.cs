@@ -313,7 +313,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             activeTimerCoroutine = null;
         }
 
-        displayAlphabetText.text = "<size=90>X</size>";
+        displayAlphabetText.text = "<size=55><voffset=-20px>다시 입력하세요</voffset></size>";
 
         if (timerBarImage != null)
         {
