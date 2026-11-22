@@ -108,10 +108,10 @@ public class ColorPuzzleManager : MonoBehaviour
 
     private void CheckPuzzle()
     {
-        bool sunCorrect = (Color32)sunImage.color == sunAnswer;
-        bool cloudCorrect = (Color32)cloudImage.color == cloudAnswer;
-        bool grassCorrect = (Color32)grassImage.color == grassAnswer;
-        bool houseCorrect = (Color32)houseImage.color == houseAnswer;
+        bool sunCorrect = sunImage.color == (Color)sunAnswer;
+        bool cloudCorrect = cloudImage.color == (Color)cloudAnswer;
+        bool grassCorrect = grassImage.color == (Color)grassAnswer;
+        bool houseCorrect = houseImage.color == (Color)houseAnswer;
 
         if (sunCorrect && cloudCorrect && grassCorrect && houseCorrect)
         {
