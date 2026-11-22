@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,9 +20,13 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
     [Header("각 물체에서 설정")]
     [SerializeField] private DetailView manager;
     [SerializeField] private GameObject detailPrefab;
+    [Tooltip("체크하면 닫았다 열어도 이전 상태를 유지합니다. 끄면 열 때마다 새로 생성합니다.")]
+    [SerializeField] private bool keepState = true;
 
 
     private GameObject currentDetail;
+    private bool currentDetailIsCached;
+    private readonly Dictionary<GameObject, GameObject> detailCache = new Dictionary<GameObject, GameObject>();
     private int lastOpenedFrame = -1;
 
     private bool IsManager => detailView != null && detailRoot != null;
@@ -50,10 +55,10 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
 
-        manager.Show(detailPrefab);
+        manager.Show(detailPrefab, keepState);
     }
 
-    private void Show(GameObject prefab)
+    private void Show(GameObject prefab, bool keep)
     {
         if (!IsManager)
         {
@@ -67,22 +72,58 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             return;
         }
 
-        // 같은 클릭이 UI 이벤트와 물리 이벤트 양쪽에서 들어오는 경우를 방지합니다.
-        if (lastOpenedFrame == Time.frameCount)
+
+        GameObject detail = null;
+
+        // 상태 유지 대상이면 만들어 둔 인스턴스를 찾아 재사용합니다.
+        if (keep)
         {
-            return;
+            detailCache.TryGetValue(prefab, out detail);
         }
 
-        lastOpenedFrame = Time.frameCount;
-
-        if (currentDetail != null)
+        //확대본이 두번 연속 있을시 가장 이전 것은 지워주는 역할을 함. 
+        if (currentDetail != detail)
         {
-            Destroy(currentDetail);
+            HideCurrentDetail();
+        }
+
+        // 상태 유지 대상의 첫 생성이거나, 상태 유지 안 하는 프리팹이면 새로 생성합니다.
+        if (detail == null)
+        {
+            detail = Instantiate(prefab, detailRoot, false);
+
+            if (keep)
+            {
+                detailCache[prefab] = detail;
+            }
         }
 
         detailView.SetActive(true);
         detailView.transform.SetAsLastSibling();
-        currentDetail = Instantiate(prefab, detailRoot, false);
+
+        detail.SetActive(true);
+        currentDetail = detail;
+        currentDetailIsCached = keep;
+    }
+
+    /// 상태 유지 대상은 숨기고, 그렇지 않은 것은 파괴합니다.
+    private void HideCurrentDetail()
+    {
+        if (currentDetail == null)
+        {
+            return;
+        }
+
+        if (currentDetailIsCached)
+        {
+            currentDetail.SetActive(false);
+        }
+        else
+        {
+            Destroy(currentDetail);
+        }
+
+        currentDetail = null;
     }
 
     /// BackButton의 OnClick에 Canvas 관리자 컴포넌트의 이 함수를 연결합니다.
@@ -99,11 +140,7 @@ public class DetailView : MonoBehaviour , IPointerClickHandler
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
 
-        if (currentDetail != null)
-        {
-            Destroy(currentDetail);
-            currentDetail = null;
-        }
+        HideCurrentDetail();
 
         detailView.SetActive(false);
     }
