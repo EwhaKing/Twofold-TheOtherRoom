@@ -93,7 +93,6 @@ public class Puzzle18 : CoopPuzzle
     public PuzzleDimension ActorSide =>
         HintSide == PuzzleDimension.TwoD ? PuzzleDimension.ThreeD : PuzzleDimension.TwoD;
 
-
     /// <summary>초록불 판정. 지나간 단계의 정답 막대</summary>
     public bool IsBarLit(int bar)
     {
@@ -105,7 +104,6 @@ public class Puzzle18 : CoopPuzzle
         return bar % BarsPerStage == stages[stage].answer - 1;
     }
 
-
     /// <summary>클릭 허용 범위. 이번 단계 막대 4개</summary>
     public bool IsCurrentStageBar(int bar)
     {
@@ -114,7 +112,6 @@ public class Puzzle18 : CoopPuzzle
 
         return bar / BarsPerStage == Step;
     }
-
 
     /// <summary>내 전광판 문구. 힌트 쪽이면 숫자, 아니면 상대 차원 이름</summary>
     public string BoardTextFor(PuzzleDimension me)
@@ -130,10 +127,9 @@ public class Puzzle18 : CoopPuzzle
 
     #endregion
 
-
     #region 2D/3D가 부르는 API
 
-    /// <summary>정답 막대 입력. bar는 전역 인덱스 0~19. 판정과 오답 연출은 뷰에서 IsAnswer로 처리</summary>
+    /// <summary>이번 단계 막대 입력. bar는 전역 인덱스 0~19. 정답->다음단계, 오답->처음</summary>
     public void PressBar(int bar)
     {
         RpcPressBar(bar);
@@ -141,16 +137,15 @@ public class Puzzle18 : CoopPuzzle
 
     #endregion
 
-
     #region Fusion RPC
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RpcPressBar(int bar)
     {
         // 연타 중복 방지
-        if (IsAnswer(bar)) Step++;
+        if (!IsCurrentStageBar(bar)) return;
+        Step = IsAnswer(bar) ? Step + 1 : 0;
     }
-
 
     /// <summary>디버그 전용 단계 대입. 스폰하지 않은 쪽도 쓰도록 RPC</summary>
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -160,7 +155,6 @@ public class Puzzle18 : CoopPuzzle
     }
 
     #endregion
-
 
     #region 한쪽 테스트 디버그 메뉴
 
@@ -172,20 +166,17 @@ public class Puzzle18 : CoopPuzzle
         PressBar(AnswerBar);
     }
 
-
     [ContextMenu("디버그: 전부 통과")]
     private void DebugSolve()
     {
         RpcDebugSetStep(stages.Length);
     }
 
-
     [ContextMenu("디버그: 처음으로")]
     private void DebugReset()
     {
         RpcDebugSetStep(0);
     }
-
 
     /// <summary>정답표</summary>
     [ContextMenu("디버그: 정답표 로그")]
