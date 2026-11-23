@@ -20,17 +20,20 @@ public class LAY_Lamp : MonoBehaviour
     public void BlinkWhite()
     {
         ColorUtility.TryParseHtmlString("#FFFFFF", out Color color);
-        Blink(color);    }
+        Blink(color);    
+    }
 
     public void BlinkGreen()
     {
         ColorUtility.TryParseHtmlString("#0EECC0", out Color color);
-        Blink(color);    }
+        Blink(color);   
+    }
 
     public void BlinkPink()
     {
         ColorUtility.TryParseHtmlString("#FF7B8A", out Color color);
-        Blink(color);    }
+        Blink(color);    
+    }
 
     private void Blink(Color color)
     {
