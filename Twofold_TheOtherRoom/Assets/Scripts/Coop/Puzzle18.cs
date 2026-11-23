@@ -166,6 +166,14 @@ public class Puzzle18 : CoopPuzzle
         PressBar(AnswerBar);
     }
 
+    [ContextMenu("디버그: 현재 단계 오답")]
+    private void DebugPressWrong()
+    {
+        if (Solved) return;
+        int first = Step * BarsPerStage;
+        PressBar(AnswerBar == first ? first + 1 : first);
+    }
+
     [ContextMenu("디버그: 전부 통과")]
     private void DebugSolve()
     {
