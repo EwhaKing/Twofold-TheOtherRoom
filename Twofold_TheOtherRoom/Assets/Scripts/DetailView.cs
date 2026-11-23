@@ -2,15 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-/// <summary>
-/// 물체를 클릭하면 해당 물체의 확대 프리팹을 DetailRoot에 생성합니다.
-///
-/// 사용법
-/// 1. Canvas에 이 컴포넌트를 붙이고 Detail View와 Detail Root를 연결합니다.
-/// 2. 각 물체에도 이 컴포넌트를 붙이고, Canvas의 DetailView 컴포넌트와
-///    해당 물체의 Detail Prefab을 연결합니다.
-/// 3. BackButton의 OnClick에는 Canvas에 붙인 컴포넌트의 CloseDetail을 연결합니다.
-/// </summary>
+
 public class DetailView : MonoBehaviour , IPointerClickHandler
 {
     [Header("Canvas에서 설정")]
