@@ -17,20 +17,20 @@ public class LAY_Lamp : MonoBehaviour
         TurnOff();
     }
 
-    public void BlinkRed()
+    public void BlinkWhite()
     {
-        Blink(Color.red);
-    }
+        ColorUtility.TryParseHtmlString("#FFFFFF", out Color color);
+        Blink(color);    }
 
     public void BlinkGreen()
     {
-        Blink(Color.green);
-    }
+        ColorUtility.TryParseHtmlString("#0EECC0", out Color color);
+        Blink(color);    }
 
-    public void BlinkBlue()
+    public void BlinkPink()
     {
-        Blink(Color.blue);
-    }
+        ColorUtility.TryParseHtmlString("#FF7B8A", out Color color);
+        Blink(color);    }
 
     private void Blink(Color color)
     {

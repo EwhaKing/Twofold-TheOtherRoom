@@ -9,9 +9,9 @@ public class LAY_Button : MonoBehaviour, IInteractable
 
     public enum ButtonColor
     {
-        Red,
+        White,
         Green,
-        Blue
+        Pink
     }
 
     public ButtonColor buttonColor;
@@ -70,16 +70,16 @@ public class LAY_Button : MonoBehaviour, IInteractable
 
             switch (buttonColor)
             {
-                case ButtonColor.Red:
-                    lamps[i].BlinkRed();
+                case ButtonColor.White:
+                    lamps[i].BlinkWhite();
                     break;
 
                 case ButtonColor.Green:
                     lamps[i].BlinkGreen();
                     break;
 
-                case ButtonColor.Blue:
-                    lamps[i].BlinkBlue();
+                case ButtonColor.Pink:
+                    lamps[i].BlinkPink();
                     break;
             }
         }
