@@ -37,8 +37,12 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
     private List<int> playerSequence = new List<int>();
     private Coroutine activeTimerCoroutine;
 
+    private Puzzle11 puzzle;
+    private bool cleared3D;
+
     private const string ClearMessage =
         "<size=62><cspace=-0.03em><voffset=-0.25em>3D 거울 획득 확인</voffset></cspace></size>";
+    private string ClearText => cleared3D ? ClearMessage : "";
 
     private void Awake()
     {
@@ -78,6 +82,19 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         {
             RestoreClearedState();
         }
+    }
+
+    private void Update()
+    {
+        if (cleared3D) return;
+
+        Puzzle11 found = ResolvePuzzle();
+        if (found == null || !found.Cleared3D) return;
+
+        cleared3D = true;
+
+        if (isCleared && !isFinalClearing && displayAlphabetText != null)
+            displayAlphabetText.text = ClearMessage;
     }
 
     private void OnDisable()
@@ -131,7 +148,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
 
         if (displayAlphabetText != null)
         {
-            displayAlphabetText.text = ClearMessage;
+            displayAlphabetText.text = ClearText;
         }
 
         if (timerBarImage != null)
@@ -313,7 +330,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
             activeTimerCoroutine = null;
         }
 
-        displayAlphabetText.text = "<size=90>X</size>";
+        displayAlphabetText.text = "<size=55><voffset=-20px>다시 입력하세요</voffset></size>";
 
         if (timerBarImage != null)
         {
@@ -475,7 +492,7 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         isFinalClearing = false;
         isReplaying = false;
 
-        displayAlphabetText.text = ClearMessage;
+        displayAlphabetText.text = ClearText;
 
         if (timerBarImage != null)
         {
@@ -486,5 +503,13 @@ public class AcpdStageGameManager_V2 : MonoBehaviour
         {
             PuzzleManager.Instance.ReportSolved(puzzleID, dimension);
         }
+    }
+
+    private Puzzle11 ResolvePuzzle()
+    {
+        if (puzzle == null)
+            puzzle = CoopPuzzle.Find<Puzzle11>(Puzzle11.Key);
+
+        return puzzle;
     }
 }

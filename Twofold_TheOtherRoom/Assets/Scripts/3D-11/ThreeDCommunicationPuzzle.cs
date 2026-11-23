@@ -5,6 +5,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Fusion;
 
 
 /// 3D 플레이어용 통신 퍼즐.
@@ -42,7 +43,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
     [SerializeField] private Camera playerCamera;
     [Tooltip("모니터 정면에 빈 오브젝트를 만들고 카메라가 확대될 위치/회전으로 배치하세요.")]
     [SerializeField] private Transform cameraFocusPoint;
-    [SerializeField] private Behaviour[] behavioursToDisable;
+    [SerializeField] private UnityEngine.Behaviour[] behavioursToDisable;
 
     [Header("UI - Common")]
     [SerializeField] private TMP_Text stageText;
@@ -63,7 +64,13 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
     [Header("UI - ClearPanel")]
     [SerializeField] private GameObject MirrorPanel;
-  
+
+    [Header("Coop Prefab")]
+    [SerializeField] private NetworkPrefabRef puzzle11Prefab;
+
+    private Puzzle11 puzzle;
+    private bool spawnTried;
+    private bool warnedNoRunner;
 
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
     private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
@@ -100,6 +107,11 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
 
 
         HideAllShapeSlots();
+    }
+
+    private void Start()
+    {
+        TrySpawnPuzzle();
     }
 
     private void Update()
@@ -177,6 +189,7 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
         {
             SoundManager.Instance.PlaySFX(SFXType.DefaultClick);
         }
+        TrySpawnPuzzle();
         RestartFromBeginning();
         StartCoroutine(ActivateAlphabetInputAfterInteractKeyReleased());
     }
@@ -416,6 +429,8 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 **/
         phase = Phase.Cleared;
+        Puzzle11 found = ResolvePuzzle();
+        if (found != null) found.ReportCleared3D();
 
         // 클리어 후에는 기본 설명(입력/결정)을 끄고,
         // ThreeDCommunicationDescriptionImages의 Cleared Descriptions만 보이게 함
@@ -561,4 +576,41 @@ public class ThreeDCommunicationPuzzle : MonoBehaviour, IInteractable, ICloseIns
             Array.Resize(ref stages, 3);
     }
 #endif
+
+    private Puzzle11 ResolvePuzzle()
+    {
+        if (puzzle == null)
+            puzzle = CoopPuzzle.Find<Puzzle11>(Puzzle11.Key);
+
+        return puzzle;
+    }
+    private void TrySpawnPuzzle()
+    {
+        if (spawnTried || !puzzle11Prefab.IsValid) return;
+        if (ResolvePuzzle() != null) return;
+
+        if (RoomService.Instance == null) return;
+
+        NetworkRunner runner = RoomService.Instance.Runner;
+
+        if (runner == null || !runner.IsRunning)
+        {
+            if (!warnedNoRunner)
+            {
+                warnedNoRunner = true;
+                Debug.LogWarning($"러너가 아직 준비되지 않음. 접속 후 재시도");
+            }
+            return;
+        }
+
+        spawnTried = true;
+
+        NetworkObject spawned = runner.Spawn(puzzle11Prefab);
+        puzzle = spawned != null ? spawned.GetComponent<Puzzle11>() : null;
+
+        if (puzzle == null)
+        {
+            Debug.LogWarning($"스폰한 프리팹에 {nameof(Puzzle11)}가 없음");
+        }
+    }
 }
