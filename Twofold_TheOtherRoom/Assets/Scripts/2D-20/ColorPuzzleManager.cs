@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class ColorPuzzleManager : MonoBehaviour
 {
     [Header("붓")]
-    [SerializeField] private Image brushImage;
+    [SerializeField] private Image brushTipImage;
 
     [Header("그림")]
     [SerializeField] private Image sunImage;
@@ -12,8 +12,9 @@ public class ColorPuzzleManager : MonoBehaviour
     [SerializeField] private Image grassImage;
     [SerializeField] private Image houseImage;
 
-    [Header("정답 화면")]
+    [Header("정답")]
     [SerializeField] private GameObject emptyCanvas;
+    [SerializeField] private GameObject canvasBook;
 
     private readonly Color32 redColor = new Color32(248, 56, 56, 255);
     private readonly Color32 orangeColor = new Color32(243, 146, 16, 255);
@@ -38,71 +39,32 @@ public class ColorPuzzleManager : MonoBehaviour
         emptyCanvas.SetActive(false);
     }
 
-    public void SelectRed()
-    {
-        SelectColor(redColor);
-    }
-
-    public void SelectOrange()
-    {
-        SelectColor(orangeColor);
-    }
-
-    public void SelectYellow()
-    {
-        SelectColor(yellowColor);
-    }
-
-    public void SelectGreen()
-    {
-        SelectColor(greenColor);
-    }
-
-    public void SelectBlue()
-    {
-        SelectColor(blueColor);
-    }
-
-    public void SelectPurple()
-    {
-        SelectColor(purpleColor);
-    }
+    public void SelectRed() { SelectColor(redColor); }
+    public void SelectOrange() { SelectColor(orangeColor); }
+    public void SelectYellow() { SelectColor(yellowColor); }
+    public void SelectGreen() { SelectColor(greenColor); }
+    public void SelectBlue() { SelectColor(blueColor); }
+    public void SelectPurple() { SelectColor(purpleColor); }
 
     private void SelectColor(Color32 color)
     {
+        if (solved) return;
+
         currentBrushColor = color;
         hasSelectedColor = true;
-
-        brushImage.color = color;
+        brushTipImage.color = color;
     }
 
-    public void PaintSun()
-    {
-        PaintObject(sunImage);
-    }
-
-    public void PaintCloud()
-    {
-        PaintObject(cloudImage);
-    }
-
-    public void PaintGrass()
-    {
-        PaintObject(grassImage);
-    }
-
-    public void PaintHouse()
-    {
-        PaintObject(houseImage);
-    }
+    public void PaintSun() { PaintObject(sunImage); }
+    public void PaintCloud() { PaintObject(cloudImage); }
+    public void PaintGrass() { PaintObject(grassImage); }
+    public void PaintHouse() { PaintObject(houseImage); }
 
     private void PaintObject(Image target)
     {
-        if (!hasSelectedColor || solved)
-            return;
+        if (!hasSelectedColor || solved) return;
 
         target.color = currentBrushColor;
-
         CheckPuzzle();
     }
 
@@ -116,9 +78,8 @@ public class ColorPuzzleManager : MonoBehaviour
         if (sunCorrect && cloudCorrect && grassCorrect && houseCorrect)
         {
             solved = true;
-
             emptyCanvas.SetActive(true);
-
+            canvasBook.SetActive(false);
             Debug.Log("finished");
         }
     }
