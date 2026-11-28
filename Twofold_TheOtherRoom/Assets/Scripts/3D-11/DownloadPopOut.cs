@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class DownloadPopOut : MonoBehaviour
 {
+    [Header("Puzzle Data")]
+    [SerializeField] private string puzzleId = "3D-11";
+
     [Header("Target")]
     [SerializeField] private GameObject Mirror4;
     [SerializeField] private GameObject MirrorIcon;
@@ -36,7 +39,7 @@ public class DownloadPopOut : MonoBehaviour
         MirrorIcon.SetActive(false);
 
         if (PuzzleManager.Instance != null)
-            PuzzleManager.Instance.ReportSolved("3D-11", PuzzleDimension.ThreeD);
+            PuzzleManager.Instance.ReportSolved(puzzleId, PuzzleDimension.ThreeD);
         else
             Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
 
