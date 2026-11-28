@@ -33,7 +33,12 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
     [Header("UI - Alphabet Input")]
     [SerializeField] private TMP_InputField alphabetInput;
 
+    [Header("UI - ClearPanel")]
+    [SerializeField] private GameObject mirrorPanel;
+
     private readonly PlayerControlLock playerControlLock = new PlayerControlLock();
+    private readonly PlayerModelHider playerModelHider = new PlayerModelHider();
+    private bool isInspecting;
     private Phase phase = Phase.Closed;
     private bool solved;
     private Vector3 originalCameraPosition;
@@ -47,11 +52,12 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
         if (instructionText != null) instructionText.gameObject.SetActive(true);
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
+        if (mirrorPanel != null) mirrorPanel.SetActive(false);
     }
 
     private void Update()
     {
-        if (phase == Phase.Closed || phase == Phase.Cleared)
+        if (phase != Phase.AlphabetInput)
             return;
 
         if ( Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
@@ -63,11 +69,17 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
 
     public void Interact()
     {
-        if (phase == Phase.Closed && !solved)
+        if (isInspecting)
+            return;
+        if (!BeginInspection())
+            return;
+
+        // 클리어 뒤엔 확대만 (거울 팝업 다운로드용)
+        if (!solved)
             OpenPuzzle();
     }
 
-    private void OpenPuzzle()
+    private bool BeginInspection()
     {
         if (playerCamera == null)
             playerCamera = Camera.main;
@@ -75,8 +87,11 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
         if (playerCamera == null || cameraFocusPoint == null)
         {
             Debug.LogWarning("[ThreeDCommunicationPuzzle] Player Camera와 Camera Focus Point를 연결하세요.", this);
-            return;
+            return false;
         }
+
+        isInspecting = true;
+        playerModelHider.Hide();
 
         originalCameraPosition = playerCamera.transform.position;
         originalCameraRotation = playerCamera.transform.rotation;
@@ -87,11 +102,16 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
             cameraFocusPoint.position,
             cameraFocusPoint.rotation);
 
-        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
-
         // CommonCanvas 뒤로가기 버튼
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
+
+        return true;
+    }
+
+    private void OpenPuzzle()
+    {
+        if (feedbackText != null) feedbackText.gameObject.SetActive(true);
 
         phase = Phase.AlphabetInput;
 
@@ -135,7 +155,7 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
     /// CommonCanvas 뒤로가기 버튼이 부름. E를 누르기 전 상태로 돌아감.
     public void CloseInspection()
     {
-        if (phase == Phase.Closed)
+        if (!isInspecting)
             return;
 
         if (InspectionUIController.Instance != null)
@@ -144,10 +164,12 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
         playerCamera.transform.SetPositionAndRotation(
             originalCameraPosition,
             originalCameraRotation);
+        playerModelHider.Restore();
+        isInspecting = false;
         playerControlLock.Unlock();
 
         if (instructionText != null) instructionText.gameObject.SetActive(true);
-        if (alphabetInput != null) alphabetInput.gameObject.SetActive(true);
+        if (alphabetInput != null) alphabetInput.gameObject.SetActive(!solved);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
 
         phase = solved ? Phase.Cleared : Phase.Closed;
@@ -162,10 +184,7 @@ public class ThreeDCommunicationPuzzle3D15 : MonoBehaviour, IInteractable, IClos
         if (alphabetInput != null) alphabetInput.gameObject.SetActive(false);
         if (feedbackText != null) feedbackText.gameObject.SetActive(false);
 
-        if (PuzzleManager.Instance != null)
-            PuzzleManager.Instance.ReportSolved(puzzleId, dimension);
-        else
-            Debug.LogWarning("[ThreeDCommunicationPuzzle] PuzzleManager.Instance가 없습니다.", this);
+        if (mirrorPanel != null) mirrorPanel.SetActive(true);
 
         phase = Phase.Cleared;
     }
