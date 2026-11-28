@@ -15,7 +15,6 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
 
     [Header("Rotation")]
     [SerializeField, Min(0.01f)] private float rotationSpeed;
-    [SerializeField] private float verticalRotationLimit = 180f;
     [Tooltip("켜면 Transform pivot 대신 자식 Renderer들의 시각적 중심을 기준으로 회전합니다. 모델이 pivot에서 떨어져 있을 때 사용하세요.")]
     [SerializeField] private bool rotateAroundVisualCenter = false;
 
@@ -40,18 +39,12 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
     private bool originalUseGravity;
     private bool isInspecting;
     private int enteredFrame;
-    private float inspectionYaw;
-    private float inspectionPitch;
-    private Quaternion objectRotationInCameraSpace;
 
     // inspectionPoint   : 살펴보기 중 물체가 놓일 화면상의 목표 지점 (월드 좌표)
     // visualCenterLocal : 모델의 실제 가운데 점을 이 오브젝트 기준(로컬) 좌표로 저장한 값
 
     private Vector3 inspectionPoint;
     private Vector3 visualCenterLocal;
-
-    private float dragStartPitch;
-    private float dragPitchDelta;
 
     // 레이어 교체용: 살펴보기 시작 시 자신+자식들의 Transform과 원래 레이어를 저장해 두고, 끝날 때 그대로 되돌립니다.
     private Transform[] layerTargets;
@@ -79,38 +72,23 @@ public class camera_to_object : MonoBehaviour, IInteractable, ICloseInspection, 
             return;
         }
 
-        // 마우스를 처음 누른 순간의 회전값 저장
-if (Input.GetMouseButtonDown(0))
-{
-    dragStartPitch = inspectionPitch;
-    dragPitchDelta = 0f;
-}
+        if (!Input.GetMouseButton(0))
+            return;
 
-if (!Input.GetMouseButton(0))
-    return;
+        float mouseX = Input.GetAxis("Mouse X") * -1f;
+        float mouseY = Input.GetAxis("Mouse Y");
+        // 마우스 축 값은 이미 프레임당 이동량이라 deltaTime 을 곱하지 않음 (곱하면 FPS 따라 속도가 달라짐)
+        float amount = rotationSpeed;
 
-float mouseX = Input.GetAxis("Mouse X") * -1f;
-float mouseY = Input.GetAxis("Mouse Y");
-// 마우스 축 값은 이미 프레임당 이동량이라 deltaTime 을 곱하지 않음 (곱하면 FPS 따라 속도가 달라짐)
-float amount = rotationSpeed;
+        // 화면 기준 축으로 이번 프레임 이동량만 누적
+        Transform cameraTransform = inspectionCamera.transform;
+        transform.rotation =
+            Quaternion.AngleAxis(mouseX * amount, cameraTransform.up)
+            * Quaternion.AngleAxis(mouseY * amount, cameraTransform.right)
+            * transform.rotation;
 
-inspectionYaw += mouseX * amount;
-
-    // 이번 드래그에서 움직인 양만 제한
-    dragPitchDelta = Mathf.Clamp(
-        dragPitchDelta + mouseY * amount,
-        -verticalRotationLimit,
-        verticalRotationLimit);
-
-    inspectionPitch = dragStartPitch + dragPitchDelta;
-
-    transform.rotation =
-        inspectionCamera.transform.rotation
-        * Quaternion.Euler(inspectionPitch, inspectionYaw, 0f)
-        * objectRotationInCameraSpace;
-
-    // 회전 후 위치 보정 (rotateAroundVisualCenter가 켜져 있을 때만 의미 있음)
-    ApplyInspectionPosition();
+        // 회전 후 위치 보정 (rotateAroundVisualCenter가 켜져 있을 때만 의미 있음)
+        ApplyInspectionPosition();
     }
 
 
@@ -239,11 +217,6 @@ inspectionYaw += mouseX * amount;
             + cameraTransform.forward * (distanceFromCamera + screenOffset.z);
         ApplyInspectionPosition();
 
-        inspectionYaw = 0f;
-        inspectionPitch = 0f;
-        objectRotationInCameraSpace =
-            Quaternion.Inverse(cameraTransform.rotation) * transform.rotation;
-
         if (InspectionUIController.Instance != null)
             InspectionUIController.Instance.Show(this);
 
@@ -278,15 +251,6 @@ inspectionYaw += mouseX * amount;
     transform.rotation = originalRotation;
     // 회전을 되돌렸으니 시각적 중심이 다시 화면 가운데에 오도록 위치도 맞춥니다.
     ApplyInspectionPosition();
-
-    // 마우스 회전 누적값 초기화
-    inspectionYaw = 0f;
-    inspectionPitch = 0f;
-
-    // 현재 카메라 기준으로 초기 회전 관계 재설정
-    objectRotationInCameraSpace =
-        Quaternion.Inverse(inspectionCamera.transform.rotation)
-        * originalRotation;
 
     if (objectRigidbody != null)
     {
